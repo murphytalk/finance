@@ -1,16 +1,94 @@
 # -*- coding: utf-8 -*-
 """
 Adapters used by the scraper
+
+Login credentials are read from MyInvestMan.ini, its format is:
+
+[BrokerName]
+user=my-user-name
+pass=my-pass-word
+
+== Other configuration ==
+
+If proxy is needed :
+[Proxy]
+http=
+https=
 """
 import sys
+import ConfigParser
 import sqlite3
+from time import time
 
-class SqliteAdapter:
+config = ConfigParser.RawConfigParser(allow_no_value=True)
+config.read("MyInvestMan.ini")
+
+#see if proxy is specified in .ini
+#def get_proxy():
+#    proxy = None
+#    try:
+#        http_proxy = config.get('Proxy', 'http')
+#        https_proxy = config.get('Proxy', 'https')
+#        if http_proxy is not None and https_proxy is not None:
+#            proxy = urllib2.ProxyHandler({'http': http_proxy, 'https': https_proxy})
+#    except ConfigParser.NoSectionError:
+#        pass
+#
+#    return proxy
+
+
+class ConsoleAdapter:
+    def __init__(self, broker_name):
+        self.broker = broker_name
+        print "Broker:%s" % broker_name
+
+    def get_login(self):
+        return config.get(self.broker, 'user'), config.get(self.broker, 'pass')
+
+    def onData(self, instrument_name, capital, amount, market_value, profit, price):
+        print u"{}:amount={},price={},market value={},capital={},profit={}".format(instrument_name,
+                                                                                   amount,
+                                                                                   price,
+                                                                                   market_value,
+                                                                                   capital,
+                                                                                   profit)
+    def close(self):
+        pass
+
+class SqliteAdapter(ConsoleAdapter):
     """
     This is an adapter implementation to write to sqlite DB.
     """
-    def __init__():
-        pass
+    def __init__(self, db_path,broker_name):
+        print "Broker:%s" % broker_name        
+        self.broker = broker_name
+        self.conn = sqlite3.connect(db_path)
+        self.c = self.conn.cursor()
+
+        self.broker_id = self.get_id('broker',broker_name)
+
+
+    def get_id(self,table,param):
+        #insert if we see it first time
+        while True:
+            self.c.execute('SELECT rowid,name FROM %s WHERE name=?'%table,(param,))
+            r = self.c.fetchone()
+            if r is None:
+                self.c.execute("INSERT INTO %s VALUES (?,NULL,?)"%table,(param,self.broker_id))
+                self.conn.commit
+            else:
+                return r[0]                
+                
+         
+    def onData(self, instrument_name, capital, amount, market_value, profit, price):
+        instrument_id = self.get_id('instrument',instrument_name)
+        self.c.execute("INSERT INTO performance VALUES (?,?,?,?,?,?,?)",(instrument_id,amount,price,market_value,profit,capital,int(time())))
+
+        
+
+    def close(self):
+        self.conn.commit()
+        self.conn.close()
 
 if __name__ == "__main__":    
     if len(sys.argv) <> 2:
@@ -41,8 +119,8 @@ if __name__ == "__main__":
         for b in ('US','Europe','S.Korea','China','Japan'):
             c.execute("INSERT INTO region values ('%s')"%b)
 
-        c.execute("CREATE TABLE instrument (name text not null, asset int not null, broker null, FOREIGN KEY(asset) REFERENCES asset(rowid),FOREIGN KEY(broker) REFERENCES broker(rowid))")
-        c.execute("CREATE TABLE [transaction](instrument int not null ,type text not null, price real not null, number not null, fee real null, date int not null,FOREIGN KEY(instrument) REFERENCES asset(rowid))"
+        c.execute("CREATE TABLE instrument (name text not null, asset int null, broker null, FOREIGN KEY(asset) REFERENCES asset(rowid),FOREIGN KEY(broker) REFERENCES broker(rowid))")
+        c.execute("CREATE TABLE [transaction](instrument int not null ,type text not null, price real not null, number not null, fee real null, date int not null,FOREIGN KEY(instrument) REFERENCES asset(rowid))")
         c.execute("CREATE TABLE performance(instrument int not null ,amount int not null,price real not null, value real not null, profit value not null, capital,date int not null, FOREIGN KEY(instrument) REFERENCES asset(rowid))")
                 
 

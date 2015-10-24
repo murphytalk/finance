@@ -13,7 +13,7 @@ from time import sleep
 from bs4 import BeautifulSoup as bs
 from utils import ScrapError
 
-DEBUG = True
+DEBUG = False
 
 
 def read_as(res, encoding='sjis'):
@@ -689,52 +689,17 @@ if __name__ == '__main__':
     parameter : one or more broker name, or all brokers if no parameter given
 
     This is more for dev purpose, launched from console rather than GAE.
-    Login credentials are read from MyInvestMan.ini, its format is:
-
-    [BrokerName]
-    user=my-user-name
-    pass=my-pass-word
-
-    == Other configuration ==
-
-    If proxy is needed :
-    [Proxy]
-    http=
-    https=
     """
     import sys
-    import ConfigParser
     from config import BROKERS
+    from adapter import ConsoleAdapter,config
 
-    config = ConfigParser.RawConfigParser(allow_no_value=True)
-    config.read("MyInvestMan.ini")
+    def do_work(broker):
+        adapter = ConsoleAdapter(broker.get_name())
+        broker.open(adapter)
+        adapter.close()
 
-    class ConsoleAdapter:
-        def __init__(self, broker_name):
-            self.broker = broker_name
-            print "Broker:%s" % broker_name
-
-        def get_login(self):
-            return config.get(self.broker, 'user'), config.get(self.broker, 'pass')
-
-        def onData(self, instrument_name, capital, amount, market_value, profit, price):
-            print u"{}:amount={},price={},market value={},capital={},profit={}".format(instrument_name,
-                                                                                       amount,
-                                                                                       price,
-                                                                                       market_value,
-                                                                                       capital,
-                                                                                       profit)
-
-    #see if proxy is specified in .ini
-    proxy = None
-    try:
-        http_proxy = config.get('Proxy', 'http')
-        https_proxy = config.get('Proxy', 'https')
-        if http_proxy is not None and https_proxy is not None:
-            proxy = urllib2.ProxyHandler({'http': http_proxy, 'https': https_proxy})
-    except ConfigParser.NoSectionError:
-        pass
-
+    proxy = None #get_proxy()
 
     ## cmd arguments :
     # -d : debug mode
@@ -746,9 +711,8 @@ if __name__ == '__main__':
 
     if len(args) == 0:
         for broker in [getattr(sys.modules[__name__], x)(proxy) for x in BROKERS]:
-            broker.open(ConsoleAdapter(broker.get_name()))
+            do_work(broker)
     else:
         for broker_name in args:
             broker_class = getattr(sys.modules[__name__], broker_name)
-            broker = broker_class(proxy)
-            broker.open(ConsoleAdapter(broker.get_name()))
+            do_work(broker_class(proxy))
