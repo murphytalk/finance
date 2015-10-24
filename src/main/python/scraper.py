@@ -752,7 +752,3 @@ if __name__ == '__main__':
             broker_class = getattr(sys.modules[__name__], broker_name)
             broker = broker_class(proxy)
             broker.open(ConsoleAdapter(broker.get_name()))
-
-
-
-

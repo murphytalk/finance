@@ -176,4 +176,5 @@ target/
 
 
 *.ini
+*.db
 

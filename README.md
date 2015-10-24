@@ -1,6 +1,14 @@
 Personal finance and investment portal.
 
 
+# The Web Application
+
+# The Python Scripts
+
+# The Database Schema
+
+
+
 # Local development workflow
 
 
