@@ -201,7 +201,7 @@ class UFJ(Broker):
 
     def parse_performance_table(self, soup_table, adapter):
         def parse_value(s,name,ender):
-            pattern = re.compile(r'%s" *type="hidden" *value="(.*?)\u.*".*'%(name)) 
+            pattern = re.compile(r'%s" *type="hidden" *value="(.*?)".*'%(name)) 
             sub_s = s[s.find(name):]
             m = pattern.match(sub_s)
             if DEBUG:
