@@ -200,6 +200,17 @@ class UFJ(Broker):
 
 
     def parse_performance_table(self, soup_table, adapter):
+        def parse_value(s,name,ender):
+            pattern = re.compile(r'%s" *type="hidden" *value="(.*?)\u.*".*'%(name)) 
+            sub_s = s[s.find(name):]
+            m = pattern.match(sub_s)
+            if DEBUG:
+                print s
+                print "%s str:%s"%(name,sub_s)
+                print "%s=%s,digit only=%s"%(name,m.group(1),get_digits(m.group(1)))
+            return get_digits(m.group(1))
+
+
         #tag = u'＜特定＞'
         rows = soup_table.find_all('tr')
         #2014/1 Format
@@ -238,22 +249,20 @@ class UFJ(Broker):
             ##基準価額
             #step 1 : get string like  11257+27
             base_value = get_digits(strip_str_from_first_matched_class(r, "base_value"))
+            if DEBUG:
+                print("base value:%s"%base_value)
             #step 2 : remove from + or -
             base_value = float(re.split('\+|-', base_value)[0])
 
             ##cannot get the following <input> elements by using class,possible reason : it should be <input/>
             ##So have to convert it to string and use regex to parse
             s = r.findAll("input", attrs={"class": "unit_price"}).__str__()
-
-            pattern = re.compile(r'.*value="(.*)".*')
-
-            ##数量
-            m = pattern.match(s[s.find("amount"):])
-            amount = int(get_digits(m.group(1)))
+        
+            amount = int(parse_value(s,"amount",u'口'))
 
             ##個別元本 => price per 10,000 units
-            m = pattern.match(s[s.find("capital"):])
-            capital = round(float(get_digits(m.group(1))) * amount/10000, 0)
+            capital = parse_value(s,"capital",u'円')
+            capital = round(float(capital) * amount/10000, 0)
 
             adapter.onData(fund_name, capital, amount, market_value, diff, base_value)
 

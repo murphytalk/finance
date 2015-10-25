@@ -5,11 +5,7 @@ Personal finance and investment portal.
 
 # The Python Scripts
 
-# The Database Schema
-
-
-
-# Local development workflow
+# Local Development Workflow
 
 
 To compile the entire project, run `mvn install`.
