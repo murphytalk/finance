@@ -15,5 +15,7 @@ BROKERS = (
     'Fidelity'
 )
 
+INI='/home/murphy/MyInvestMan.ini'
+
 REPORT_EMAIL_ADDRESS = 'murphytalk+invest@gmail.com'
 MAIL_FROM = "MyInvestMan <murphytalk@gmail.com>"

@@ -19,9 +19,10 @@ import sys
 import ConfigParser
 import sqlite3
 from time import time
+from config import INI
 
 config = ConfigParser.RawConfigParser(allow_no_value=True)
-config.read("MyInvestMan.ini")
+config.read(INI)
 
 #see if proxy is specified in .ini
 #def get_proxy():
