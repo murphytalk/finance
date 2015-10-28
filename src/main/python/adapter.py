@@ -120,7 +120,7 @@ if __name__ == "__main__":
         for b in ('US','Europe','S.Korea','China','Japan'):
             c.execute("INSERT INTO region values ('%s')"%b)
 
-        c.execute("CREATE TABLE instrument (name text not null, asset int null, broker null, FOREIGN KEY(asset) REFERENCES asset(rowid),FOREIGN KEY(broker) REFERENCES broker(rowid))")
+        c.execute("CREATE TABLE instrument (name text not null, asset int null, broker null,currency text not null,  FOREIGN KEY(asset) REFERENCES asset(rowid),FOREIGN KEY(broker) REFERENCES broker(rowid))")
         c.execute("CREATE TABLE [transaction](instrument int not null ,type text not null, price real not null, number not null, fee real null, date int not null,FOREIGN KEY(instrument) REFERENCES asset(rowid))")
         c.execute("CREATE TABLE performance(instrument int not null ,amount int not null,price real not null, value real not null, profit value not null, capital,date int not null, FOREIGN KEY(instrument) REFERENCES asset(rowid))")
                 
