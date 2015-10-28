@@ -4,6 +4,11 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <bean class="net.murphytalk.finance.MyUI.MyConfiguration" />
+    <bean class="net.murphytalk.finance.MainUI.MyConfiguration" />
     <context:component-scan base-package="net.murphytalk.finance" />
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="org.sqlite.JDBC"/>
+        <property name="url" value="jdbc:sqlite:/home/murphy/IdeaProjects/finance/fiance.db"/>
+    </bean>
 </beans>

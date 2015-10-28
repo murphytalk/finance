@@ -14,13 +14,17 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import net.murphytalk.finance.dao.DAO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.ContextLoaderListener;
 
 @Theme("mytheme")
 @Title("My Finance")
 @SpringUI
-public class MyUI extends UI {
+public class MainUI extends UI {
+    @Autowired
+    private DAO dao;
 
     @Override
     protected void init(VaadinRequest vaadinRequest) {
