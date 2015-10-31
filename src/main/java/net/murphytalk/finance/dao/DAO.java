@@ -8,6 +8,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +22,13 @@ import java.util.Map;
 @SpringComponent
 @Scope("singleton")
 public class DAO {
+    public static final ZoneOffset TIMEZONE = ZoneOffset.ofHours(9);
     private JdbcTemplate jdbcTemplate;
     static final Map<Integer,Asset>  assets  = new HashMap<>();
     static final Map<Integer,Broker> brokers = new HashMap<>();
     static final Map<Integer,Instrument> instruments = new HashMap<>();
+
+    static private final String selectFromPerformanceByDate = "select * from performance where date>=%d and date<=%d";
 
     public static class StaticData {
         public int rowid;
@@ -44,17 +51,21 @@ public class DAO {
         }
     }
 
-    public List<Performance> loadPerformance(LocalDate date){
-        return jdbcTemplate.query("select * from performance",
+    public List<Performance> loadPerformance(Date input){
+        long epoch = input.getTime()/1000 ;//- TIMEZONE.getTotalSeconds();
+        return jdbcTemplate.query(String.format(selectFromPerformanceByDate,epoch,epoch+24*3600),
                 new BeanPropertyRowMapper<>(Performance.class));
+    }
+
+    public LocalDate getLatestPerformanceDate(){
+        long epoch = jdbcTemplate.queryForLong("SELECT max(date) as date from performance");
+        return LocalDateTime.ofEpochSecond(epoch, 0, DAO.TIMEZONE).toLocalDate();
     }
 
     @Autowired
     public void setDataSource(DataSource dataSource){
         jdbcTemplate = new JdbcTemplate(dataSource);
         loadStaticData();
-
-        List<Performance> performances = loadPerformance(null);
     }
 
 }

@@ -32,5 +32,46 @@
 @mixin mytheme {
   @include valo;
 
-  // Insert your own theme rules here
+  // Main layout padding
+  $view-padding: round($v-unit-size / 1.5) !default;
+
+  .viewheader {
+    padding-bottom: $view-padding;
+    width: 100%;
+    text-align: right;   //align date picker to right
+    white-space: normal;
+
+    .v-slot-h1 {
+      float: left;
+    }
+
+    .h1 {
+      white-space: normal;
+    }
+
+    @include width-range($max: 700px) {
+      padding-bottom: round($v-unit-size / 2);
+      text-align: left;
+
+      .v-slot-h1 {
+        float: none;
+      }
+
+      .h1 {
+        font-size: round($v-font-size--h1 * 0.8);
+      }
+
+      > .v-slot {
+        display: block;
+      }
+
+      .toolbar {
+        white-space: normal;
+
+        > .v-spacing {
+          height: round($v-unit-size / 4);
+        }
+      }
+    }
+  }
 }
