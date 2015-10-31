@@ -1,5 +1,6 @@
 package net.murphytalk.finance.view;
 
+import com.vaadin.data.Container;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
@@ -47,12 +48,14 @@ public final class Portfolio extends VerticalLayout implements View  {
     }
 
     private void updateData(Date date){
-
+        BeanItemContainer<Performance> ds = (BeanItemContainer<Performance>)grid.getContainerDataSource();
+        ds.removeAllItems();
+        ds.addAll(dao.loadPerformance(date));
     }
 
     private Component buildToolbar() {
         HorizontalLayout header = new HorizontalLayout();
-        header.addStyleName("viewheader");
+        header.addStyleName("viewheader"); //to align to right
         header.setSpacing(true);
         Responsive.makeResponsive(header);
 
@@ -64,7 +67,10 @@ public final class Portfolio extends VerticalLayout implements View  {
 
         LocalDate ld = dao.getLatestPerformanceDate();
         Instant instant = ld.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
-        datePicker = new PopupDateField("Latest Performance",Date.from(instant));
+        datePicker = new PopupDateField("Performance Date",Date.from(instant));
+
+        datePicker.addValueChangeListener( e -> updateData(datePicker.getValue()));
+
         header.addComponent(datePicker);
 
         return header;
