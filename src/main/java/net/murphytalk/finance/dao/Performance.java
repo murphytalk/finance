@@ -10,13 +10,13 @@ import java.time.ZoneOffset;
  * getters are used by Vaadin's BeanItemContainer
  */
 public class Performance {
-    private Instrument instrument;
-    private int amount;
-    private float price;
-    private float value;
-    private float profit;
-    private float capital;
-    private LocalDateTime date;
+    public Instrument instrument;
+    public int amount;
+    public float price;
+    public float value;
+    public float profit;
+    public float capital;
+    public LocalDateTime date;
 
     public void setInstrument(int instrument) {
         this.instrument = DAO.instruments.get(instrument);

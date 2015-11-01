@@ -1,0 +1,105 @@
+package net.murphytalk.finance.window;
+
+import com.vaadin.data.Item;
+import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.data.util.ObjectProperty;
+import com.vaadin.event.ShortcutAction;
+import com.vaadin.server.Responsive;
+import com.vaadin.ui.*;
+import com.vaadin.ui.themes.ValoTheme;
+import net.murphytalk.finance.dao.*;
+
+import java.util.Map;
+
+public class EditInstrument extends Window {
+    private final Instrument instrument;
+    private final DAO dao;
+    private final IndexedContainer currency = new IndexedContainer();
+    private AssetAllocation assetAllocation;
+    //private OptionGroup currency;
+
+
+
+	public EditInstrument(DAO dao,Instrument instrument) {
+        this.dao = dao;
+        this.instrument = instrument;
+		addStyleName("moviedetailswindow");
+		Responsive.makeResponsive(this);
+
+		setCaption(instrument.name);
+        setWidth(30,Unit.PERCENTAGE);
+        setModal(true);
+		setCloseShortcut(ShortcutAction.KeyCode.ESCAPE, null);
+		setResizable(false);
+		setClosable(false);
+
+		VerticalLayout content = new VerticalLayout();
+        content.setMargin(true);
+		setContent(content);
+
+		Panel detailsWrapper = new Panel(buildDetails());
+		detailsWrapper.addStyleName(ValoTheme.PANEL_BORDERLESS);
+		content.addComponent(detailsWrapper);
+
+		content.addComponent(buildFooter());
+	}
+
+	private Component buildDetails(){
+		FormLayout fields = new FormLayout();
+		fields.setSpacing(false);
+		fields.setMargin(false);
+
+        for(Map.Entry<Integer,Currency> e:dao.currencies.entrySet()) {
+            Item i = currency.addItem(e.getValue().name);
+            //currency.addContainerProperty(e.getValue().name, String.class, null);
+        }
+
+        OptionGroup c = new OptionGroup("Currency",currency);
+        c.select(instrument.currency.name);
+		fields.addComponent(c);
+
+        assetAllocation = dao.loadAssetAllocation(instrument);
+        final TextField[] assetAllocations = new TextField[Asset.Max.getValue()];
+        for(int i = 0 ;i<Asset.Max.getValue();++i){
+            final Asset a = Asset.int2asset(i);
+            assetAllocations[i] = new TextField(a.name(),new ObjectProperty<>(assetAllocation.getAllocation(i)));
+            fields.addComponent(assetAllocations[i]);
+        }
+
+
+		return fields;
+	}
+
+	private Component buildFooter() {
+		HorizontalLayout footer = new HorizontalLayout();
+        footer.setSpacing(true);
+
+		footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
+		footer.setWidth(100.0f, Unit.PERCENTAGE);
+
+        Button save = new Button("Save",this::cancel);
+        //save.addStyleName(ValoTheme.BUTTON_PRIMARY);
+        save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
+        footer.addComponent(save);
+
+		Button ok = new Button("Close",this::cancel);
+		ok.addStyleName(ValoTheme.BUTTON_PRIMARY);
+		ok.focus();
+		footer.addComponent(ok);
+		footer.setComponentAlignment(ok, Alignment.TOP_RIGHT);
+		return footer;
+	}
+
+    public void save(Button.ClickEvent event) {
+    }
+
+	public void cancel(Button.ClickEvent event) {
+		close();
+	}
+
+	public static void  open(DAO dao,Instrument instrument){
+		Window w = new EditInstrument(dao,instrument);
+		UI.getCurrent().addWindow(w);
+		w.focus();
+	}
+}

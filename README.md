@@ -43,7 +43,7 @@ next theme compilation or running the `mvn clean` target.
 
 When developing the theme, running the application in the "run" mode (rather than
 in "debug") in the IDE can speed up consecutive on-the-fly theme compilations
-significantly.
+significantly. Note this won't happen if the `productionMode` is set to `true`, if you get error like _Request for /VAADIN/themes/mytheme/styles.css not handled by sass compiler while in production mode_, run `mvn vaadin:compile-theme`. 
 
 # Deployment
 

@@ -1,12 +1,13 @@
 package net.murphytalk.finance.view;
 
-import com.vaadin.data.Container;
+import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.Responsive;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
+import net.murphytalk.finance.window.EditInstrument;
 import net.murphytalk.finance.dao.DAO;
 import net.murphytalk.finance.dao.Performance;
 
@@ -44,6 +45,15 @@ public final class Portfolio extends VerticalLayout implements View  {
         g.removeColumn("date");
         g.setColumnOrder("instrument","price","amount","capital","value");
 
+        g.addItemClickListener(e ->
+                {
+                    if(e.isDoubleClick()){
+                        BeanItem<Performance> i = (BeanItem)e.getItem();
+                        EditInstrument.open(dao,i.getBean().instrument);
+                    }
+                }
+        );
+
         return g;
     }
 
@@ -79,6 +89,5 @@ public final class Portfolio extends VerticalLayout implements View  {
 
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {
-
     }
 }
