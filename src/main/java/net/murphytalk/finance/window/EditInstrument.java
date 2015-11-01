@@ -48,6 +48,8 @@ public class EditInstrument extends Window {
         fields.setSpacing(false);
         fields.setMargin(true);
 
+        fields.addComponent(new Label(instrument.broker.name));
+
         for (Map.Entry<String, Currency> e : dao.currenciesByName.entrySet()) {
             currency.addItem(e.getKey());
         }
