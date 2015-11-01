@@ -5,11 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -27,6 +24,7 @@ public class DAO {
     public static final ZoneOffset TIMEZONE = ZoneOffset.ofHours(9);
     private JdbcTemplate jdbcTemplate;
     static public final Map<Integer,InstrumentType> instrumentTypes = new HashMap<>();
+    static public final Map<String,Currency> currenciesByName = new HashMap<>();
     static public final Map<Integer,Currency> currencies = new HashMap<>();
     static public final Map<Integer,Broker> brokers = new HashMap<>();
     static public final Map<Integer,Instrument> instruments = new HashMap<>();
@@ -50,6 +48,7 @@ public class DAO {
         }
 
         for(Currency c:jdbcTemplate.query("select rowid,[name] from currency", new BeanPropertyRowMapper<>(Currency.class))){
+            currenciesByName.put(c.name, c);
             currencies.put(c.rowid,c);
         }
 
@@ -76,6 +75,13 @@ public class DAO {
                     result.setAllocation(rs.getInt(0),rs.getInt(1));
                 });
         return result;
+    }
+
+    public void saveInstrumentCurrency(String currency){
+        Currency c = currenciesByName.get(currency);
+        if(c!=null){
+
+        }
     }
 
     @Autowired
