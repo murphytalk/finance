@@ -23,69 +23,70 @@ import java.util.Map;
 public class DAO {
     public static final ZoneOffset TIMEZONE = ZoneOffset.ofHours(9);
     private JdbcTemplate jdbcTemplate;
-    static public final Map<Integer,InstrumentType> instrumentTypes = new HashMap<>();
-    static public final Map<String,Currency> currenciesByName = new HashMap<>();
-    static public final Map<Integer,Currency> currencies = new HashMap<>();
-    static public final Map<Integer,Broker> brokers = new HashMap<>();
-    static public final Map<Integer,Instrument> instruments = new HashMap<>();
+    static public final Map<Integer, InstrumentType> instrumentTypes = new HashMap<>();
+    static public final Map<String, Currency> currenciesByName = new HashMap<>();
+    static public final Map<Integer, Currency> currencies = new HashMap<>();
+    static public final Map<Integer, Broker> brokers = new HashMap<>();
+    static public final Map<Integer, Instrument> instruments = new HashMap<>();
 
     static private final String selectFromPerformanceByDate = "select * from performance where date>=%d and date<=%d";
 
     public static class StaticData {
         public int rowid;
+
         public void setRowid(int rowid) {
             this.rowid = rowid;
         }
     }
 
-    public void loadStaticData(){
-        for(InstrumentType t:jdbcTemplate.query("select rowid,[type] from instrument_type", new BeanPropertyRowMapper<>(InstrumentType.class))){
+    public void loadStaticData() {
+        for (InstrumentType t : jdbcTemplate.query("select rowid,[type] from instrument_type", new BeanPropertyRowMapper<>(InstrumentType.class))) {
             instrumentTypes.put(t.rowid, t);
         }
 
-        for(Broker b:jdbcTemplate.query("select rowid,[name] from broker", new BeanPropertyRowMapper<>(Broker.class))){
-            brokers.put(b.rowid,b);
+        for (Broker b : jdbcTemplate.query("select rowid,[name] from broker", new BeanPropertyRowMapper<>(Broker.class))) {
+            brokers.put(b.rowid, b);
         }
 
-        for(Currency c:jdbcTemplate.query("select rowid,[name] from currency", new BeanPropertyRowMapper<>(Currency.class))){
+        for (Currency c : jdbcTemplate.query("select rowid,[name] from currency", new BeanPropertyRowMapper<>(Currency.class))) {
             currenciesByName.put(c.name, c);
-            currencies.put(c.rowid,c);
+            currencies.put(c.rowid, c);
         }
 
-        for(Instrument i:jdbcTemplate.query("select rowid,[name],type,broker,currency from instrument", new BeanPropertyRowMapper<>(Instrument.class))){
-            instruments.put(i.rowid,i);
+        for (Instrument i : jdbcTemplate.query("select rowid,[name],type,broker,currency from instrument", new BeanPropertyRowMapper<>(Instrument.class))) {
+            instruments.put(i.rowid, i);
         }
     }
 
-    public List<Performance> loadPerformance(Date input){
-        long epoch = input.getTime()/1000 ;//- TIMEZONE.getTotalSeconds();
-        return jdbcTemplate.query(String.format(selectFromPerformanceByDate,epoch,epoch+24*3600),
+    public List<Performance> loadPerformance(Date input) {
+        long epoch = input.getTime() / 1000;//- TIMEZONE.getTotalSeconds();
+        return jdbcTemplate.query(String.format(selectFromPerformanceByDate, epoch, epoch + 24 * 3600),
                 new BeanPropertyRowMapper<>(Performance.class));
     }
 
-    public LocalDate getLatestPerformanceDate(){
+    public LocalDate getLatestPerformanceDate() {
         long epoch = jdbcTemplate.queryForLong("SELECT max(date) as date from performance");
         return LocalDateTime.ofEpochSecond(epoch, 0, DAO.TIMEZONE).toLocalDate();
     }
 
-    public AssetAllocation loadAssetAllocation(Instrument instrument){
+    public AssetAllocation loadAssetAllocation(Instrument instrument) {
         final AssetAllocation result = new AssetAllocation();
         jdbcTemplate.query(String.format("select asset,ratio from asset_allocation where instrument = %d", instrument.rowid),
                 rs -> {
-                    result.setAllocation(rs.getInt(0),rs.getInt(1));
+                    result.setAllocation(rs.getInt(0), rs.getInt(1));
                 });
         return result;
     }
 
-    public void saveInstrumentCurrency(String currency){
+    public void saveInstrumentCurrency(String currency) {
         Currency c = currenciesByName.get(currency);
-        if(c!=null){
+        if (c != null) {
 
         }
     }
 
     @Autowired
-    public void setDataSource(DataSource dataSource){
+    public void setDataSource(DataSource dataSource) {
         jdbcTemplate = new JdbcTemplate(dataSource);
         loadStaticData();
     }

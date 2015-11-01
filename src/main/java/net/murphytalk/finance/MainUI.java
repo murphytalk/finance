@@ -1,11 +1,7 @@
 package net.murphytalk.finance;
 
-import javax.servlet.annotation.WebListener;
-import javax.servlet.annotation.WebServlet;
-
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
-import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.EnableVaadin;
@@ -19,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.ContextLoaderListener;
 
+import javax.servlet.annotation.WebListener;
+import javax.servlet.annotation.WebServlet;
 import java.util.Properties;
 
 @Theme("mytheme")
@@ -43,7 +41,7 @@ public class MainUI extends UI {
     public static class MyUIServlet extends SpringVaadinServlet {
         @Override
         protected DeploymentConfiguration createDeploymentConfiguration(Properties initParameters) {
-            initParameters.put("productionMode" , "true");
+            initParameters.put("productionMode", "true");
             return super.createDeploymentConfiguration(initParameters);
         }
     }

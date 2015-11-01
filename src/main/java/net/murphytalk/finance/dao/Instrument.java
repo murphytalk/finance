@@ -12,12 +12,15 @@ public class Instrument extends DAO.StaticData {
     public void setName(String name) {
         this.name = name;
     }
+
     public void setType(int type) {
         this.type = DAO.instrumentTypes.get(type);
     }
+
     public void setBroker(int broker) {
         this.broker = DAO.brokers.get(broker);
     }
+
     public void setCurrency(int currency) {
         this.currency = DAO.currencies.get(currency);
     }

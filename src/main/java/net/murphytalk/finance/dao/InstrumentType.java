@@ -5,6 +5,7 @@ package net.murphytalk.finance.dao;
  */
 public class InstrumentType extends DAO.StaticData {
     public String type;
+
     public void setType(String type) {
         this.type = type;
     }

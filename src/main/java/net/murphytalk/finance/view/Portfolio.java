@@ -7,9 +7,9 @@ import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.Responsive;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
-import net.murphytalk.finance.window.EditInstrument;
 import net.murphytalk.finance.dao.DAO;
 import net.murphytalk.finance.dao.Performance;
+import net.murphytalk.finance.window.EditInstrument;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -19,7 +19,7 @@ import java.util.Date;
 /**
  * Created by Mu Lu (murphytalk@gmail) on 10/31/15.
  */
-public final class Portfolio extends VerticalLayout implements View  {
+public final class Portfolio extends VerticalLayout implements View {
     private final Grid grid;
     private PopupDateField datePicker;
     private final DAO dao;
@@ -36,20 +36,20 @@ public final class Portfolio extends VerticalLayout implements View  {
         setExpandRatio(grid, 1);
     }
 
-    private Grid buildGrid(){
+    private Grid buildGrid() {
         BeanItemContainer<Performance> bic = new BeanItemContainer<>(Performance.class);
         bic.addAll(dao.loadPerformance(datePicker.getValue()));
         final Grid g = new Grid(bic);
         //grid.setContainerDataSource(bic);  //this cause a NPE
 
         g.removeColumn("date");
-        g.setColumnOrder("instrument","price","amount","capital","value");
+        g.setColumnOrder("instrument", "price", "amount", "capital", "value");
 
         g.addItemClickListener(e ->
                 {
-                    if(e.isDoubleClick()){
-                        BeanItem<Performance> i = (BeanItem)e.getItem();
-                        EditInstrument.open(dao,i.getBean().instrument);
+                    if (e.isDoubleClick()) {
+                        BeanItem<Performance> i = (BeanItem) e.getItem();
+                        EditInstrument.open(dao, i.getBean().instrument);
                     }
                 }
         );
@@ -57,8 +57,8 @@ public final class Portfolio extends VerticalLayout implements View  {
         return g;
     }
 
-    private void updateData(Date date){
-        BeanItemContainer<Performance> ds = (BeanItemContainer<Performance>)grid.getContainerDataSource();
+    private void updateData(Date date) {
+        BeanItemContainer<Performance> ds = (BeanItemContainer<Performance>) grid.getContainerDataSource();
         ds.removeAllItems();
         ds.addAll(dao.loadPerformance(date));
     }
@@ -77,9 +77,9 @@ public final class Portfolio extends VerticalLayout implements View  {
 
         LocalDate ld = dao.getLatestPerformanceDate();
         Instant instant = ld.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
-        datePicker = new PopupDateField("Performance Date",Date.from(instant));
+        datePicker = new PopupDateField("Performance Date", Date.from(instant));
 
-        datePicker.addValueChangeListener( e -> updateData(datePicker.getValue()));
+        datePicker.addValueChangeListener(e -> updateData(datePicker.getValue()));
 
         header.addComponent(datePicker);
 
