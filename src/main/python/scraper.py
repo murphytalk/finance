@@ -21,8 +21,8 @@ def read_as(res, encoding='sjis'):
 
 
 def parse_form_parameters(soup, encoding='sjis'):
-    return dict((n['name'].encode(encoding), n['value'].encode(encoding)) for n in soup.find_all('input') if
-                n.has_attr('value') and n.has_attr('name'))
+    return dict((n['type'].encode(encoding), n['value'].encode(encoding)) for n in soup.find_all('input') if
+                n.has_attr('value') and n.has_attr('type'))
 
 
 def strip_str(s):
@@ -117,7 +117,7 @@ class Suruga(Broker):
             else:
                 c2 = cols
 
-                name = strip_str(c1[1].get_text())
+                type = strip_str(c1[1].get_text())
 
                 #strip new lines to get 残高口数 and  評価金額
                 l = strip_numbers(c2[1].get_text())
@@ -137,7 +137,7 @@ class Suruga(Broker):
                 #compute 基準価額
                 base_value = round((market_value / amount) * 10000, 0)
 
-                adapter.onData(name, capital, amount, market_value, profit, base_value)
+                adapter.onData(type, capital, amount, market_value, profit, base_value)
 
     def open(self, adapter):
         site = 'https://ib.surugabank.co.jp'
@@ -200,14 +200,14 @@ class UFJ(Broker):
 
 
     def parse_performance_table(self, soup_table, adapter):
-        def parse_value(s,name,ender):
-            pattern = re.compile(r'%s" *type="hidden" *value="(.*?)".*'%(name)) 
-            sub_s = s[s.find(name):]
+        def parse_value(s,type,ender):
+            pattern = re.compile(r'%s" *type="hidden" *value="(.*?)".*'%(type))
+            sub_s = s[s.find(type):]
             m = pattern.match(sub_s)
             if DEBUG:
                 print s
-                print "%s str:%s"%(name,sub_s)
-                print "%s=%s,digit only=%s"%(name,m.group(1),get_digits(m.group(1)))
+                print "%s str:%s"%(type,sub_s)
+                print "%s=%s,digit only=%s"%(type,m.group(1),get_digits(m.group(1)))
             return get_digits(m.group(1))
 
 
@@ -215,7 +215,7 @@ class UFJ(Broker):
         rows = soup_table.find_all('tr')
         #2014/1 Format
         for r in rows:
-            #Fund name is in the first "txt" class
+            #Fund type is in the first "txt" class
             fund_name = strip_str_from_first_matched_class(r, "txt")
 
             #the market value and profit are in the 2nd col
@@ -353,9 +353,9 @@ class Nomura(Broker):
             else:
                 c2 = cols
 
-                name = strip_str(c1[1].get_text())
+                type = strip_str(c1[1].get_text())
 
-                if name == ignore:
+                if type == ignore:
                     continue
 
                 #数量
@@ -389,7 +389,7 @@ class Nomura(Broker):
                 ##評価損益
                 profit = market_value - capital
 
-                adapter.onData(name, capital, amount, market_value, profit, price)
+                adapter.onData(type, capital, amount, market_value, profit, price)
 
 
     def open(self, adapter):
@@ -459,7 +459,7 @@ class Nomura401K(Broker):
         login_seq = write_html(Nomura401K.get_name(), page, login_seq)
 
         soup = bs(page, self.parser)
-        frame = soup.findAll('frame', attrs={"name": 'contents'})[0]
+        frame = soup.findAll('frame', attrs={"type": 'contents'})[0]
         url = site + frame.attrs['src']
         page = read_as(opener.open(url))
         login_seq = write_html(Nomura401K.get_name(), page, login_seq)
@@ -492,9 +492,9 @@ class Nomura401K(Broker):
                 if a is None:
                     #valid fund detail has <a/>
                     break
-                name = a.get_text()
+                type = a.get_text()
                 l = [x.get_text() for x in r.findAll('td',recursive=False) if x.get_text().find(yen) > 0]
-                result.append((name, l))
+                result.append((type, l))
 
             return result
 
@@ -505,7 +505,7 @@ class Nomura401K(Broker):
         p1 = parse_page(page)
 
         for p in p1:
-            name = p[0]
+            type = p[0]
             market_value = float(parse_num_before_yen(p[1][0]))
 
             s = p[1][0]
@@ -515,7 +515,7 @@ class Nomura401K(Broker):
             profit = float(get_digits(parse_num_before_yen(p[1][2])))
             price = float(get_digits(parse_num_before_yen(p[1][3])))
 
-            adapter.onData(name, capital, amount, market_value, profit, price)
+            adapter.onData(type, capital, amount, market_value, profit, price)
 
 class Saison(Broker):
     def open(self, adapter):
@@ -527,7 +527,7 @@ class Saison(Broker):
         login_seq = write_html(Saison.get_name(), page, 0)
         
         soup = bs(page, self.parser)
-        f = soup.findAll('form',attrs={'name':'loginForm'})[0]
+        f = soup.findAll('form',attrs={'type':'loginForm'})[0]
         data = parse_form_parameters(f)
         data['aa_accd'],data['lg_pw'] = adapter.get_login()
         
@@ -537,7 +537,7 @@ class Saison(Broker):
         login_seq = write_html(Saison.get_name(), page, login_seq)
         
         soup = bs(page, self.parser)
-        f=soup.findAll('form',attrs={'name':'forwardForm'})[0]
+        f=soup.findAll('form',attrs={'type':'forwardForm'})[0]
         data2 = parse_form_parameters(f)
         data.update(data2)
         url = site + f.attrs['action']
@@ -557,7 +557,7 @@ class Saison(Broker):
         
         dataitem=5
         for r in rows[1:]:
-            name = r.findAll('td',attrs={'class':'dataitem%02d start'%dataitem})[0].get_text()
+            type = r.findAll('td',attrs={'class':'dataitem%02d start'%dataitem})[0].get_text()
             l = r.findAll('td',attrs={'class':'dataitem%02d end'%dataitem})
             dataitem += 1
             
@@ -573,7 +573,7 @@ class Saison(Broker):
             profit = float(get_digits(l[1]))
             capital = market_value - profit
             
-            adapter.onData(name, capital, amount, market_value, profit, price)
+            adapter.onData(type, capital, amount, market_value, profit, price)
 
 class MoneyPartners(Broker):    
     def open(self, adapter):
@@ -621,7 +621,7 @@ class Fidelity(Broker):
         login_seq = write_html(Fidelity.get_name(), page, 0 ,'utf-8')
         
         soup = bs(page, self.parser)
-        f = soup.findAll('form',attrs={'name':'form1324881444971'})
+        f = soup.findAll('form',attrs={'type':'form1324881444971'})
         if len(f)==0:
             logging.error('Cannot find Fidelity login form!')
             return
@@ -671,21 +671,21 @@ class Fidelity(Broker):
             if len(a) == 0:
                 continue #breakdown of NISA tenor
 
-            name   = a[0].text
+            type   = a[0].text
             price  = float(get_digits(c[1].text.split()[0]))
             amount = int(get_digits(c[2].text.split()[0]))
             capital = float(get_digits(c[3].text.split()[0]))*amount/10000
             value   = float(get_digits(c[4].text.split()[0]))
             profit  = value-capital
                 
-            if name in perf:
-                p = perf[name]
+            if type in perf:
+                p = perf[type]
                 p.amount  += amount
                 p.capital += capital
                 p.value   += value
                 p.profit  += profit
             else:
-                perf[name] = Fidelity.Perf(amount,price,value,profit,capital)
+                perf[type] = Fidelity.Perf(amount,price,value,profit,capital)
             
         for k in perf.keys():
             p = perf[k]
@@ -695,7 +695,7 @@ class Fidelity(Broker):
 
 if __name__ == '__main__':
     """
-    parameter : one or more broker name, or all brokers if no parameter given
+    parameter : one or more broker type, or all brokers if no parameter given
 
     This is more for dev purpose, launched from console rather than GAE.
     """
@@ -712,7 +712,7 @@ if __name__ == '__main__':
 
     ## cmd arguments :
     # -d : debug mode
-    # all the others will be treated as a broker name
+    # all the others will be treated as a broker type
     debug_mode_option = '-d'
 
     DEBUG = debug_mode_option in sys.argv[1:]

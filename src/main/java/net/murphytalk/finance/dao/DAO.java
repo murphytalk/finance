@@ -26,6 +26,7 @@ public class DAO {
     static public final Map<Integer, InstrumentType> instrumentTypes = new HashMap<>();
     static public final Map<String, Currency> currenciesByName = new HashMap<>();
     static public final Map<Integer, Currency> currencies = new HashMap<>();
+    static public final Map<Integer, Asset> assets = new HashMap<>();
     static public final Map<Integer, Broker> brokers = new HashMap<>();
     static public final Map<Integer, Instrument> instruments = new HashMap<>();
 
@@ -40,6 +41,10 @@ public class DAO {
     }
 
     public void loadStaticData() {
+        for (Asset a : jdbcTemplate.query("select rowid,[type] from asset", new BeanPropertyRowMapper<>(Asset.class))) {
+            assets.put(a.rowid, a);
+        }
+
         for (InstrumentType t : jdbcTemplate.query("select rowid,[type] from instrument_type", new BeanPropertyRowMapper<>(InstrumentType.class))) {
             instrumentTypes.put(t.rowid, t);
         }
@@ -69,24 +74,15 @@ public class DAO {
         return LocalDateTime.ofEpochSecond(epoch, 0, DAO.TIMEZONE).toLocalDate();
     }
 
-    public AssetAllocation loadAssetAllocation(Instrument instrument) {
-        final AssetAllocation result = new AssetAllocation();
+    public Map<Asset,Integer> loadAssetAllocation(Instrument instrument) {
+        final Map<Asset,Integer> assetAllocation = new HashMap<>();
         jdbcTemplate.query(String.format("select asset,ratio from asset_allocation where instrument = %d", instrument.rowid),
                 rs -> {
-                    result.setAllocation(rs.getInt(0), rs.getInt(1));
+                    final int asset = rs.getInt(1);
+                    final int ratio = rs.getInt(2);
+                    assetAllocation.put(assets.get(asset),ratio);
                 });
-        return result;
-    }
-
-    public void saveInstrumentCurrency(Instrument instrument,String currency) {
-        Currency c = currenciesByName.get(currency);
-        if (c != null) {
-            jdbcTemplate.update("update instrument set currency=? where rowid=?",new Object[]{c.rowid,instrument.rowid});
-        }
-    }
-
-    public void saveInstrumentAssetAllocation(AssetAllocation assetAllocation){
-
+        return assetAllocation;
     }
 
     @Autowired

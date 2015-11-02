@@ -5,16 +5,20 @@ import com.vaadin.server.Responsive;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import net.murphytalk.finance.dao.*;
+import org.dussan.vaadin.dcharts.DCharts;
+import org.dussan.vaadin.dcharts.data.DataSeries;
+import org.dussan.vaadin.dcharts.metadata.renderers.SeriesRenderers;
+import org.dussan.vaadin.dcharts.options.Highlighter;
+import org.dussan.vaadin.dcharts.options.Legend;
+import org.dussan.vaadin.dcharts.options.Options;
+import org.dussan.vaadin.dcharts.options.SeriesDefaults;
+import org.dussan.vaadin.dcharts.renderers.series.PieRenderer;
 
 import java.util.Map;
 
 public class EditInstrument extends Window {
     private final Instrument instrument;
-    private final ComboBox currency = new ComboBox("Currency"); //todo: how does ComboBox data binding work?
     private final DAO dao;
-    //private final IndexedContainer currency = new IndexedContainer();
-    private AssetAllocation assetAllocation;
-
 
     public EditInstrument(DAO dao, Instrument instrument) {
         this.dao = dao;
@@ -22,7 +26,7 @@ public class EditInstrument extends Window {
         addStyleName("moviedetailswindow");
         Responsive.makeResponsive(this);
 
-        setCaption(instrument.name);
+        setCaption(instrument.broker.name);
         setWidth(30, Unit.PERCENTAGE);
         setModal(true);
         setCloseShortcut(ShortcutAction.KeyCode.ESCAPE, null);
@@ -45,27 +49,46 @@ public class EditInstrument extends Window {
         fields.setSpacing(false);
         fields.setMargin(true);
 
-        fields.addComponent(new Label(instrument.broker.name));
-
-        for (Map.Entry<String, Currency> e : dao.currenciesByName.entrySet()) {
-            currency.addItem(e.getKey());
-        }
-        currency.select(instrument.currency.name);
-        fields.addComponent(currency);
+        fields.addComponent(new Label(instrument.name));
+        fields.addComponent(new Label(instrument.currency.name));
 
         TabSheet tabs = new TabSheet();
         fields.addComponent(tabs);
 
         final VerticalLayout layout1 = new VerticalLayout();
-        assetAllocation = dao.loadAssetAllocation(instrument);
-        final TextField[] assetAllocations = new TextField[Asset.Max.getValue()];
-        for (int i = 0; i < Asset.Max.getValue(); ++i) {
-            final Asset a = Asset.int2asset(i);
-            final String asset = a.name();
-            assetAllocations[i] = new TextField(asset, assetAllocation.getItem().getItemProperty(asset));
-            layout1.addComponent(assetAllocations[i]);
+        layout1.setSizeFull();
+        layout1.setSpacing(true);
+
+        DataSeries dataSeries = new DataSeries().newSeries();
+        for(Map.Entry<Asset,Integer> e : dao.loadAssetAllocation(instrument).entrySet()){
+            dataSeries.add(e.getKey().type,e.getValue());
         }
+        SeriesDefaults seriesDefaults = new SeriesDefaults()
+                .setRenderer(SeriesRenderers.PIE)
+                .setRendererOptions(new PieRenderer().setShowDataLabels(true));
+
+        Legend legend = new Legend().setShow(true);
+
+        Highlighter highlighter = new Highlighter()
+                .setShow(true)
+                .setShowTooltip(true)
+                .setTooltipAlwaysVisible(true)
+                .setKeepTooltipInsideChart(true);
+
+        Options options = new Options()
+                .setSeriesDefaults(seriesDefaults)
+                .setLegend(legend)
+                .setHighlighter(highlighter);
+
+        DCharts chart = new DCharts()
+                .setDataSeries(dataSeries)
+                .setOptions(options);
+        layout1.addComponent(chart);
+        layout1.setComponentAlignment(chart, Alignment.TOP_CENTER);
+        chart.setSizeFull();
+        chart.show();
         tabs.addTab(layout1, "Asset Allocation");
+
 
 
         return fields;
@@ -78,22 +101,12 @@ public class EditInstrument extends Window {
         footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         footer.setWidth(100.0f, Unit.PERCENTAGE);
 
-        Button save = new Button("Save", this::save);
-        //save.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        save.setClickShortcut(ShortcutAction.KeyCode.ENTER);
-        footer.addComponent(save);
-
         Button ok = new Button("Close", this::cancel);
         ok.addStyleName(ValoTheme.BUTTON_PRIMARY);
         ok.focus();
         footer.addComponent(ok);
         footer.setComponentAlignment(ok, Alignment.TOP_RIGHT);
         return footer;
-    }
-
-    public void save(Button.ClickEvent event) {
-        dao.saveInstrumentCurrency(instrument,(String) currency.getValue());
-        close();
     }
 
     public void cancel(Button.ClickEvent event) {

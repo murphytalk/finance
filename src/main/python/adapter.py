@@ -5,7 +5,7 @@ Adapters used by the scraper
 Login credentials are read from MyInvestMan.ini, its format is:
 
 [BrokerName]
-user=my-user-name
+user=my-user-type
 pass=my-pass-word
 
 == Other configuration ==
@@ -72,7 +72,7 @@ class SqliteAdapter(ConsoleAdapter):
     def get_id(self,table,param):
         #insert if we see it first time
         while True:
-            self.c.execute('SELECT rowid,name FROM %s WHERE name=?'%table,(param,))
+            self.c.execute('SELECT rowid,type FROM %s WHERE type=?'%table,(param,))
             r = self.c.fetchone()
             if r is None:
                 self.c.execute("INSERT INTO %s VALUES (?,NULL,?)"%table,(param,self.broker_id))
@@ -101,9 +101,9 @@ if __name__ == "__main__":
         c = conn.cursor()
 
         for t in(
-            'broker (name text)',
+            'broker (type text)',
             'asset  (type text)',
-            'region (name text)'
+            'region (type text)'
             ):
                c.execute("CREATE TABLE %s"%t)
 
@@ -120,7 +120,7 @@ if __name__ == "__main__":
         for b in ('US','Europe','S.Korea','China','Japan'):
             c.execute("INSERT INTO region values ('%s')"%b)
 
-        c.execute("CREATE TABLE instrument (name text not null, asset int null, broker null,currency text not null,  FOREIGN KEY(asset) REFERENCES asset(rowid),FOREIGN KEY(broker) REFERENCES broker(rowid))")
+        c.execute("CREATE TABLE instrument (type text not null, asset int null, broker null,currency text not null,  FOREIGN KEY(asset) REFERENCES asset(rowid),FOREIGN KEY(broker) REFERENCES broker(rowid))")
         c.execute("CREATE TABLE [transaction](instrument int not null ,type text not null, price real not null, number int not null, fee real null, date int not null,FOREIGN KEY(instrument) REFERENCES asset(rowid))")
         c.execute("CREATE TABLE performance(instrument int not null ,amount int not null,price real not null, value real not null, profit value not null, capital,date int not null, FOREIGN KEY(instrument) REFERENCES asset(rowid))")
                 

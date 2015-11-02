@@ -11,7 +11,7 @@ if __name__ == '__main__':
     """
     parameter : 
         -fxxxxxx  path to sqlite db file xxxxx
-    	one or more broker name, or all brokers if no parameter given 
+    	one or more broker type, or all brokers if no parameter given
     """
     def do_work(db,broker):
         adapter = SqliteAdapter(db,broker.get_name())
