@@ -16,17 +16,17 @@ import org.dussan.vaadin.dcharts.renderers.series.PieRenderer;
 
 import java.util.Map;
 
-public class EditInstrument extends Window {
+public class InstrumentDetailsWindow extends Window {
     private final Instrument instrument;
     private final DAO dao;
 
-    public EditInstrument(DAO dao, Instrument instrument) {
+    public InstrumentDetailsWindow(DAO dao, Instrument instrument) {
         this.dao = dao;
         this.instrument = instrument;
-        addStyleName("moviedetailswindow");
+        //addStyleName("moviedetailswindow");
         Responsive.makeResponsive(this);
 
-        setCaption(instrument.broker.name);
+        setCaption(instrument.broker.fullName);
         setWidth(30, Unit.PERCENTAGE);
         setModal(true);
         setCloseShortcut(ShortcutAction.KeyCode.ESCAPE, null);
@@ -34,7 +34,7 @@ public class EditInstrument extends Window {
         setClosable(false);
 
         VerticalLayout content = new VerticalLayout();
-        content.setMargin(true);
+        content.setMargin(false);
         setContent(content);
 
         Panel detailsWrapper = new Panel(buildDetails());
@@ -52,10 +52,11 @@ public class EditInstrument extends Window {
         fields.addComponent(new Label(instrument.name));
         fields.addComponent(new Label(instrument.currency.name));
 
-        TabSheet tabs = new TabSheet();
-        fields.addComponent(tabs);
+        //TabSheet tabs = new TabSheet();
+        //tabs.setSizeFull();
 
         final VerticalLayout layout1 = new VerticalLayout();
+        fields.addComponent(layout1);
         layout1.setSizeFull();
         layout1.setSpacing(true);
 
@@ -85,9 +86,12 @@ public class EditInstrument extends Window {
                 .setOptions(options);
         layout1.addComponent(chart);
         layout1.setComponentAlignment(chart, Alignment.TOP_CENTER);
+        layout1.setExpandRatio(chart,1.f);
         chart.setSizeFull();
+        chart.setWidth(100, Unit.PERCENTAGE);
         chart.show();
-        tabs.addTab(layout1, "Asset Allocation");
+        //tabs.addTab(layout1, "Asset Allocation");
+
 
 
 
@@ -114,7 +118,7 @@ public class EditInstrument extends Window {
     }
 
     public static void open(DAO dao, Instrument instrument) {
-        Window w = new EditInstrument(dao, instrument);
+        Window w = new InstrumentDetailsWindow(dao, instrument);
         UI.getCurrent().addWindow(w);
         w.focus();
     }

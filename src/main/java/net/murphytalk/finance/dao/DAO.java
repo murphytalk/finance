@@ -10,10 +10,7 @@ import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Mu Lu on 10/28/15.
@@ -26,7 +23,7 @@ public class DAO {
     static public final Map<Integer, InstrumentType> instrumentTypes = new HashMap<>();
     static public final Map<String, Currency> currenciesByName = new HashMap<>();
     static public final Map<Integer, Currency> currencies = new HashMap<>();
-    static public final Map<Integer, Asset> assets = new HashMap<>();
+    static public final Map<Integer, Asset> assets = new LinkedHashMap<>();
     static public final Map<Integer, Broker> brokers = new HashMap<>();
     static public final Map<Integer, Instrument> instruments = new HashMap<>();
 
@@ -49,7 +46,7 @@ public class DAO {
             instrumentTypes.put(t.rowid, t);
         }
 
-        for (Broker b : jdbcTemplate.query("select rowid,[name] from broker", new BeanPropertyRowMapper<>(Broker.class))) {
+        for (Broker b : jdbcTemplate.query("select rowid,[name],fullName from broker", new BeanPropertyRowMapper<>(Broker.class))) {
             brokers.put(b.rowid, b);
         }
 

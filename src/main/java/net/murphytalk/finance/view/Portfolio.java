@@ -9,7 +9,7 @@ import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import net.murphytalk.finance.dao.DAO;
 import net.murphytalk.finance.dao.Performance;
-import net.murphytalk.finance.window.EditInstrument;
+import net.murphytalk.finance.window.InstrumentDetailsWindow;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -49,7 +49,7 @@ public final class Portfolio extends VerticalLayout implements View {
                 {
                     if (e.isDoubleClick()) {
                         BeanItem<Performance> i = (BeanItem) e.getItem();
-                        EditInstrument.open(dao, i.getBean().instrument);
+                        InstrumentDetailsWindow.open(dao, i.getBean().instrument);
                     }
                 }
         );

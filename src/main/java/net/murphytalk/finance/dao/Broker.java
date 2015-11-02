@@ -5,8 +5,11 @@ package net.murphytalk.finance.dao;
  */
 public class Broker extends DAO.StaticData {
     public String name;
-
+    public String fullName;
     public void setName(String name) {
         this.name = name;
+    }
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 }
