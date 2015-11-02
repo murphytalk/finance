@@ -1,6 +1,5 @@
 package net.murphytalk.finance.window;
 
-import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.Responsive;
 import com.vaadin.ui.*;
@@ -14,9 +13,7 @@ public class EditInstrument extends Window {
     private final ComboBox currency = new ComboBox("Currency"); //todo: how does ComboBox data binding work?
     private final DAO dao;
     //private final IndexedContainer currency = new IndexedContainer();
-
     private AssetAllocation assetAllocation;
-    //private OptionGroup currency;
 
 
     public EditInstrument(DAO dao, Instrument instrument) {
@@ -64,7 +61,8 @@ public class EditInstrument extends Window {
         final TextField[] assetAllocations = new TextField[Asset.Max.getValue()];
         for (int i = 0; i < Asset.Max.getValue(); ++i) {
             final Asset a = Asset.int2asset(i);
-            assetAllocations[i] = new TextField(a.name(), new ObjectProperty<>(assetAllocation.getAllocation(i)));
+            final String asset = a.name();
+            assetAllocations[i] = new TextField(asset, assetAllocation.getItem().getItemProperty(asset));
             layout1.addComponent(assetAllocations[i]);
         }
         tabs.addTab(layout1, "Asset Allocation");
@@ -94,7 +92,7 @@ public class EditInstrument extends Window {
     }
 
     public void save(Button.ClickEvent event) {
-        dao.saveInstrumentCurrency((String) currency.getValue());
+        dao.saveInstrumentCurrency(instrument,(String) currency.getValue());
         close();
     }
 

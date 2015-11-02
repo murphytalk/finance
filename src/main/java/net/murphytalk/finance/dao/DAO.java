@@ -78,11 +78,15 @@ public class DAO {
         return result;
     }
 
-    public void saveInstrumentCurrency(String currency) {
+    public void saveInstrumentCurrency(Instrument instrument,String currency) {
         Currency c = currenciesByName.get(currency);
         if (c != null) {
-
+            jdbcTemplate.update("update instrument set currency=? where rowid=?",new Object[]{c.rowid,instrument.rowid});
         }
+    }
+
+    public void saveInstrumentAssetAllocation(AssetAllocation assetAllocation){
+
     }
 
     @Autowired
