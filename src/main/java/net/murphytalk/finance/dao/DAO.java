@@ -72,8 +72,8 @@ public class DAO {
     }
 
     public Map<Asset,Integer> loadAssetAllocation(Instrument instrument) {
-        final Map<Asset,Integer> assetAllocation = new HashMap<>();
-        jdbcTemplate.query(String.format("select asset,ratio from asset_allocation where instrument = %d", instrument.rowid),
+        final Map<Asset,Integer> assetAllocation = new LinkedHashMap<>();
+        jdbcTemplate.query(String.format("select asset,ratio from asset_allocation where instrument = %d order by asset", instrument.rowid),
                 rs -> {
                     final int asset = rs.getInt(1);
                     final int ratio = rs.getInt(2);

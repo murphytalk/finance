@@ -62,7 +62,7 @@ public class InstrumentDetailsWindow extends Window {
 
         DataSeries dataSeries = new DataSeries().newSeries();
         for(Map.Entry<Asset,Integer> e : dao.loadAssetAllocation(instrument).entrySet()){
-            dataSeries.add(e.getKey().type,e.getValue());
+            dataSeries.newSeries().add(e.getKey().type,e.getValue());
         }
         SeriesDefaults seriesDefaults = new SeriesDefaults()
                 .setRenderer(SeriesRenderers.PIE)
