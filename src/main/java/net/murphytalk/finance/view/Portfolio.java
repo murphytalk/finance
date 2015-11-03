@@ -47,16 +47,10 @@ public final class Portfolio extends VerticalLayout implements View {
         g.removeColumn("date");
         g.setColumnOrder("instrument", "price", "amount", "capital", "value");
 
-        g.addItemClickListener(e ->
-                {
-                    if (e.isDoubleClick()) {
-                        BeanItem<Performance> i = (BeanItem) e.getItem();
-                        InstrumentDetailsWindow.open(dao, i.getBean().instrument);
-                    }
-                }
-        );
-
+        //fixme: the eye icon rending is above the row in a way that is blocking the row to get mouse click event correctly
         g.getColumn("instrument").setRenderer(new ViewButtonValueRenderer(e -> {
+            BeanItem<Performance> i = (BeanItem<Performance>) grid.getContainerDataSource().getItem(e.getItemId());
+            InstrumentDetailsWindow.open(dao, i.getBean().instrument);
         }));
 
         return g;
