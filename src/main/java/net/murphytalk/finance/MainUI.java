@@ -1,8 +1,6 @@
 package net.murphytalk.finance;
 
-import com.vaadin.annotations.Theme;
-import com.vaadin.annotations.Title;
-import com.vaadin.annotations.Widgetset;
+import com.vaadin.annotations.*;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.EnableVaadin;
@@ -23,6 +21,7 @@ import java.util.Properties;
 @Theme("mytheme")
 @Title("My Finance")
 @Widgetset("net.murphytalk.finance.widgetset.FinanceWidgetset")
+//@StyleSheet("style.css")
 @SpringUI
 public class MainUI extends UI {
     @Autowired

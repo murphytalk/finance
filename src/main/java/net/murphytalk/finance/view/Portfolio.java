@@ -6,10 +6,12 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.server.Responsive;
 import com.vaadin.ui.*;
+import com.vaadin.ui.renderers.ClickableRenderer;
 import com.vaadin.ui.themes.ValoTheme;
 import net.murphytalk.finance.dao.DAO;
 import net.murphytalk.finance.dao.Performance;
 import net.murphytalk.finance.window.InstrumentDetailsWindow;
+import org.vaadin.gridutil.renderer.ViewButtonValueRenderer;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -40,7 +42,7 @@ public final class Portfolio extends VerticalLayout implements View {
         BeanItemContainer<Performance> bic = new BeanItemContainer<>(Performance.class);
         bic.addAll(dao.loadPerformance(datePicker.getValue()));
         final Grid g = new Grid(bic);
-        //grid.setContainerDataSource(bic);  //this cause a NPE
+        //grid.setContainerDataSource(bic);  //this causes a NPE
 
         g.removeColumn("date");
         g.setColumnOrder("instrument", "price", "amount", "capital", "value");
@@ -53,6 +55,9 @@ public final class Portfolio extends VerticalLayout implements View {
                     }
                 }
         );
+
+        g.getColumn("instrument").setRenderer(new ViewButtonValueRenderer(e -> {
+        }));
 
         return g;
     }
