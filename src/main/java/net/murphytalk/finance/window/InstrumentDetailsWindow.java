@@ -27,7 +27,7 @@ public class InstrumentDetailsWindow extends Window {
         Responsive.makeResponsive(this);
 
         setCaption(instrument.broker.fullName);
-        setWidth(30, Unit.PERCENTAGE);
+        setWidth(50, Unit.PERCENTAGE);
         setModal(true);
         setCloseShortcut(ShortcutAction.KeyCode.ESCAPE, null);
         setResizable(false);
@@ -44,26 +44,18 @@ public class InstrumentDetailsWindow extends Window {
         content.addComponent(buildFooter());
     }
 
-    private Component buildDetails() {
-        FormLayout fields = new FormLayout();
-        fields.setSpacing(false);
-        fields.setMargin(true);
+    @FunctionalInterface
+    private interface AddDataSeriers{
+        void add(DataSeries dataSeries);
+    }
 
-        fields.addComponent(new Label(instrument.name));
-        fields.addComponent(new Label(instrument.currency.name));
-
-        //TabSheet tabs = new TabSheet();
-        //tabs.setSizeFull();
-
+    private void addPieChartTab(TabSheet tabSheet, String caption, AddDataSeriers addDataSeriers){
         final VerticalLayout layout1 = new VerticalLayout();
-        fields.addComponent(layout1);
-        layout1.setSizeFull();
-        layout1.setSpacing(true);
-
+        //layout1.setSizeFull();
+        //layout1.setSpacing(true);
+        //fields.addComponent(layout1);
         DataSeries dataSeries = new DataSeries().newSeries();
-        for(Map.Entry<Asset,Integer> e : dao.loadAssetAllocation(instrument).entrySet()){
-            dataSeries.newSeries().add(e.getKey().type,e.getValue());
-        }
+        addDataSeriers.add(dataSeries);
         SeriesDefaults seriesDefaults = new SeriesDefaults()
                 .setRenderer(SeriesRenderers.PIE)
                 .setRendererOptions(new PieRenderer().setShowDataLabels(true));
@@ -85,14 +77,42 @@ public class InstrumentDetailsWindow extends Window {
                 .setDataSeries(dataSeries)
                 .setOptions(options);
         layout1.addComponent(chart);
-        layout1.setComponentAlignment(chart, Alignment.TOP_CENTER);
-        layout1.setExpandRatio(chart,1.f);
+        layout1.setMargin(true);
+        //layout1.setComponentAlignment(chart, Alignment.TOP_CENTER);
+        layout1.setExpandRatio(chart, 1.f);
         chart.setSizeFull();
-        chart.setWidth(100, Unit.PERCENTAGE);
+        //chart.setWidth(100, Unit.PERCENTAGE);
         chart.show();
-        //tabs.addTab(layout1, "Asset Allocation");
+        tabSheet.addTab(layout1, caption);
+    }
 
+    private Component buildDetails() {
+        FormLayout fields = new FormLayout();
+        fields.setSpacing(false);
+        fields.setMargin(true);
 
+        fields.addComponent(new Label(instrument.name));
+        fields.addComponent(new Label(instrument.currency.name));
+
+        TabSheet tabs = new TabSheet();
+        //tabs.setSizeFull();
+        fields.addComponent(tabs);
+
+        addPieChartTab(tabs,"Asset Allocation",(DataSeries d) -> {
+            for (Map.Entry<Asset, Integer> e : dao.loadAssetAllocation(instrument).entrySet()) {
+                d.newSeries().add(e.getKey().type, e.getValue());
+            }
+        });
+
+        addPieChartTab(tabs,"Region Allocation",(DataSeries d) -> {
+            for (Map.Entry<Asset, Integer> e : dao.loadAssetAllocation(instrument).entrySet()) {
+                d.newSeries().add(e.getKey().type, e.getValue());
+            }
+        });
+
+        //fixme : by default the chart in the first tab does not expand ...
+        tabs.setSelectedTab(1);
+        tabs.setSelectedTab(0);
 
 
         return fields;
