@@ -1,7 +1,10 @@
 package net.murphytalk.finance.window;
 
 import com.vaadin.event.ShortcutAction;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.Responsive;
+import com.vaadin.server.ThemeResource;
+import com.vaadin.shared.ui.BorderStyle;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import net.murphytalk.finance.dao.*;
@@ -91,8 +94,17 @@ public class InstrumentDetailsWindow extends Window {
         fields.setSpacing(false);
         fields.setMargin(true);
 
-        fields.addComponent(new Label(instrument.name));
-        fields.addComponent(new Label(instrument.currency.name));
+        if(instrument.url!=null) {
+            Link link = new Link(instrument.name, new ExternalResource(instrument.url));
+            link.setTargetName("_blank");
+            link.setTargetBorder(BorderStyle.DEFAULT);
+            link.setTargetHeight(300);
+            link.setTargetWidth(400);
+            fields.addComponent(link);
+        }
+        else {
+            fields.addComponent(new Label(instrument.name));
+        }
 
         TabSheet tabs = new TabSheet();
         //tabs.setSizeFull();
@@ -110,6 +122,7 @@ public class InstrumentDetailsWindow extends Window {
             }
         });
 
+
         //fixme : by default the chart in the first tab does not expand ...
         tabs.setSelectedTab(1);
         tabs.setSelectedTab(0);
@@ -124,6 +137,12 @@ public class InstrumentDetailsWindow extends Window {
 
         footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         footer.setWidth(100.0f, Unit.PERCENTAGE);
+
+        Label icon = new Label();
+        icon.setIcon(new ThemeResource("Japan-Flag.png"));
+        icon.setSizeUndefined();
+        footer.addComponent(icon);
+
 
         Button ok = new Button("Close", this::cancel);
         ok.addStyleName(ValoTheme.BUTTON_PRIMARY);

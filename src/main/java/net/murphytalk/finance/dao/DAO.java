@@ -55,7 +55,7 @@ public class DAO {
             currencies.put(c.rowid, c);
         }
 
-        for (Instrument i : jdbcTemplate.query("select rowid,[name],type,broker,currency from instrument", new BeanPropertyRowMapper<>(Instrument.class))) {
+        for (Instrument i : jdbcTemplate.query("select rowid,[name],type,broker,currency,url from instrument", new BeanPropertyRowMapper<>(Instrument.class))) {
             instruments.put(i.rowid, i);
         }
     }

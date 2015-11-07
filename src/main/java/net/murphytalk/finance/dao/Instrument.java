@@ -11,6 +11,7 @@ public class Instrument extends DAO.StaticData {
     public InstrumentType type;
     public Broker broker;
     public Currency currency;
+    public String url;
 
     public void setName(String name) {
         this.name = name;
@@ -28,5 +29,7 @@ public class Instrument extends DAO.StaticData {
         this.currency = DAO.currencies.get(currency);
     }
 
-
+    public void setUrl(String url) {
+        this.url = url;
+    }
 }

@@ -77,7 +77,7 @@ public final class Portfolio extends VerticalLayout implements View {
         LocalDate ld = dao.getLatestPerformanceDate();
         Instant instant = ld.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
         datePicker = new PopupDateField("Performance Date", Date.from(instant));
-
+        datePicker.setDateFormat("yyyy-MM-dd");
         datePicker.addValueChangeListener(e -> updateData(datePicker.getValue()));
 
         header.addComponent(datePicker);
