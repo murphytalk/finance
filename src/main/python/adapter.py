@@ -72,7 +72,7 @@ class SqliteAdapter(ConsoleAdapter):
     def get_id(self,table,param):
         #insert if we see it first time
         while True:
-            self.c.execute('SELECT rowid,type FROM %s WHERE type=?'%table,(param,))
+            self.c.execute('SELECT rowid,name FROM %s WHERE name=?'%table,(param,))
             r = self.c.fetchone()
             if r is None:
                 self.c.execute("INSERT INTO %s VALUES (?,NULL,?)"%table,(param,self.broker_id))
