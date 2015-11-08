@@ -2,11 +2,11 @@ package net.murphytalk.finance.window;
 
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.server.ExternalResource;
+import com.vaadin.server.Resource;
 import com.vaadin.server.Responsive;
-import com.vaadin.server.ThemeResource;
-import com.vaadin.shared.ui.BorderStyle;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
+import net.murphytalk.finance.Util;
 import net.murphytalk.finance.dao.*;
 import org.dussan.vaadin.dcharts.DCharts;
 import org.dussan.vaadin.dcharts.data.DataSeries;
@@ -113,6 +113,7 @@ public class InstrumentDetailsWindow extends Window {
             }
         });
 
+        //todo:region allocation pie
         addPieChartTab(tabs,"Region Allocation",(DataSeries d) -> {
             for (Map.Entry<Asset, Integer> e : dao.loadAssetAllocation(instrument).entrySet()) {
                 d.newSeries().add(e.getKey().type, e.getValue());
@@ -135,11 +136,13 @@ public class InstrumentDetailsWindow extends Window {
         footer.addStyleName(ValoTheme.WINDOW_BOTTOM_TOOLBAR);
         footer.setWidth(100.0f, Unit.PERCENTAGE);
 
-        Label icon = new Label();
-        icon.setIcon(new ThemeResource("Japan-Flag.png"));
-        icon.setSizeUndefined();
-        footer.addComponent(icon);
-
+        Resource iconRes = Util.getCurrencyIcon(instrument.currency.name);
+        if(iconRes!=null) {
+            Label icon = new Label();
+            icon.setIcon(iconRes);
+            icon.setSizeUndefined();
+            footer.addComponent(icon);
+        }
 
         Button ok = new Button("Close", this::cancel);
         ok.addStyleName(ValoTheme.BUTTON_PRIMARY);
