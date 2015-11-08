@@ -97,9 +97,6 @@ public class InstrumentDetailsWindow extends Window {
         if(instrument.url!=null) {
             Link link = new Link(instrument.name, new ExternalResource(instrument.url));
             link.setTargetName("_blank");
-            link.setTargetBorder(BorderStyle.DEFAULT);
-            link.setTargetHeight(300);
-            link.setTargetWidth(400);
             fields.addComponent(link);
         }
         else {

@@ -17,6 +17,7 @@ public class Performance {
     public float capital;
     public LocalDateTime date;
 
+
     public void setInstrument(int instrument) {
         this.instrument = DAO.instruments.get(instrument);
     }
@@ -46,7 +47,7 @@ public class Performance {
     }
 
     public String getInstrument() {
-        return instrument.name;
+        return getShortname(instrument.name);
     }
 
     public int getAmount() {
@@ -72,4 +73,13 @@ public class Performance {
     public String getDate() {
         return date.toString();
     }
+
+    private static String getShortname(String name){
+        final char start = '（';
+        //final char end   = '）';
+        int p1 = name.indexOf(start);
+        //int p2 = name.indexOf(end);
+        return (p1>=0 )?name.substring(0,p1):name;
+    }
+
 }

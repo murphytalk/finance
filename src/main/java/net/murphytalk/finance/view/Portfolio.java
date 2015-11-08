@@ -85,7 +85,6 @@ public final class Portfolio extends VerticalLayout implements View {
         return header;
     }
 
-
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {
     }
