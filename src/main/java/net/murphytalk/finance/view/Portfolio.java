@@ -13,10 +13,12 @@ import net.murphytalk.finance.dao.Performance;
 import net.murphytalk.finance.window.InstrumentDetailsWindow;
 import org.vaadin.gridutil.renderer.ViewButtonValueRenderer;
 
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Mu Lu (murphytalk@gmail) on 10/31/15.
@@ -25,6 +27,7 @@ public final class Portfolio extends VerticalLayout implements View {
     private final Grid grid;
     private PopupDateField datePicker;
     private final DAO dao;
+    private final DecimalFormat formatter = new DecimalFormat("#,###.00");
 
     public Portfolio(DAO dao) {
         this.dao = dao;
@@ -40,12 +43,23 @@ public final class Portfolio extends VerticalLayout implements View {
 
     private Grid buildGrid() {
         BeanItemContainer<Performance> bic = new BeanItemContainer<>(Performance.class);
-        bic.addAll(dao.loadPerformance(datePicker.getValue()));
+
+        List<Performance> performances = dao.loadPerformance(datePicker.getValue());
+
+        float totalCapital = 0, totalValue = 0, totalProfit = 0;
+        for(Performance p:performances){
+            totalCapital+=p.capital;
+            totalValue+=p.value;
+            totalProfit+=p.profit;
+        }
+
+
+        bic.addAll(performances);
         final Grid g = new Grid(bic);
         //grid.setContainerDataSource(bic);  //this causes a NPE
 
         g.removeColumn("date");
-        g.setColumnOrder("instrument", "price", "amount", "capital", "value");
+        g.setColumnOrder("instrument", "price", "amount", "capital", "value","profit");
 
         //fixme: the eye icon rending is above the row in a way that is blocking the row to get mouse click event correctly
         g.getColumn("instrument").setRenderer(new ViewButtonValueRenderer(e -> {
@@ -53,6 +67,8 @@ public final class Portfolio extends VerticalLayout implements View {
             InstrumentDetailsWindow.open(dao, i.getBean().instrument);
         }));
 
+
+        initFooterRow(g,totalCapital,totalValue,totalProfit);
         return g;
     }
 
@@ -83,6 +99,15 @@ public final class Portfolio extends VerticalLayout implements View {
         header.addComponent(datePicker);
 
         return header;
+    }
+
+    private void initFooterRow(final Grid g,float totalCapital,float totalValue, float totalProfit){
+        final Grid.FooterRow footerRow = g.appendFooterRow();
+        footerRow.getCell("instrument").setHtml("<b>Total</b>");
+        //footerRow.join("capital", "value","profit");
+        footerRow.getCell("capital").setHtml("<b>"+formatter.format(totalCapital)+"</b>");
+        footerRow.getCell("value").setHtml("<b>"+formatter.format(totalValue)+"</b>");
+        footerRow.getCell("profit").setHtml("<b>"+formatter.format(totalProfit)+"</b>");
     }
 
     @Override
