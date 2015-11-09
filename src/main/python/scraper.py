@@ -205,7 +205,6 @@ class UFJ(Broker):
             sub_s = s[s.find(name):]
             m = pattern.match(sub_s)
             if DEBUG:
-                print s
                 print "%s str:%s"%(name,sub_s)
                 print "%s=%s,digit only=%s"%(name,m.group(1),get_digits(m.group(1)))
             return get_digits(m.group(1))
@@ -575,29 +574,6 @@ class Saison(Broker):
             
             adapter.onData(name, capital, amount, market_value, profit, price)
 
-class MoneyPartners(Broker):    
-    def open(self, adapter):
-        site = 'https://www.moneypartners.co.jp'
-        url = site + '/login/login'
-        opener = self.build_url_opener()
-        page = read_as(opener.open(url),'utf-8')
-        seq = 1
-        seq = write_html(MoneyPartners.get_name(), page, seq, 'utf-8')
-
-        #soup = bs(page, self.parser)
-        #f=soup.findAll('form',attrs={'class':'mpLogin'})[0]
-        #data = parse_form_parameters(f)
-        data = {}
-        data['loginId'], data['password'] = adapter.get_login()
-        url = site + '/retail/login.do'
-        page = read_as(opener.open(url,urllib.urlencode(data)),'utf-8')
-        seq = write_html(MoneyPartners.get_name(), page, seq, 'utf-8')
-
-        url = site + '/retail/create_sso.do?serviceId=PARTNERS_FX_NANO'
-        page = read_as(opener.open(url),'utf-8')
-        seq = write_html(MoneyPartners.get_name(), page, seq, 'utf-8')
-
-
 
 class Fidelity(Broker):
     class Perf:
@@ -690,6 +666,34 @@ class Fidelity(Broker):
         for k in perf.keys():
             p = perf[k]
             adapter.onData(k, p.capital, p.amount, p.value, p.profit, p.price)
+        
+        
+class Google(Broker):
+    """
+    Login to google finance portofolio
+    """
+    def open(self,adapter):
+        url = 'https://accounts.google.com/ServiceLogin?continue=http%3A%2F%2Fwww.google.com%2Ffinance%2Fportfolio%3Faction%3Dview%26pid%3D1%26ei%3D155AVqmiDM2X0ATHrpvACg&service=finance&sacu=1&passive=1209600&acui=0'
+        
+        opener = self.build_url_opener()
+
+        p = read_as(opener.open(url),'utf8')
+        seq = write_html(Google.get_name(), p, 0)        
+        soup = bs(p,self.parser)
+        #f = soup.findAll('form',attrs={'name':'gaia_loginform'})[0]
+        f = soup.form
+        
+        data = parse_form_parameters(f,'utf8')
+
+        data['Email'],data['Passwd']=adapter.get_login()
+        url='https://accounts.google.com/ServiceLoginAuth'
+        p = read_as(opener.open(url, urllib.urlencode(data)),'utf8')
+        seq = write_html(Google.get_name(), p, seq)
+
+        # The transaction CSV
+        url = 'https://www.google.com/finance/portfolio?pid=1&output=csv&action=viewt&ei=OKZAVvHOH8aO0gTy_rDABw'
+        p = read_as(opener.open(url),'utf8')
+        print p
         
 
 

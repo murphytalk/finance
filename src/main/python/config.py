@@ -3,16 +3,17 @@ Application configurations
 """
 
 """
-Brokers used in this deployment, a list of BrokerName
+Funds brokers used in this deployment, a list of BrokerName
 where BrokerName must be the class type of one of the Broker child classes defined in scraper.py
 """
 BROKERS = (
-    'UFJ',
 #    'Nomura',
+    'UFJ',
     'Suruga',
     'Nomura401K',
     'Saison',
-    'Fidelity'
+    'Fidelity',
+    'Monex',
 )
 
 INI='/home/murphy/MyInvestMan.ini'
