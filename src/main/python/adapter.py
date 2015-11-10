@@ -5,7 +5,7 @@ Adapters used by the scraper
 Login credentials are read from MyInvestMan.ini, its format is:
 
 [BrokerName]
-user=my-user-type
+user=my-user-name
 pass=my-pass-word
 
 == Other configuration ==
@@ -18,8 +18,8 @@ https=
 import sys
 import ConfigParser
 import sqlite3
-from time import time
-from config import INI
+from time import time,mktime
+from config import INI,HOURS_TO_UTC
 
 config = ConfigParser.RawConfigParser(allow_no_value=True)
 config.read(INI)
@@ -53,6 +53,10 @@ class ConsoleAdapter:
                                                                                    market_value,
                                                                                    capital,
                                                                                    profit)
+    def onTransaction(self,name,type,when,shares,price,commission):
+        epoch = int(mktime(when.timetuple())+HOURS_TO_UTC*3600)
+        print u"name={},type={},date={}({}),shares={},price={},commission={}".format(name,type,when,epoch,shares,price,commission)
+                      
     def close(self):
         pass
 
@@ -65,8 +69,16 @@ class SqliteAdapter(ConsoleAdapter):
         self.broker = broker_name
         self.conn = sqlite3.connect(db_path)
         self.c = self.conn.cursor()
-
+        
         self.broker_id = self.get_id('broker',broker_name)
+
+        self.c.execute('select max(date) from [transaction]')
+        r = self.c.fetchone()
+        if r is None:            
+            self.lastest_trans_date = 0
+        else:
+            self.lastest_trans_date = r[0]
+
 
 
     def get_id(self,table,param):
@@ -85,7 +97,12 @@ class SqliteAdapter(ConsoleAdapter):
         instrument_id = self.get_id('instrument',instrument_name)
         self.c.execute("INSERT INTO performance VALUES (?,?,?,?,?,?,?)",(instrument_id,amount,price,market_value,profit,capital,int(time())))
 
-        
+
+    def onTransaction(self,name,type,when,shares,price,commission):
+        instrument_id = self.get_id('instrument',name)
+        epoch = int(mktime(when.timetuple())+HOURS_TO_UTC*3600)
+        if self.lastest_trans_date < epoch:
+            self.c.execute("INSERT INTO [transaction] VALUES (?,?,?,?,?,?)",(instrument_id,type,price,shares,commission,epoch))
 
     def close(self):
         self.conn.commit()
@@ -101,9 +118,9 @@ if __name__ == "__main__":
         c = conn.cursor()
 
         for t in(
-            'broker (type text)',
-            'asset  (type text)',
-            'region (type text)'
+            'broker (name text)',
+            'asset  (name text)',
+            'region (name text)'
             ):
                c.execute("CREATE TABLE %s"%t)
 
@@ -120,8 +137,8 @@ if __name__ == "__main__":
         for b in ('US','Europe','S.Korea','China','Japan'):
             c.execute("INSERT INTO region values ('%s')"%b)
 
-        c.execute("CREATE TABLE instrument (type text not null, asset int null, broker null,currency text not null,  FOREIGN KEY(asset) REFERENCES asset(rowid),FOREIGN KEY(broker) REFERENCES broker(rowid))")
-        c.execute("CREATE TABLE [transaction](instrument int not null ,type text not null, price real not null, number int not null, fee real null, date int not null,FOREIGN KEY(instrument) REFERENCES asset(rowid))")
+        c.execute("CREATE TABLE instrument (name text not null, asset int null, broker null,currency text not null,  FOREIGN KEY(asset) REFERENCES asset(rowid),FOREIGN KEY(broker) REFERENCES broker(rowid))")
+        c.execute("CREATE TABLE [transaction](instrument int not null ,name text not null, price real not null, number int not null, fee real null, date int not null,FOREIGN KEY(instrument) REFERENCES asset(rowid))")
         c.execute("CREATE TABLE performance(instrument int not null ,amount int not null,price real not null, value real not null, profit value not null, capital,date int not null, FOREIGN KEY(instrument) REFERENCES asset(rowid))")
                 
 

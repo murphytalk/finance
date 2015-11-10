@@ -9,6 +9,8 @@ import urllib2
 import re
 import logging
 from time import sleep
+import csv
+from datetime import datetime
 
 from bs4 import BeautifulSoup as bs
 from utils import ScrapError
@@ -668,17 +670,17 @@ class Fidelity(Broker):
             adapter.onData(k, p.capital, p.amount, p.value, p.profit, p.price)
         
         
-class Google(Broker):
+class Monex(Broker):
     """
     Login to google finance portofolio
     """
     def open(self,adapter):
-        url = 'https://accounts.google.com/ServiceLogin?continue=http%3A%2F%2Fwww.google.com%2Ffinance%2Fportfolio%3Faction%3Dview%26pid%3D1%26ei%3D155AVqmiDM2X0ATHrpvACg&service=finance&sacu=1&passive=1209600&acui=0'
+        url = 'https://accounts.google.com/ServiceLogin'
         
         opener = self.build_url_opener()
 
         p = read_as(opener.open(url),'utf8')
-        seq = write_html(Google.get_name(), p, 0)        
+        seq = write_html(Monex.get_name(), p, 0)        
         soup = bs(p,self.parser)
         #f = soup.findAll('form',attrs={'name':'gaia_loginform'})[0]
         f = soup.form
@@ -688,12 +690,17 @@ class Google(Broker):
         data['Email'],data['Passwd']=adapter.get_login()
         url='https://accounts.google.com/ServiceLoginAuth'
         p = read_as(opener.open(url, urllib.urlencode(data)),'utf8')
-        seq = write_html(Google.get_name(), p, seq)
+        seq = write_html(Monex.get_name(), p, seq)
 
         # The transaction CSV
         url = 'https://www.google.com/finance/portfolio?pid=1&output=csv&action=viewt&ei=OKZAVvHOH8aO0gTy_rDABw'
         p = read_as(opener.open(url),'utf8')
-        print p
+        c = csv.reader(p.split(u'\n')[1:])
+        for fields in c:
+            if fields is not None and len(fields)>2 and len(fields[0])>0:
+                adapter.onTransaction(fields[0],fields[2].upper(),datetime.strptime(fields[3],'%b %d, %Y'),fields[4],fields[5],fields[7])
+            else:
+                break
         
 
 
