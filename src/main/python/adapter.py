@@ -56,7 +56,13 @@ class ConsoleAdapter:
     def onTransaction(self,name,type,when,shares,price,commission):
         epoch = int(mktime(when.timetuple())+HOURS_TO_UTC*3600)
         print u"name={},type={},date={}({}),shares={},price={},commission={}".format(name,type,when,epoch,shares,price,commission)
-                      
+
+
+    def onXccy(self,when,ccy1,ccy2,rate):
+        epoch = int(mktime(when.timetuple())+HOURS_TO_UTC*3600)
+        print u"{}/{},date={},rate={}".format(ccy1,ccy2,epoch,rate)
+
+
     def close(self):
         pass
 
@@ -80,7 +86,6 @@ class SqliteAdapter(ConsoleAdapter):
             self.lastest_trans_date = r[0]
 
 
-
     def get_id(self,table,param):
         #insert if we see it first time
         while True:
@@ -98,15 +103,26 @@ class SqliteAdapter(ConsoleAdapter):
         self.c.execute("INSERT INTO performance VALUES (?,?,?,?,?,?,?)",(instrument_id,amount,price,market_value,profit,capital,int(time())))
 
 
-    def onTransaction(self,name,type,when,shares,price,commission):
-        instrument_id = self.get_id('instrument',name)
+    def onXccy(self,when,ccy1,ccy2,rate):
         epoch = int(mktime(when.timetuple())+HOURS_TO_UTC*3600)
-        if self.lastest_trans_date < epoch:
-            self.c.execute("INSERT INTO [transaction] VALUES (?,?,?,?,?,?)",(instrument_id,type,price,shares,commission,epoch))
+        ccy1_id = self.get_id('currency',ccy1)
+        ccy2_id = self.get_id('currency',ccy2)
+        self.c.execute("INSERT INTO xccy VALUES (?,?,?,?)",(ccy1_id,ccy2_id,rate,epoch))
 
     def close(self):
         self.conn.commit()
         self.conn.close()
+        
+class SqliteAdapter2(SqliteAdapter):
+    """
+    This version would not try to write broker table
+    """
+    def __init__(self,db_path,broker_name):
+        print "Broker:%s" % broker_name        
+        self.conn = sqlite3.connect(db_path)
+        self.c = self.conn.cursor()
+        
+
 
 if __name__ == "__main__":    
     if len(sys.argv) <> 2:

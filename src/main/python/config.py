@@ -16,6 +16,10 @@ BROKERS = (
 #    'Monex',
 )
 
+FINANCIAL_DATA = (
+    'Xccy',
+)
+
 INI='/home/murphy/MyInvestMan.ini'
 
 REPORT_EMAIL_ADDRESS = 'murphytalk+invest@gmail.com'

@@ -7,16 +7,17 @@ import cookielib
 import urllib
 import urllib2
 import re
+import codecs
 import logging
 from time import sleep
 import csv
-from datetime import datetime
+from datetime import datetime,date,timedelta
 
 from bs4 import BeautifulSoup as bs
 from utils import ScrapError
 
 DEBUG = False
-
+AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:42.0) Gecko/20100101 Firefox/42.0'
 
 def read_as(res, encoding='sjis'):
     return res.read().decode(encoding)
@@ -39,38 +40,23 @@ def strip_str_from_first_matched_class(soup, class_name):
 def get_digits(s):
     return ''.join(c for c in s if c.isdigit() or c == '-' or c == '+' or c == '.')
 
-#for debug
-if __name__ == '__main__':
-    import codecs
-
-    def write_html(fname, data, seq, encoding='shift_jis'):
-        if DEBUG:
-            f = codecs.open('{}-{}.htm'.format(fname,seq), 'w', encoding)
-            f.write(data)
-            f.close()
-        return seq + 1
-
-    def read_html(fname, encoding='shift_jis'):
-        f = codecs.open(fname, 'r', encoding)
-        p = f.read()
+    
+def write_html(fname, data, seq, encoding='shift_jis'):
+    if DEBUG:
+        f = codecs.open('{}-{}.htm'.format(fname,seq), 'w', encoding)
+        f.write(data)
         f.close()
-        return p
-else:
-    """
-    from google.appengine.api import mail
-    from config import BROKERS, REPORT_EMAIL_ADDRESS, MAIL_FROM
-    """
-    def write_html(fname, data, seq,encoding='shift_jis'):
-        """
-        mail.send_mail(sender=MAIL_FROM,
-                       to=REPORT_EMAIL_ADDRESS,
-                       subject="[MyInvestMan]{}-{}".format(fname,seq),
-                       body='Please check the HTML attachment',
-                       html=data_in_sjis)
-        """
-        logging.info("{} seq {}".format(fname,seq))    
-        return seq + 1
+    return seq + 1
 
+def read_html(fname, encoding='shift_jis'):
+    f = codecs.open(fname, 'r', encoding)
+    p = f.read()
+    f.close()
+    return p
+
+def set_debug(debug):
+    global DEBUG
+    DEBUG = debug
 
 class Broker:
     def __init__(self, proxy_handler=None):
@@ -89,6 +75,7 @@ class Broker:
             urllib2.HTTPHandler(debuglevel=debug_level ),
             urllib2.HTTPSHandler(debuglevel=debug_level),
             urllib2.HTTPCookieProcessor(cookies))
+        opener.addheaders = [('User-agent', AGENT)]
         if not self.proxy_handler is None:
             opener.add_handler(self.proxy_handler)
         return opener
@@ -701,7 +688,52 @@ class Monex(Broker):
                 adapter.onTransaction(fields[0],fields[2].upper(),datetime.strptime(fields[3],'%b %d, %Y'),fields[4],fields[5],fields[7])
             else:
                 break
+
+class FinancialData(Broker):
+    """
+    Download historical financial data from public site
+    """
+    def __init__(self,start,end,proxy_handler=None):
+        """
+        start - start date
+        end   - end date
+        """
+        self.start = start
+        self.end   = end
+        Broker.__init__(self,proxy_handler)
+
         
+class Xccy(FinancialData):
+    """
+    Download currency exchange rates
+    """
+    def open(self,adapter):
+        def download(currency,dt,seq,adapter):
+            url = "http://www.xe.com/currencytables/?from={}&date={}"
+            opener = self.build_url_opener()
+            p = read_as(opener.open(url.format(currency,d.strftime("%Y-%m-%d"))),'utf8')            
+            seq = write_html(currency, p, seq,'utf8')
+
+            soup = bs(p,self.parser)
+            t = soup.findAll('table',attrs={'id':'historicalRateTbl'})[0]
+
+            rows = t.find_all('tr')
+            for r in rows[2:]:
+                cols = r.find_all('td')
+                if cols[0].get_text() == u'JPY':
+                    adapter.onXccy(dt,currency,'JPY',float(get_digits(cols[2].get_text())))
+            
+            return seq
+
+
+        d = self.start
+        seq = 0
+        while  d <= self.end:
+            seq = download('USD', d, seq, adapter)
+            seq = download('CNY', d, seq, adapter)
+
+            d = d + timedelta(1)
+
 
 
 if __name__ == '__main__':

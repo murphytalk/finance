@@ -1,7 +1,7 @@
 package net.murphytalk.finance.dao;
 
 /**
- * Created by Mu Lu (murphytalk@gmail) on 11/1/15.
+ * Created by Mu Lu (murphytalk@gmail.com) on 11/1/15.
  */
 public class Currency extends DAO.StaticData {
     public String name;
