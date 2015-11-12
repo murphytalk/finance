@@ -685,7 +685,8 @@ class Monex(Broker):
         c = csv.reader(p.split(u'\n')[1:])
         for fields in c:
             if fields is not None and len(fields)>2 and len(fields[0])>0:
-                adapter.onTransaction(fields[0],fields[2].upper(),datetime.strptime(fields[3],'%b %d, %Y'),fields[4],fields[5],fields[7])
+                if not adapter.onTransaction(fields[0],fields[2].upper(),datetime.strptime(fields[3],'%b %d, %Y'),fields[4],fields[5],fields[7]):
+                    break
             else:
                 break
 
@@ -709,7 +710,6 @@ class Xccy(FinancialData):
     """
     def open(self,adapter):
         def download(currency,dt,seq,adapter):
-            url = "http://www.xe.com/currencytables/?from={}&date={}"
             opener = self.build_url_opener()
             p = read_as(opener.open(url.format(currency,d.strftime("%Y-%m-%d"))),'utf8')            
             seq = write_html(currency, p, seq,'utf8')
@@ -726,6 +726,7 @@ class Xccy(FinancialData):
             return seq
 
 
+        url = "http://www.xe.com/currencytables/?from={}&date={}"
         d = self.start
         seq = 0
         while  d <= self.end:

@@ -19,7 +19,8 @@ import sys
 import ConfigParser
 import sqlite3
 from time import time,mktime
-from config import INI,HOURS_TO_UTC
+from config import INI
+from utils import get_utc_offset
 
 config = ConfigParser.RawConfigParser(allow_no_value=True)
 config.read(INI)
@@ -54,12 +55,13 @@ class ConsoleAdapter:
                                                                                    capital,
                                                                                    profit)
     def onTransaction(self,name,type,when,shares,price,commission):
-        epoch = int(mktime(when.timetuple())+HOURS_TO_UTC*3600)
+        epoch = int(mktime(when.timetuple())+get_utc_offset())
         print u"name={},type={},date={}({}),shares={},price={},commission={}".format(name,type,when,epoch,shares,price,commission)
+        return True
 
 
     def onXccy(self,when,ccy1,ccy2,rate):
-        epoch = int(mktime(when.timetuple())+HOURS_TO_UTC*3600)
+        epoch = int(mktime(when.timetuple())+get_utc_offset())
         print u"{}/{},date={},rate={}".format(ccy1,ccy2,epoch,rate)
 
 
@@ -103,8 +105,19 @@ class SqliteAdapter(ConsoleAdapter):
         self.c.execute("INSERT INTO performance VALUES (?,?,?,?,?,?,?)",(instrument_id,amount,price,market_value,profit,capital,int(time())))
 
 
+    def onTransaction(self,name,type,when,shares,price,commission):
+        instrument_id = self.get_id('instrument',name)
+        epoch = int(mktime(when.timetuple())+get_utc_offset())
+        if self.lastest_trans_date < epoch:
+            self.c.execute("INSERT INTO [transaction] VALUES (?,?,?,?,?,?)",(instrument_id,type,price,shares,commission,epoch))
+            return True
+        else:
+            print "no new transaction data"
+            return False
+
+
     def onXccy(self,when,ccy1,ccy2,rate):
-        epoch = int(mktime(when.timetuple())+HOURS_TO_UTC*3600)
+        epoch = int(mktime(when.timetuple())+get_utc_offset())
         ccy1_id = self.get_id('currency',ccy1)
         ccy2_id = self.get_id('currency',ccy2)
         self.c.execute("INSERT INTO xccy VALUES (?,?,?,?)",(ccy1_id,ccy2_id,rate,epoch))

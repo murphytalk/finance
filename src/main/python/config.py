@@ -24,6 +24,3 @@ INI='/home/murphy/MyInvestMan.ini'
 
 REPORT_EMAIL_ADDRESS = 'murphytalk+invest@gmail.com'
 MAIL_FROM = "MyInvestMan <murphytalk@gmail.com>"
-
-HOURS_TO_UTC = 9
-#EST -5
