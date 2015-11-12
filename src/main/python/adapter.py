@@ -22,8 +22,22 @@ from time import time,mktime
 from config import INI
 from utils import get_utc_offset
 
+
+class ConfigFile:
+    def __init__(self):
+        self.lines = open(INI).readlines()
+        self.total = len(self.lines)
+        self.cur   = 0
+        
+    def readline(self):
+        if self.cur<self.total:
+            self.cur = self.cur + 1
+            return self.lines[self.cur - 1]
+        else:
+            return ''
+
 config = ConfigParser.RawConfigParser(allow_no_value=True)
-config.read(INI)
+config.readfp(ConfigFile())
 
 #see if proxy is specified in .ini
 #def get_proxy():
