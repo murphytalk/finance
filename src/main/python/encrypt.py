@@ -20,30 +20,16 @@ def tell(data):
     return reduce(reduce_func, desobj.decrypt(unhexlify(data.strip()))).strip()
 
 
-#def tell(data, len):
-#    if data:
-#        return desobj.decrypt(data)[0:len]
-#    else:
-#        return None
-
-
 if __name__ == '__main__':
     """
     -exxxxxx  encrypt file 
     -dxxxxxx  dycrypt file
-    -oxxxxxx  output file
     """
     if len(sys.argv)!=2:
         sys.exit()
 
     encrypt = [x for x in sys.argv if x[:2] == '-e']
     decrypt = [x for x in sys.argv if x[:2] == '-d']
-#    output  = [x for x in sys.argv if x[:2] == '-o']
-
-#    if len(output)==0:
-#        sys.exit()
-#    else:
-#        output=output[0][2:]
 
     if len(encrypt)>0:
         f = encrypt[0][2:]
@@ -54,9 +40,6 @@ if __name__ == '__main__':
     else:
         do = None
 
-#    o = open(output,'w+b')
     if do is not None:
         for data in open(f).readlines():
             print do(data)
-
-#    o.close()
