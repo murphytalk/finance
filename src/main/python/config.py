@@ -20,7 +20,8 @@ FINANCIAL_DATA = (
     'Xccy',
 )
 
-INI='/home/murphy/MyInvestMan.ini'
+from os.path import expanduser
+INI=expanduser("~")+'/myseed'
 
 REPORT_EMAIL_ADDRESS = 'murphytalk+invest@gmail.com'
 MAIL_FROM = "MyInvestMan <murphytalk@gmail.com>"

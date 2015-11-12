@@ -21,11 +21,14 @@ import sqlite3
 from time import time,mktime
 from config import INI
 from utils import get_utc_offset
-
+from encrypt import tell
 
 class ConfigFile:
     def __init__(self):
-        self.lines = open(INI).readlines()
+        self.lines = []
+        for i in open(INI).readlines():
+            self.lines.append(tell(i))
+            
         self.total = len(self.lines)
         self.cur   = 0
         
