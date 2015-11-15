@@ -6,6 +6,12 @@ Application configurations
 Funds brokers used in this deployment, a list of BrokerName
 where BrokerName must be the class type of one of the Broker child classes defined in scraper.py
 """
+DEBUG = False
+
+def set_debug(debug):
+    global DEBUG
+    DEBUG = debug
+
 BROKERS = (
 #    'Nomura',
     'UFJ',
@@ -25,3 +31,4 @@ INI=expanduser("~")+'/myseed'
 
 REPORT_EMAIL_ADDRESS = 'murphytalk+invest@gmail.com'
 MAIL_FROM = "MyInvestMan <murphytalk@gmail.com>"
+
