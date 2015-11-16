@@ -690,7 +690,7 @@ class FinancialData(Broker):
     """
     Download historical financial data from public site
     """
-    def __init__(self,start,end,proxy_handler=None):
+    def __init__(self,caption,start,end,proxy_handler=None):
         """
         start - start date
         end   - end date
@@ -698,6 +698,7 @@ class FinancialData(Broker):
         self.start = start
         self.end   = end
         Broker.__init__(self,proxy_handler)
+        print caption
 
         
 class Xccy(FinancialData):
@@ -707,7 +708,9 @@ class Xccy(FinancialData):
     def open(self,adapter):
         def download(currency,dt,seq,adapter):
             opener = self.build_url_opener()
-            p = read_as(opener.open(url.format(currency,d.strftime("%Y-%m-%d"))),'utf8')            
+            url_formatted = url.format(currency,d.strftime("%Y-%m-%d"))
+            #print url_formatted
+            p = read_as(opener.open(url_formatted),'utf8')            
             seq = write_html(currency, p, seq,'utf8')
 
             soup = bs(p,self.parser)
@@ -731,7 +734,34 @@ class Xccy(FinancialData):
 
             d = d + timedelta(1)
 
+class Yahoo(FinancialData):
+    """
+    Download historical quotes of stocks/ETFs from Yahoo finance
+    """
+    def __init__(self,symbol,start,end,proxy_handler=None):
+        self.symbol = symbol
+        FinancialData.__init__(self,symbol,start,end,proxy_handler)
 
+    def open(self,adapter):
+        # URL paramters :
+        # s - symbol, a/d - start/end month (00~11), b/e - start/end day, c/f - start/end year
+        # g=?  d-daily v-dividend only
+        url = 'http://real-chart.finance.yahoo.com/table.csv?s=%s&a=%02d&b=%02d&c=%d&d=%d&e=%d&f=%d&g=%s&ignore=.csv'%(self.symbol,self.start.month-1,self.start.day,self.start.year,self.end.month-1,self.end.day,self.end.year,'d')
+        print url
+        opener = self.build_url_opener()
+        p = read_as(opener.open(url),'utf8')
+        #print p
+        c = csv.reader(p.split(u'\n')[1:])
+        for f in c:
+            print f
+            if f is not None and len(f)>4:
+                if not adapter.onQuote(self.symbol,datetime.strptime(f[0],'%Y-%m-%d'),float(f[4])):
+                    break
+            else:
+                break
+            
+    def __unicode__(self):
+        return self.symbol
 
 if __name__ == '__main__':
     """

@@ -81,6 +81,10 @@ class ConsoleAdapter:
         epoch = int(mktime(when.timetuple())+get_utc_offset())
         print u"{}/{},date={},rate={}".format(ccy1,ccy2,epoch,rate)
 
+    def onQuote(self,symbol,when,price):
+        epoch = int(mktime(when.timetuple())+get_utc_offset())
+        print u"{},date={},price={}".format(symbol,epoch,price)
+        return True
 
     def close(self):
         pass
@@ -89,20 +93,26 @@ class SqliteAdapter(ConsoleAdapter):
     """
     This is an adapter implementation to write to sqlite DB.
     """
-    def __init__(self, db_path,broker_name):
+    def __init__(self, db_path,broker_name,update_broker=True):
+        def get_last_date(table):
+            self.c.execute('select max(date) from %s'%table)
+            r = self.c.fetchone()
+            if r is None:            
+                return 0
+            else:
+                return r[0]
+            
         print "Broker:%s" % broker_name        
         self.broker = broker_name
         self.conn = sqlite3.connect(db_path)
         self.c = self.conn.cursor()
-        
-        self.broker_id = self.get_id('broker',broker_name)
 
-        self.c.execute('select max(date) from [transaction]')
-        r = self.c.fetchone()
-        if r is None:            
-            self.lastest_trans_date = 0
-        else:
-            self.lastest_trans_date = r[0]
+        if update_broker:
+            self.broker_id = self.get_id('broker',broker_name)
+
+        self.lastest_trans_date = get_last_date('[transaction]')
+        self.lastest_xccy_date  = get_last_date('xccy')
+        self.lastest_quote_date = get_last_date('quote')
 
 
     def get_id(self,table,param):
@@ -132,27 +142,34 @@ class SqliteAdapter(ConsoleAdapter):
             print "no new transaction data"
             return False
 
+    def onQuote(self,symbol,when,price):
+        instrument_id = self.get_id('instrument',symbol)
+        epoch = int(mktime(when.timetuple())+get_utc_offset())
+        #print symbol
+        if self.lastest_xccy_date < epoch:
+            self.c.excute("INSERT INTO quote VALUES (?,?,?)",(instrument_id,price,epoch))
+            return True
+        else:
+            print "no new quote data"
+            return False
 
     def onXccy(self,when,ccy1,ccy2,rate):
         epoch = int(mktime(when.timetuple())+get_utc_offset())
-        ccy1_id = self.get_id('currency',ccy1)
-        ccy2_id = self.get_id('currency',ccy2)
-        self.c.execute("INSERT INTO xccy VALUES (?,?,?,?)",(ccy1_id,ccy2_id,rate,epoch))
+        if self.lastest_xccy_date < epoch:
+            ccy1_id = self.get_id('currency',ccy1)
+            ccy2_id = self.get_id('currency',ccy2)
+            self.c.execute("INSERT INTO xccy VALUES (?,?,?,?)",(ccy1_id,ccy2_id,rate,epoch))
+        else:
+            print "no new xccy data"
 
     def close(self):
         self.conn.commit()
         self.conn.close()
-        
-class SqliteAdapter2(SqliteAdapter):
-    """
-    This version would not try to write broker table
-    """
-    def __init__(self,db_path,broker_name):
-        print "Broker:%s" % broker_name        
-        self.conn = sqlite3.connect(db_path)
-        self.c = self.conn.cursor()
-        
 
+
+    def load_stock_symbols(self):
+        self.c.execute('select [name] from instrument where type = 2 or type = 1')
+        self.stocks = [ x[0] for x in self.c.fetchall() ]
 
 if __name__ == "__main__":    
     if len(sys.argv) <> 2:
