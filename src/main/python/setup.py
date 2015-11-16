@@ -15,8 +15,7 @@ build_exe_opts = {"silent": False,
                  }
 executables = [
     Executable('scraper.py'),
-    Executable('financial_data.py'),
-    Executable('scrap_to_db.py')
+    Executable('financial_data.py')
 ]
 
 setup(name='finance',

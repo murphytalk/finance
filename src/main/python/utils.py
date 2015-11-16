@@ -15,7 +15,7 @@ class ScrapError(Exception):
     def __init__(self,  msg):
         self.msg = msg
 
-def cmdline_args(argv):
+def cmdline_args(argv,db_adapter_clz = None):
     """
     parameter :
          argv : sys.argv[1:]

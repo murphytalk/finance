@@ -735,33 +735,37 @@ class Xccy(FinancialData):
 
 if __name__ == '__main__':
     """
-    parameter : one or more broker name, or all brokers if no parameter given
-
-    This is more for dev purpose, launched from console rather than GAE.
+    parameter : 
+        -fxxxxxx  path to sqlite db file xxxxx
+        one or more broker type, or all brokers if no parameter given
     """
     import sys
+    from adapter import SqliteAdapter
+    from scraper import *
+    from utils import cmdline_args
     from config import BROKERS
-    from adapter import ConsoleAdapter,config
+    from adapter import ConsoleAdapter,SqliteAdapter
 
-    def do_work(broker):
-        adapter = ConsoleAdapter(broker.get_name())
+
+    def do_work(db,broker):
+        if db is None:
+            adapter = ConsoleAdapter(broker.get_name())
+        else:
+            adapter = SqliteAdapter(db,broker.get_name())
         broker.open(adapter)
         adapter.close()
+        
+    proxy = None
+    args,brokers = cmdline_args(sys.argv[1:])
 
-    proxy = None #get_proxy()
 
-    ## cmd arguments :
-    # -d : debug mode
-    # all the others will be treated as a broker name
-    debug_mode_option = '-d'
-
-    DEBUG = debug_mode_option in sys.argv[1:]
-    args = [x for x in sys.argv[1:] if x != debug_mode_option]
-
-    if len(args) == 0:
+    db = args['dbfile']
+    
+    if len(brokers) == 0:
         for broker in [getattr(sys.modules[__name__], x)(proxy) for x in BROKERS]:
-            do_work(broker)
+            do_work(db,broker)
     else:
-        for broker_name in args:
+        for broker_name in brokers:
             broker_class = getattr(sys.modules[__name__], broker_name)
-            do_work(broker_class(proxy))
+            do_work(db,broker_class(proxy))
+
