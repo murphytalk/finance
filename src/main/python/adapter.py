@@ -146,8 +146,8 @@ class SqliteAdapter(ConsoleAdapter):
         instrument_id = self.get_id('instrument',symbol)
         epoch = int(mktime(when.timetuple())+get_utc_offset())
         #print symbol
-        if self.lastest_xccy_date < epoch:
-            self.c.excute("INSERT INTO quote VALUES (?,?,?)",(instrument_id,price,epoch))
+        if self.lastest_quote_date < epoch:
+            self.c.execute("INSERT INTO quote VALUES (?,?,?)",(instrument_id,price,epoch))
             return True
         else:
             print "no new quote data"

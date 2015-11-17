@@ -746,19 +746,21 @@ class Yahoo(FinancialData):
         # URL paramters :
         # s - symbol, a/d - start/end month (00~11), b/e - start/end day, c/f - start/end year
         # g=?  d-daily v-dividend only
-        url = 'http://real-chart.finance.yahoo.com/table.csv?s=%s&a=%02d&b=%02d&c=%d&d=%d&e=%d&f=%d&g=%s&ignore=.csv'%(self.symbol,self.start.month-1,self.start.day,self.start.year,self.end.month-1,self.end.day,self.end.year,'d')
-        print url
-        opener = self.build_url_opener()
-        p = read_as(opener.open(url),'utf8')
-        #print p
-        c = csv.reader(p.split(u'\n')[1:])
-        for f in c:
-            print f
-            if f is not None and len(f)>4:
-                if not adapter.onQuote(self.symbol,datetime.strptime(f[0],'%Y-%m-%d'),float(f[4])):
-                    break
-            else:
-                break
+        url = 'http://real-chart.finance.yahoo.com/table.csv?s=%s&a=%02d&b=%02d&c=%04d&d=%02d&e=%02d&f=%04d&g=%s&ignore=.csv'%(self.symbol,self.start.month-1,self.start.day,self.start.year,self.end.month-1,self.end.day,self.end.year,'d')
+        #print url
+        try:
+            opener = self.build_url_opener()
+            p = read_as(opener.open(url),'utf8')
+            #print p
+            c = csv.reader(p.split(u'\n')[1:])
+            #print c
+            for f in c:
+                #print f
+                if f is not None and len(f)>4:
+                    if not adapter.onQuote(self.symbol,datetime.strptime(f[0],'%Y-%m-%d'),float(f[4])):
+                        break
+        except urllib2.HTTPError:
+            print "Failed to open %s"%url
             
     def __unicode__(self):
         return self.symbol
