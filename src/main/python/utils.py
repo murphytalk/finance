@@ -3,12 +3,17 @@ import time
 from config import set_debug
 from datetime import datetime,date
 
+SECONDS_PER_DAY = 3600*24
+
 def add_lib_to_path(zip):
     if len([x for x in sys.path if x == zip]) == 0:
         sys.path.insert(0, zip)
 
 def get_utc_offset():
     return -time.timezone
+
+def get_current_date_epoch():
+    return int((time.time()+get_utc_offset())/SECONDS_PER_DAY) * SECONDS_PER_DAY
 
 
 class ScrapError(Exception):

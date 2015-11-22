@@ -20,7 +20,7 @@ import ConfigParser
 import sqlite3
 from time import time,mktime
 from config import INI
-from utils import get_utc_offset
+from utils import get_utc_offset,get_current_date_epoch
 from encrypt import tell
 
 class ConfigFile:
@@ -129,7 +129,7 @@ class SqliteAdapter(ConsoleAdapter):
          
     def onData(self, instrument_name, capital, amount, market_value, profit, price):
         instrument_id = self.get_id('instrument',instrument_name)
-        self.c.execute("INSERT INTO performance VALUES (?,?,?,?,?,?,?)",(instrument_id,amount,price,market_value,profit,capital,int(time())))
+        self.c.execute("INSERT INTO performance VALUES (?,?,?,?,?,?,?)",(instrument_id,amount,price,market_value,profit,capital,get_current_date_epoch()))
 
 
     def onTransaction(self,name,type,when,shares,price,commission):
