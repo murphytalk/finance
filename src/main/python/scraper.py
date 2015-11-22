@@ -729,9 +729,12 @@ class Xccy(FinancialData):
         d = self.start
         seq = 0
         while  d <= self.end:
-            seq = download('USD', d, seq, adapter)
-            seq = download('CNY', d, seq, adapter)
-
+            try:
+                print("Downloading Xccy :{}".format(d))
+                seq = download('USD', d, seq, adapter)
+                seq = download('CNY', d, seq, adapter)
+            except:
+                print "Failed to download Xccy for {}".format(d)
             d = d + timedelta(1)
 
 class Yahoo(FinancialData):

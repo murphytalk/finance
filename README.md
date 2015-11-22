@@ -7,9 +7,9 @@ Personal finance and investment portal.
 
 Python scripts are used to scrape broker's web site to download performance data.
 
- 1. [scraper.py](src/main/python/scraper.py) does the actual scraping. It reads login credentials from a ini file, which is defined in [config.py](src/main/python/config.py). It can be launched along, with multiple parameters (broker's type) nor no parameter (all brokers),  it outputs results to standard output.
+ 1. [scraper.py](src/main/python/scraper.py) does the actual scraping. It reads login credentials from an encrypted ini file, the path to the file defined in [config.py](src/main/python/config.py). It can be launched alone, with multiple parameters (broker's type) nor no parameter (all brokers),  by default it outputs results to standard output, but if command line argument `-f/full/path/to/sqlite/file` is specified, the data will be written into the specified DB.
+ 1. [financial_data.py](src/main/python/financial_data.py) is used to download public available financial data, including currency exchange rate and stock quotes. Apart from the `-f` argument, `-sYYYYMMDD` and `-eYYYYMMDD` can also be used to specify the start date and the end date respectively, current date will be used if it is omitted. Other supported argments are `Xccy`(to download currency exchange rate) or any valid stock symbol(on Yahoo finance). If none of these arguments are specified, it will download exchange rate and all stocks found in transaction table.  
  1. [adapter.py](src/main/python/adapter.py) defines adapters to be used to output results.
- 1. [scrap_to_db.py](src/main/python/scrap_to_db.py) is the one to be scheduled to run daily. It outputs result to a sqlite database. It takes whatever parameters [scraper.py](src/main/python/scraper.py) can handle, plus one more : `-f/full/path/to/sqlite/file`.
 
 
 # Local Development Workflow
