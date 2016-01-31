@@ -43,11 +43,9 @@ def cmdline_args(argv,db_adapter_clz = None):
     def convert_date(ss):
         if len(ss)==1:
             try:
-                return datetime.strptime(ss[0][2:],'%Y%m%d')
+                return date(2014,1,1)
             except ValueError:
                 return None
-        else:
-            return date.today()
 
     debug_mode_option = '-d'
     set_debug(debug_mode_option in argv)
@@ -65,16 +63,18 @@ def cmdline_args(argv,db_adapter_clz = None):
 
     result = None
     if start_date is None:
-        print "invalid start date"
-    elif end_date is None:
-        print "invalid end date"
+        start_date = datetime.strptime('20140101','%Y%m%d')
+    
+    if end_date is None:
+        end_date = date.today()
+
+    
+    result = {}
+    result['start_date'] = start_date
+    result['end_date']   = end_date
+    if len(db)>0:
+        result['dbfile'] = db[0][2:]
     else:
-        result = {}
-        result['start_date'] = start_date
-        result['end_date']   = end_date
-        if len(db)>0:
-            result['dbfile'] = db[0][2:]
-        else:
-            result['dbfile'] = None
+        result['dbfile'] = None
         
     return (result,others)

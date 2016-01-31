@@ -15,6 +15,7 @@ from datetime import datetime,date,timedelta
 from bs4 import BeautifulSoup as bs
 from utils import ScrapError
 from config import DEBUG
+from calculate import iterate_transaction
 
 AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:42.0) Gecko/20100101 Firefox/42.0'
 
@@ -745,7 +746,7 @@ class Yahoo(FinancialData):
         self.symbol = symbol
         FinancialData.__init__(self,symbol,start,end,proxy_handler)
 
-    def open(self,adapter):
+    def download(self,adapter):
         # URL paramters :
         # s - symbol, a/d - start/end month (00~11), b/e - start/end day, c/f - start/end year
         # g=?  d-daily v-dividend only
@@ -764,6 +765,9 @@ class Yahoo(FinancialData):
                         break
         except urllib2.HTTPError:
             print "Failed to open %s"%url
+
+    def open(self,adapter):
+        self.download(adapter)
             
     def __unicode__(self):
         return self.symbol

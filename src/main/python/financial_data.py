@@ -44,7 +44,7 @@ if __name__ == '__main__':
             p = []
         else:
             p = [Yahoo(x,args['start_date'],args['end_date'],proxy) for x in adapter.stocks]
-            p.append(Xccy('Xccy',args['start_date'],args['end_date'],proxy))
+            #p.append(Xccy('Xccy',args['start_date'],args['end_date'],proxy))
     else:
         p = [ Xccy('Xccy',args['start_date'],args['end_date'],proxy) if x == 'Xccy' else Yahoo(x,args['start_date'],args['end_date'],proxy) for x in providers]
         
