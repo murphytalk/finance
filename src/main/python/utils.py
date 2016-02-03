@@ -43,9 +43,11 @@ def cmdline_args(argv,db_adapter_clz = None):
     def convert_date(ss):
         if len(ss)==1:
             try:
-                return date(2014,1,1)
+                return datetime.strptime(ss[0][2:],'%Y%m%d')
             except ValueError:
                 return None
+        else:
+            return None
 
     debug_mode_option = '-d'
     set_debug(debug_mode_option in argv)

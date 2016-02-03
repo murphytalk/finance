@@ -2,7 +2,8 @@
 """
 Various calculations
 """
-import sys,sqlite3,datetime
+import sys,sqlite3
+from datetime import date
 from time import mktime
 from utils import cmdline_args
 from adapter import *
@@ -55,6 +56,6 @@ if __name__ == '__main__':
     if db is None:
         print 'Need a db file'
     else:
-        c = CalcPosition(args['start_date'],args['end_date'])
+        c = CalcPosition(date(2014,1,1),args['end_date'])
         c.calc(db)
         c.dump()
