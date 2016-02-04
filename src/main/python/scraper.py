@@ -682,8 +682,7 @@ class Monex(Broker):
         c = csv.reader(p.split(u'\n')[1:])
         for fields in c:
             if fields is not None and len(fields)>2 and len(fields[0])>0:
-                if not adapter.onTransaction(fields[0],fields[2].upper(),datetime.strptime(fields[3],'%b %d, %Y'),fields[4],fields[5],fields[7]):
-                    break
+                adapter.onTransaction(fields[0],fields[2].upper(),datetime.strptime(fields[3],'%b %d, %Y'),fields[4],fields[5],fields[7])
             else:
                 break
 

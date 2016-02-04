@@ -139,7 +139,7 @@ class SqliteAdapter(ConsoleAdapter):
             self.c.execute("INSERT INTO [transaction] VALUES (?,?,?,?,?,?)",(instrument_id,type,price,shares,commission,epoch))
             return True
         else:
-            print "no new transaction data"
+            print "Ignoring transaction @ %s "%when
             return False
 
     def onQuote(self,symbol,when,price):
