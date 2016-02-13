@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Various calculations
+
+parameter:
+ -fxxxxxxx path to db file
+ -i        do not update db file
+
 """
 import sys,sqlite3
 from datetime import date
@@ -23,24 +28,45 @@ def iterate_transaction(db_path,start_date,end_date,callback):
     conn.close()
 
 
+class Position:
+    def __init__(self,instrument):
+        self.instrument = instrument
+        self.shares = 0
+        self.liquidated = 0 # negative value => money(original value) still in market
+        self.fee = 0
+
+    def transaction(self,trans_type,price,shares,fee):
+            if trans_type == 'SPLIT':
+                # 1 to N share split, here price is the N
+                self.shares = self.shares * price 
+            else:
+                s = shares if trans_type == 'BUY' else -1*shares
+                self.shares = self.shares + s
+                self.liquidated = self.liquidated - price*s
+                self.fee = self.fee + fee
+
+    def __str__(self):
+        return "Instrument=%d,Shares=%d,Fee=%d,Liquidated=%d"%(self.instrument,self.shares,self.fee,self.liquidated)
+        
+
 class CalcPosition:
     def __init__(self,date1,date2):
         self.date1 = date1
         self.date2 = date2
         
-    def calc(self,dbpath):
+    def calc(self,dbpath,no_update_db):
         def on_each_transaction(instrument,name,transaction_type,price,shares,fee,date):
-            if transaction_type == 'SPLIT':
-                self.positions[name] = self.positions[name] * price
-            else:
-                self.positions[name] = self.positions[name] + (shares if transaction_type == 'BUY' else -1*shares)
+            self.positions[name].transaction(transaction_type,price,shares,fee)
+#            if not no_update_db:
+                
 
+            
         conn = sqlite3.connect(dbpath)
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute('select rowid,[name] from instrument where type = 2 or type = 1')
         conn.close
-        self.positions = { x[1]:0 for x in c.fetchall() }
+        self.positions = { x[1]:Position(x[0]) for x in c.fetchall() }
         
         iterate_transaction(dbpath,self.date1,self.date2,on_each_transaction)
 
@@ -50,12 +76,12 @@ class CalcPosition:
     
 if __name__ == '__main__':
 
-    args,providers = cmdline_args(sys.argv[1:])
+    args,others = cmdline_args(sys.argv[1:])
     db = args['dbfile']
 
     if db is None:
         print 'Need a db file'
     else:
         c = CalcPosition(date(2014,1,1),args['end_date'])
-        c.calc(db)
+        c.calc(db,'-i' in others)
         c.dump()
