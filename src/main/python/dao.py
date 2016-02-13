@@ -2,6 +2,7 @@
 import sqlite3
 from time import mktime
 from utils import get_utc_offset
+from model import Position
 
 class Dao:
     def __init__(self,dbpath):
@@ -43,3 +44,7 @@ class Dao:
         self.c.execute(sql)
         return {x[0]:create_new_obj_func(x[0],x[1]) for x in self.c.fetchall()}
 
+
+    def save_stock_position(self,position,date):
+        #sql = "INSERT INTO stock_position VALUES ()"
+        print "%s,[%s],%d"%(date,position.name,position.shares)
