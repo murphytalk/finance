@@ -1,6 +1,7 @@
-import sys
+﻿import sys
 import time
 from config import set_debug
+from const import STOCK_START_DATE
 from datetime import datetime,date
 
 SECONDS_PER_DAY = 3600*24
@@ -22,6 +23,8 @@ class ScrapError(Exception):
 
 def cmdline_args(argv,db_adapter_clz = None):
     """
+    ConfigParser in stdlib is overkill, this is my poor man's ConfigParser
+
     parameter :
          argv : sys.argv[1:]
 
@@ -34,7 +37,7 @@ def cmdline_args(argv,db_adapter_clz = None):
         -sYYYYMMDD start date
         -eYYYYMMDD end date
 
-    return: ({processed arg name:value}, list of not processed arguments)               
+    return: ({processed arg name:value},[not processed arguments])               
         processed arg names :
           start_date
           end_date
@@ -65,7 +68,7 @@ def cmdline_args(argv,db_adapter_clz = None):
 
     result = None
     if start_date is None:
-        start_date = datetime.strptime('20140101','%Y%m%d')
+        start_date = STOCK_START_DATE
     
     if end_date is None:
         end_date = date.today()

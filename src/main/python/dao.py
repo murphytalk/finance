@@ -2,7 +2,7 @@
 import sqlite3
 from time import mktime
 from utils import get_utc_offset
-from model import Position
+from model import *
 
 class Dao:
     def __init__(self,dbpath):
@@ -45,6 +45,37 @@ class Dao:
         return {x[0]:create_new_obj_func(x[0],x[1]) for x in self.c.fetchall()}
 
 
-    def save_stock_position(self,position,date):
-        #sql = "INSERT INTO stock_position VALUES ()"
-        print "%s,[%s],%d"%(date,position.name,position.shares)
+    def get_stock_quote(self, date):
+        """
+        return a dict {instrument id : Quote}
+        """
+        epoch = int(mktime(date.timetuple())+get_utc_offset())
+        sql = """
+select 
+q.instrument,i.name,q.price, q.date from quote q, instrument i 
+where date = (select max(date) from quote where date<={}) and
+q.instrument = i.rowid""".format(epoch)
+        self.c.execute(sql)
+        return {x['instrument']:Quote(x['instrument'],x['name'],x['price'],x['date']) for x in self.c.fetchall()}
+
+    def get_instrument_with_xccy_rate(self,epoch):
+        """
+        if the xccy rate on specified date does not exist, then use rate on the closet earlier date
+        return a dict {instrument id : }
+        """
+        sql = """
+select
+i.rowid instrument, 
+i.name, 
+i.type instrument_type_id, 
+a.type instrument_type, 
+c.name currency, 
+ifnull(x.rate,1) rate,
+ifnull(x.date,0) rate_date
+from instrument i
+join instrument_type a on i.type = a.rowid
+join currency c on i.currency = c.rowid
+left join ( select * from xccy_hist where date = (select max(date) from xccy_hist where date<={})) x 
+on i.currency = x.from_id""".format(epoch)
+        self.c.execute(sql,(date))
+        return {x['instrument']:Quote(x['instrument'],x['name'],x['price'],x['date']) for x in self.c.fetchall()}

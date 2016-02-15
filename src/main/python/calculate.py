@@ -10,7 +10,6 @@ parameter:
 import sys,sqlite3
 from datetime import date
 from utils import cmdline_args
-from adapter import *
 from dao import Dao
 from model import Position
 from const import STOCK_START_DATE
@@ -20,21 +19,28 @@ class CalcPosition:
         self.date1 = STOCK_START_DATE
         self.date2 = date2
         
-    def calc(self,dbpath):
+    def calc(self,db):
         def on_each_transaction(instrument,name,transaction_type,price,shares,fee,date):
             pos = self.positions[instrument]
             pos.transaction(transaction_type,price,shares,fee)
             #d.save_stock_position(pos,date)
 
-        d = Dao(dbpath)
+        if db.__class__ is Dao:
+            d = db
+        else:
+            d = Dao(db)
+            
         self.positions = d.populate_from_intruments('type = 2 or type = 1',lambda id,name : Position(id,name))
         d.iterate_transaction(self.date1,self.date2,on_each_transaction)
 
         d.close()
 
-    def dump(self):
+    def dump(self,callback = None):
         for k,v in self.positions.iteritems():
-            print k,v
+            if callback is None:
+                print k,v
+            else:
+                callback(k,v)
     
 if __name__ == '__main__':
 

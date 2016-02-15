@@ -15,7 +15,6 @@ from datetime import datetime,date,timedelta
 from bs4 import BeautifulSoup as bs
 from utils import ScrapError
 from config import DEBUG
-from calculate import iterate_transaction
 
 AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:42.0) Gecko/20100101 Firefox/42.0'
 
