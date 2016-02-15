@@ -58,11 +58,12 @@ q.instrument = i.rowid""".format(epoch)
         self.c.execute(sql)
         return {x['instrument']:Quote(x['instrument'],x['name'],x['price'],x['date']) for x in self.c.fetchall()}
 
-    def get_instrument_with_xccy_rate(self,epoch):
+    def get_instrument_with_xccy_rate(self,date):
         """
         if the xccy rate on specified date does not exist, then use rate on the closet earlier date
         return a dict {instrument id : }
         """
+        epoch = int(mktime(date.timetuple())+get_utc_offset())
         sql = """
 select
 i.rowid instrument, 
@@ -77,5 +78,11 @@ join instrument_type a on i.type = a.rowid
 join currency c on i.currency = c.rowid
 left join ( select * from xccy_hist where date = (select max(date) from xccy_hist where date<={})) x 
 on i.currency = x.from_id""".format(epoch)
-        self.c.execute(sql,(date))
-        return {x['instrument']:Quote(x['instrument'],x['name'],x['price'],x['date']) for x in self.c.fetchall()}
+        self.c.execute(sql)
+        return {x['instrument']:Instrument(x['instrument'],
+                                           x['name'],
+                                           x['instrument_type_id'],
+                                           x['instrument_type'],
+                                           x['currency'],
+                                           x['rate'],
+                                           x['rate_date']) for x in self.c.fetchall()}
