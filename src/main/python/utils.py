@@ -16,6 +16,8 @@ def get_utc_offset():
 def get_current_date_epoch():
     return int((time.time()+get_utc_offset())/SECONDS_PER_DAY) * SECONDS_PER_DAY
 
+def epoch2datetime(epoch):
+    return datetime.fromtimestamp(epoch)
 
 class ScrapError(Exception):
     def __init__(self,  msg):

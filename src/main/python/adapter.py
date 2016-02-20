@@ -20,7 +20,7 @@ import ConfigParser
 import sqlite3
 from time import time,mktime
 from config import INI
-from utils import get_utc_offset,get_current_date_epoch
+from utils import get_utc_offset,get_current_date_epoch,epoch2datetime
 from encrypt import tell
 
 class ConfigFile:
@@ -150,7 +150,7 @@ class SqliteAdapter(ConsoleAdapter):
             self.c.execute("INSERT INTO quote VALUES (?,?,?)",(instrument_id,price,epoch))
             return True
         else:
-            print "no new quote data"
+            print "no quote data newer than {}".format(epoch2datetime(self.lastest_quote_date))
             return False
 
     def onXccy(self,when,ccy1,ccy2,rate):

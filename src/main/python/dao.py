@@ -61,7 +61,7 @@ q.instrument = i.rowid""".format(epoch)
     def get_instrument_with_xccy_rate(self,date):
         """
         if the xccy rate on specified date does not exist, then use rate on the closet earlier date
-        return a dict {instrument id : }
+        return a dict {instrument id : Instrument}
         """
         epoch = int(mktime(date.timetuple())+get_utc_offset())
         sql = """
