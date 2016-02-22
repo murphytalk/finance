@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import date
-class Position:
+from json import dumps
+
+class Model:
+    def to_json(self):
+        return dumps(self.__dict__)
+
+class Position(Model):
     def __init__(self,instrument,name):
         self.instrument = instrument
         self.name = name
@@ -21,7 +27,7 @@ class Position:
     def __str__(self):
         return "Name=%4s,Shares=%4d,Fee=%6.2f,Liquidated=%10.2f"%(self.name,self.shares,self.fee,self.liquidated)
 
-class Quote:
+class Quote(Model):
     def __init__(self,instrument,name,price,quote_date):
         self.instrument = instrument
         self.symbol = name
@@ -31,7 +37,7 @@ class Quote:
     def __str__(self):
         return "Date={},symbol={},id={},price={}".format(self.date,self.symbol,self.instrument,self.price)
 
-class InstrumentType:
+class InstrumentType(Model):
     def __init__(self,id,name):
         self.id = id
         self.name = name
@@ -39,7 +45,7 @@ class InstrumentType:
     def __str__(self):
         return "id={},name={}".format(self.id,self.name)
             
-class Instrument:
+class Instrument(Model):
     def __init__(self,id,name,instrument_type,instrument_type_name,currency,xccy_rate,xccy_rate_date):
         self.id = id
         self.name = name
