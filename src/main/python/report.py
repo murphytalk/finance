@@ -19,7 +19,7 @@ class Report:
     def gen_price_with_xccy(self,org,currency,to_jpy_rate,rate_date):
         return {currency:org,'JPY':org*to_jpy_rate,'rate_date':str(rate_date)}
 
-    def list(self):
+    def list(self,rr = None):
         def calc_stock(instrument,position):
             v = position.shares*self.q[instrument].price
             r = {}
@@ -28,9 +28,18 @@ class Report:
             r['price']  = self.q[instrument].price
             r['value']  = self.gen_price_with_xccy(v,self.i[instrument].currency,self.i[instrument].xccy_rate,self.i[instrument].xccy_date)
             r['liquidated'] = self.gen_price_with_xccy(position.liquidated,self.i[instrument].currency,self.i[instrument].xccy_rate,self.i[instrument].xccy_date)
-            rr.append(r)            
+            
+            t = self.i[instrument].instrument_type.name
+            if t in rr:
+                by_instrument = rr[t]
+            else:
+                by_instrument = []
 
-        rr = []
+            by_instrument.append(r) 
+            rr[t] = by_instrument            
+
+        if rr is None:
+            rr = {}
         self.stock_position.dump(calc_stock)
         return rr
 
