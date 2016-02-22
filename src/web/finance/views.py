@@ -7,8 +7,8 @@ from flask import render_template
 from finance import app
 
 @app.route('/')
-@app.route('/home')
-def home():
+@app.route('/summary')
+def summary():
     """Renders the home page."""
     return render_template(
         'index.html',
@@ -16,22 +16,20 @@ def home():
         year=datetime.now().year,
     )
 
-@app.route('/contact')
-def contact():
+@app.route('/stock')
+def stock():
     """Renders the contact page."""
     return render_template(
-        'contact.html',
-        title='Contact',
-        year=datetime.now().year,
-        message='Your contact page.'
+        'stock.html',
+        title='Stock & ETF',
+        year=datetime.now().year
     )
 
-@app.route('/about')
-def about():
+@app.route('/fund')
+def fund():
     """Renders the about page."""
     return render_template(
-        'about.html',
-        title='About',
-        year=datetime.now().year,
-        message='Your application description page.'
+        'fund.html',
+        title='Mutual Funds',
+        year=datetime.now().year
     )

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -40,8 +40,8 @@
     <Content Include="finance\static\scripts\respond.js" />
     <Content Include="finance\static\scripts\respond.min.js" />
     <Content Include="finance\static\scripts\_references.js" />
-    <Content Include="finance\templates\about.html" />
-    <Content Include="finance\templates\contact.html" />
+    <Content Include="finance\templates\stock.html" />
+    <Content Include="finance\templates\fund.html" />
     <Content Include="finance\templates\index.html" />
     <Content Include="finance\templates\layout.html" />
     <Content Include="requirements.txt" />
