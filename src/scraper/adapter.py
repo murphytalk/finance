@@ -20,8 +20,17 @@ import ConfigParser
 import sqlite3
 from time import time,mktime
 from config import INI
-from utils import get_utc_offset,get_current_date_epoch,epoch2datetime
 from encrypt import tell
+
+#add ../common to path
+import os, sys, inspect
+from os.path import sep
+common_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))+sep+'..'+sep+'common'
+if common_folder not in sys.path:
+    sys.path.insert(0, common_folder)
+
+from utils import get_utc_offset,get_current_date_epoch,epoch2datetime
+
 
 class ConfigFile:
     def __init__(self):

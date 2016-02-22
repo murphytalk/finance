@@ -4,7 +4,8 @@ from Crypto.Hash import MD5
 from Crypto.Cipher import Blowfish
 from binascii import hexlify,unhexlify
 
-desobj = Blowfish.new('G$et7586')
+#!!!dummy key!!!
+desobj = Blowfish.new('0tvl7qZ2cOs7ai4B3tpe')
 
 X='^'
 

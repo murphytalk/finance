@@ -1,6 +1,5 @@
 ﻿import sys
 import time
-from config import set_debug
 from const import STOCK_START_DATE
 from datetime import datetime,date
 
@@ -18,10 +17,6 @@ def get_current_date_epoch():
 
 def epoch2datetime(epoch):
     return datetime.fromtimestamp(epoch)
-
-class ScrapError(Exception):
-    def __init__(self,  msg):
-        self.msg = msg
 
 def cmdline_args(argv,db_adapter_clz = None):
     """
@@ -55,8 +50,10 @@ def cmdline_args(argv,db_adapter_clz = None):
             return None
 
     debug_mode_option = '-d'
-    set_debug(debug_mode_option in argv)
     args      = [x for x in argv if x != debug_mode_option]
+
+    result = {}
+    result['debug'] = debug_mode_option in argv
 
         
     others    = [x for x in args if x[:2] != '-f' and x[:2] != '-s' and x[:2] != '-e']
@@ -67,16 +64,12 @@ def cmdline_args(argv,db_adapter_clz = None):
     start_date = convert_date(start_date)
     end_date   = convert_date(end_date)
 
-
-    result = None
     if start_date is None:
         start_date = STOCK_START_DATE
     
     if end_date is None:
         end_date = date.today()
 
-    
-    result = {}
     result['start_date'] = start_date
     result['end_date']   = end_date
     if len(db)>0:
