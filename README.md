@@ -1,7 +1,12 @@
 Personal finance and investment portal.
 
-
 # The Web Application
+
+## Configuration
+
+Configurations are defined as uppercase variables in [module fiance](src/web/finance/__init__.py).
+
+ 1. `DATABASE` the full path to the sqlite3 db file. It would try environment variable `FINANCE_DB` first, if that does not exist then use the value defined there.
 
 # The Common Python Scripts
 
