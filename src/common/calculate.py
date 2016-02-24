@@ -23,14 +23,13 @@ class CalcPosition:
         def on_each_transaction(instrument,name,transaction_type,price,shares,fee,date):
             pos = self.positions[instrument]
             pos.transaction(transaction_type,price,shares,fee)
-            #d.save_stock_position(pos,date)
 
-        if db.__class__ is Dao:
+        if isinstance(db, Dao):
             d = db
         else:
             d = Dao(db)
             
-        self.positions = d.populate_from_intruments('type = 2 or type = 1',lambda id,name : Position(id,name))
+        self.positions = d.populate_from_instruments('type = 2 or type = 1', lambda id, name : Position(id, name))
         d.iterate_transaction(self.date1,self.date2,on_each_transaction)
 
         d.close()
