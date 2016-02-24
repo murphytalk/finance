@@ -6,11 +6,17 @@
         $.getJSON("{{ url_for('stock_json')}}",
             function (data) {
                 var body = $('<tbody>');
+                var sum = {"shares":0,"value":0,"value_jpy":0,"liquidated":0,"liquidated_jpy":0};
                 $.each(data,function(intrument_type,v){
                     $.each(v,function(idx,d){
                         var row = $('<tr>');
                         var value = d["value"];
                         var liquidated = d["liquidated"];
+                        sum["shares"] += d["shares"];
+                        sum["value"] += value[value["ccy"]];
+                        sum["value_jpy"] += value["JPY"];
+                        sum["liquidated"] += liquidated[liquidated["ccy"]];
+                        sum["liquidated_jpy"] += liquidated["JPY"];
                         row.append("<td>" + intrument_type + "</td>")
                             .append("<td>" + d["symbol"] + "</td>")
                             .append('<td class="text-right">' + d["price"] + "</td>")
@@ -25,6 +31,10 @@
                     });
                 });
                 $("#stocks tbody").replaceWith(body);
+                $("#value").text(sum["value"].toFixed(2));
+                $("#value-jpy").text(sum["value_jpy"].toFixed(2));
+                $("#liq").text(sum["liquidated"].toFixed(2));
+                $("#liq-jpy").text(sum["liquidated_jpy"].toFixed(2));
             });
         });
         
@@ -39,7 +49,7 @@
                     <th class="text-right">Price</th>
                     <th class="text-right">Shares</th>
                     <th>Currency</th>
-                    <th class="text-right">Value</thclass="text-right">
+                    <th class="text-right">Value</th>
                     <th class="text-right">JPY</th>
                     <th class="text-right">Liquidated</th>
                     <th class="text-right">JPY</th>
@@ -47,6 +57,20 @@
                 </tr>
             </thead>
             <tbody></tbody>
+            <thead>
+                <tr>
+                    <th><strong>SUM</strong></th>
+                    <th></th>
+                    <th></th>
+                    <th class="text-right"><div id="shares"/></th>
+                    <th></th>
+                    <th class="text-right"><div id="value"/></th>
+                    <th class="text-right"><div id="value-jpy" /></th>
+                    <th class="text-right"><div id="liq" /></th>
+                    <th class="text-right"><div id="liq-jpy"/></th>
+                    <th></th>
+                </tr>
+            </thead>
          </table>
     </div>
 </div>
