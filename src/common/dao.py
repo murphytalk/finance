@@ -17,7 +17,10 @@ class Dao:
         self.conn.close()
 
     def query(self, sql, parameters=None):
-        self.c.execute(sql, parameters)
+        if parameters:
+            self.c.execute(sql, parameters)
+        else:
+            self.c.execute(sql)
         return self.c.fetchall()
 
     def iterate_transaction(self, start_date, end_date, callback):
@@ -59,10 +62,10 @@ class Dao:
         sql = """
 select 
 q.instrument,i.name,q.price, q.date from quote q, instrument i 
-where date = (select max(date) from quote where date<={}) and
-q.instrument = i.rowid""".format(epoch)
+where date = (select max(date) from quote where  date<=?) and
+q.instrument = i.rowid"""
 
-        r = self.query(sql)
+        r = self.query(sql,(epoch,))
         return {x['instrument']: Quote(x['instrument'], x['name'], x['price'], x['date']) for x in r}
 
     def get_instrument_with_xccy_rate(self, date):
@@ -83,8 +86,8 @@ ifnull(x.date,0) rate_date
 from instrument i
 join instrument_type a on i.type = a.rowid
 join currency c on i.currency = c.rowid
-left join ( select * from xccy_hist where date = (select max(date) from xccy_hist where date<={})) x 
-on i.currency = x.from_id""".format(epoch)
+left join ( select * from xccy_hist where date = (select max(date) from xccy_hist where date<=?)) x 
+on i.currency = x.from_id"""
 
         return {x['instrument']: Instrument(x['instrument'],
                                             x['name'],
@@ -92,7 +95,7 @@ on i.currency = x.from_id""".format(epoch)
                                             x['instrument_type'],
                                             x['currency'],
                                             x['rate'],
-                                            x['rate_date']) for x in self.query(sql)}
+                                            x['rate_date']) for x in self.query(sql,(epoch,))}
 
 
 class FakeDao(Dao):
