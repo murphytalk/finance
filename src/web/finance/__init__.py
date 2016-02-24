@@ -3,6 +3,7 @@ The flask application package.
 """
 from os import environ
 from os.path import isfile
+from platform import node
 from flask import Flask
 
 env_db = environ.get('FINANCE_DB')
@@ -14,5 +15,5 @@ if not isfile(DATABASE):
 app = Flask(__name__)
 #load all uppercase variables ad confiuration
 app.config.from_object(__name__)
-print app.config['DATABASE'] 
+app.debug = (node != "anchor") #anchor is the production box's hostname
 import finance.views
