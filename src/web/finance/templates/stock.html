@@ -2,9 +2,32 @@
 
 {% block content %}
 <script>
-    $(document).ready(function(){
-        console.info("stock page")
-    });
+    $(document).ready(function () {
+        $.getJSON("{{ url_for('stock_json')}}",
+            function (data) {
+                var body = $('<tbody>');
+                $.each(data,function(intrument_type,v){
+                    $.each(v,function(idx,d){
+                        var row = $('<tr>');
+                        var value = d["value"];
+                        var liquidated = d["liquidated"];
+                        row.append("<td>" + intrument_type + "</td>")
+                            .append("<td>" + d["symbol"] + "</td>")
+                            .append("<td>" + d["price"] + "</td>")
+                            .append("<td>" + d["shares"] + "</td>")
+                            .append("<td>" + value["ccy"] + "</td>")
+                            .append("<td>" + value[value["ccy"]] + "</td>")
+                            .append("<td>" + value["JPY"] + "</td>")
+                            .append("<td>" + liquidated[liquidated["ccy"]] + "</td>")
+                            .append("<td>" + liquidated["JPY"] + "</td>")
+                            .append("<td>" + liquidated["rate_date"] + "</td>");
+                        body.append(row);
+                    });
+                });
+                $("#stocks tbody").replaceWith(body);
+            });
+        });
+        
 </script>
 <div class="row">
     <div class="col-md-12">

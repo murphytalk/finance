@@ -17,7 +17,7 @@ class Report:
         self.stock_position.calc(dao)
     
     def gen_price_with_xccy(self,org,currency,to_jpy_rate,rate_date):
-        return {currency:org,'JPY':org*to_jpy_rate,'rate_date':str(rate_date)}
+        return {'ccy':currency,currency:org,'JPY':org*to_jpy_rate,'rate_date':str(rate_date)}
 
     def list(self,rr = None):
         def calc_stock(instrument,position):
