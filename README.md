@@ -6,7 +6,7 @@ Personal finance and investment portal.
 
 Configurations are defined as uppercase variables in [module fiance](src/web/finance/__init__.py).
 
- 1. `DATABASE` the full path to the sqlite3 db file. It would try environment variable `FINANCE_DB` first, if that does not exist then use the value defined there.
+ 1. `DATABASE` the full path to the sqlite3 db file. It would try environment variable `FINANCE_DB` first, if that does not exist then use the value defined there. The final value will be tested as a valid file path, if succesful a `Dao` object is created to load data from it, otherwise a `FakeDao` object will be created to generate random static and market data.
 
 # The Common Python Scripts
 
