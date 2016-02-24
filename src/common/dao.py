@@ -12,6 +12,10 @@ class Dao:
 
     def close(self):
         self.conn.close()
+
+    def query(self,sql,parameters = None):
+        self.c.execute(sql,parameters)
+        return self.c.fetchall()
         
     def iterate_transaction(self,start_date,end_date,callback):
         """
@@ -20,9 +24,8 @@ class Dao:
         """
         epoch1 = int(mktime(start_date.timetuple())+get_utc_offset())
         epoch2 = int(mktime(end_date.timetuple())+get_utc_offset())
-    
-        self.c.execute('select i.name,t.instrument,t.type,t.price,t.shares,t.fee,t.date from [transaction] t, instrument i where t.instrument = i.rowid and date >=? and date<=? order by date',(epoch1,epoch2))
-        for f in self.c.fetchall():
+            
+        for f in self.query('select i.name,t.instrument,t.type,t.price,t.shares,t.fee,t.date from [transaction] t, instrument i where t.instrument = i.rowid and date >=? and date<=? order by date',(epoch1,epcho2)):
             callback(f['instrument'],f['name'],f['type'],f['price'],f['shares'],f['fee'],f['date'])
         
     def populate_from_intruments(self,filter,create_new_obj_func):
@@ -41,8 +44,7 @@ class Dao:
         sql = 'SELECT ROWID,[NAME] FROM INSTRUMENT'
         if filter is not None:
             sql = sql + ' where ' + filter
-        self.c.execute(sql)
-        return {x[0]:create_new_obj_func(x[0],x[1]) for x in self.c.fetchall()}
+        return {x[0]:create_new_obj_func(x[0],x[1]) for x in self.query(sql)}
 
 
     def get_stock_quote(self, date):
@@ -55,8 +57,8 @@ select
 q.instrument,i.name,q.price, q.date from quote q, instrument i 
 where date = (select max(date) from quote where date<={}) and
 q.instrument = i.rowid""".format(epoch)
-        self.c.execute(sql)
-        return {x['instrument']:Quote(x['instrument'],x['name'],x['price'],x['date']) for x in self.c.fetchall()}
+        
+        return {x['instrument']:Quote(x['instrument'],x['name'],x['price'],x['date']) for x in self.query(sql)}
 
     def get_instrument_with_xccy_rate(self,date):
         """
@@ -78,11 +80,11 @@ join instrument_type a on i.type = a.rowid
 join currency c on i.currency = c.rowid
 left join ( select * from xccy_hist where date = (select max(date) from xccy_hist where date<={})) x 
 on i.currency = x.from_id""".format(epoch)
-        self.c.execute(sql)
+        
         return {x['instrument']:Instrument(x['instrument'],
                                            x['name'],
                                            x['instrument_type_id'],
                                            x['instrument_type'],
                                            x['currency'],
                                            x['rate'],
-                                           x['rate_date']) for x in self.c.fetchall()}
+                                           x['rate_date']) for x in self.query(sql)}
