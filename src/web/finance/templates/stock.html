@@ -13,13 +13,13 @@
                         var liquidated = d["liquidated"];
                         row.append("<td>" + intrument_type + "</td>")
                             .append("<td>" + d["symbol"] + "</td>")
-                            .append("<td>" + d["price"] + "</td>")
-                            .append("<td>" + d["shares"] + "</td>")
+                            .append('<td class="text-right">' + d["price"] + "</td>")
+                            .append('<td class="text-right">' + d["shares"] + "</td>")
                             .append("<td>" + value["ccy"] + "</td>")
-                            .append("<td>" + value[value["ccy"]] + "</td>")
-                            .append("<td>" + value["JPY"] + "</td>")
-                            .append("<td>" + liquidated[liquidated["ccy"]] + "</td>")
-                            .append("<td>" + liquidated["JPY"] + "</td>")
+                            .append('<td class="text-right">' + value[value["ccy"]] + "</td>")
+                            .append('<td class="text-right">' + value["JPY"] + "</td>")
+                            .append('<td class="text-right">' + liquidated[liquidated["ccy"]] + "</td>")
+                            .append('<td class="text-right">' + liquidated["JPY"] + "</td>")
                             .append("<td>" + liquidated["rate_date"] + "</td>");
                         body.append(row);
                     });
@@ -36,18 +36,17 @@
                 <tr>
                     <th>Type</th>
                     <th>Symbol</th>
-                    <th>Price</th>
-                    <th>Shares</th>
+                    <th class="text-right">Price</th>
+                    <th class="text-right">Shares</th>
                     <th>Currency</th>
-                    <th>Value</th>
-                    <th>JPY</th>
-                    <th>Liquidated</th>
-                    <th>JPY</th>
-                    <th>Rate Date</th>
+                    <th class="text-right">Value</thclass="text-right">
+                    <th class="text-right">JPY</th>
+                    <th class="text-right">Liquidated</th>
+                    <th class="text-right">JPY</th>
+                    <th>Xccy Date</th>
                 </tr>
             </thead>
-            <tbody>
-            </tbody>
+            <tbody></tbody>
          </table>
     </div>
 </div>
