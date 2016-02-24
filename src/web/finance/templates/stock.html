@@ -6,13 +6,12 @@
         $.getJSON("{{ url_for('stock_json')}}",
             function (data) {
                 var body = $('<tbody>');
-                var sum = {"shares":0,"value":0,"value_jpy":0,"liquidated":0,"liquidated_jpy":0};
+                var sum = {"value":0,"value_jpy":0,"liquidated":0,"liquidated_jpy":0};
                 $.each(data,function(intrument_type,v){
                     $.each(v,function(idx,d){
                         var row = $('<tr>');
                         var value = d["value"];
                         var liquidated = d["liquidated"];
-                        sum["shares"] += d["shares"];
                         sum["value"] += value[value["ccy"]];
                         sum["value_jpy"] += value["JPY"];
                         sum["liquidated"] += liquidated[liquidated["ccy"]];
@@ -48,7 +47,7 @@
                     <th>Symbol</th>
                     <th class="text-right">Price</th>
                     <th class="text-right">Shares</th>
-                    <th>Currency</th>
+                    <th>Ccy</th>
                     <th class="text-right">Value</th>
                     <th class="text-right">JPY</th>
                     <th class="text-right">Liquidated</th>
@@ -59,16 +58,16 @@
             <tbody></tbody>
             <thead>
                 <tr>
-                    <th><strong>SUM</strong></th>
-                    <th></th>
-                    <th></th>
-                    <th class="text-right"><div id="shares"/></th>
-                    <th></th>
+                    <th>SUM</th>
+                    <th/>
+                    <th/>
+                    <th/>
+                    <th/>
                     <th class="text-right"><div id="value"/></th>
                     <th class="text-right"><div id="value-jpy" /></th>
                     <th class="text-right"><div id="liq" /></th>
                     <th class="text-right"><div id="liq-jpy"/></th>
-                    <th></th>
+                    <th/>
                 </tr>
             </thead>
          </table>
