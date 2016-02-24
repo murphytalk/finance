@@ -1,7 +1,7 @@
+#!/usr/bin/python2
 """
 This script runs the finance application using a development server.
 """
-
 from os import environ
 from finance import app
 
