@@ -6,11 +6,11 @@
         <table class="table table-hover" id="stocks">
             <thead>
                 <tr>
-                    <th>Type</th>
-                    <th>Symbol</th>
+                    <th class="text-right">Type</th>
+                    <th class="text-right">Symbol</th>
                     <th class="text-right">Price</th>
                     <th class="text-right">Shares</th>
-                    <th>Ccy</th>
+                    <th class="text-right">Ccy</th>
                     <th class="text-right">Value</th>
                     <th class="text-right">JPY</th>
                     <th class="text-right">Liquidated</th>
@@ -45,8 +45,9 @@
         $.getJSON("{{ url_for('stock_json')}}",
             function (data) {
                 var body = $('<tbody>');
+                var td = '<td class="text-right">';
                 var sum = {"value":0,"value_jpy":0,"liquidated":0,"liquidated_jpy":0};
-                $.each(data,function(intrument_type,v){
+                $.each(data,function(instrument_type,v){
                     $.each(v,function(idx,d){
                         var row = $('<tr>');
                         var value = d["value"];
@@ -55,16 +56,16 @@
                         sum["value_jpy"] += value["JPY"];
                         sum["liquidated"] += liquidated[liquidated["ccy"]];
                         sum["liquidated_jpy"] += liquidated["JPY"];
-                        row.append("<td>" + intrument_type + "</td>")
-                            .append("<td>" + d["symbol"] + "</td>")
-                            .append('<td class="text-right">' + d["price"].toLocaleString() + "</td>")
-                            .append('<td class="text-right">' + d["shares"] + "</td>")
-                            .append("<td>" + value["ccy"] + "</td>")
-                            .append('<td class="text-right">' + value[value["ccy"]].toLocaleString() + "</td>")
-                            .append('<td class="text-right">' + value["JPY"].toLocaleString() + "</td>")
-                            .append('<td class="text-right">' + liquidated[liquidated["ccy"]].toLocaleString() + "</td>")
-                            .append('<td class="text-right">' + liquidated["JPY"].toLocaleString() + "</td>")
-                            .append("<td>" + liquidated["rate_date"] + "</td>");
+                        row.append($(td).append(instrument_type))
+                            .append($(td).append(d["symbol"]))
+                            .append($(td).append(d["price"].toLocaleString()))
+                            .append($(td).append(d["shares"]))
+                            .append($(td).append(value["ccy"]))
+                            .append($(td).append(value[value["ccy"]].toLocaleString()))
+                            .append($(td).append(value["JPY"].toLocaleString()))
+                            .append($(td).append(liquidated[liquidated["ccy"]].toLocaleString()))
+                            .append($(td).append(liquidated["JPY"].toLocaleString()))
+                            .append($('<td>').append(liquidated["rate_date"]));
                         body.append(row);
                     });
                 });
