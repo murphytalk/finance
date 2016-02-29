@@ -74,7 +74,8 @@ def fund():
 def db():
     return render_template(
             'db.html',
-            title='Data Viewer'
+            title='Data Viewer',
+            year=datetime.now().year
     )
 
 @app.route('/db/quote.json')

@@ -24,20 +24,26 @@
 {% block scripts %}
 <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
 <script>
-    $("#q").click(function () {
+    build_header = function (headers) {
         var head = $("<thead>").append();
         var tr = $("<tr>");
-        tr.append($("<th>").append("Date"));
-        tr.append($("<th>").append("Symbol"));
-        tr.append($("<th>").append("Price"));
+        $.each(headers, function (idx, h) {
+            tr.append($("<th>").append(h));
+        });
         head.append(tr);
         $("#dbtable thead").replaceWith(head);
-
+    };
+    populdate_data = function (url) {
         $("#dbtable").DataTable({
-            'ajax': "{{url_for('db_quote_json')}}",
+            'ajax': url,
             "order": [[0, 'desc'], [1, 'asc']],
             'pageLength': 100
         });
+
+    };
+    $("#q").click(function () {
+        build_header(['Date', 'Symbol', 'Price']);
+        populdate_data("{{url_for('db_quote_json')}}");
     });
 </script>
 {% endblock %}
