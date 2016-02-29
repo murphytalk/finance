@@ -55,10 +55,14 @@ class Report:
     def to_json_packed(j):
         return dumps(j)
 
-def raw_quote(dao,pretty):
-    #q = [ {'name':x['name'], 'price': x['price'], 'date':str(date.fromtimestamp(x['date']))} for x in dao.query('select * from stock_quote')]        
+def raw_quote(dao):
     q = [ [str(date.fromtimestamp(x['date'])), x['name'], x['price']] for x in dao.query('select * from stock_quote order by date desc')]        
     return Report.to_json_packed({'data':q})
+
+def raw_xccy(dao):
+    q = [ [str(date.fromtimestamp(x['date'])), x['From'], x['To'], x['rate']] for x in dao.query('select * from xccy_hist')]        
+    return Report.to_json_packed({'data':q})
+
 
 if __name__ == "__main__":
     args,others = cmdline_args(sys.argv[1:])

@@ -24,9 +24,17 @@
 {% block scripts %}
 <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
 <script>
+    clear_table = function () {
+        if ($.fn.dataTable.isDataTable('#dbtable')) {
+            table = $('#dbtable').DataTable();
+            table.destroy();
+            $('#dbtable tbody').remove();
+        }
+    }
     build_header = function (headers) {
         var head = $("<thead>").append();
         var tr = $("<tr>");
+        clear_table();
         $.each(headers, function (idx, h) {
             tr.append($("<th>").append(h));
         });
@@ -34,10 +42,6 @@
         $("#dbtable thead").replaceWith(head);
     };
     populdate_data = function (url) {
-        if ($.fn.dataTable.isDataTable('#dbtable')) {
-            table = $('#dbtable').DataTable();
-            table.destroy();
-        }
         $("#dbtable").DataTable({
             'ajax': url,
             "order": [[0, 'desc'], [1, 'asc']],
@@ -48,6 +52,14 @@
     $("#q").click(function () {
         build_header(['Date', 'Symbol', 'Price']);
         populdate_data("{{url_for('db_quote_json')}}");
+    });
+    $("#x").click(function () {
+        if ($.fn.dataTable.isDataTable('#dbtable')) {
+            table = $('#dbtable').DataTable();
+            table.destroy();
+        }
+        build_header(['Date', 'From', 'To','Rate']);
+        populdate_data("{{url_for('db_xccy_json')}}");
     });
 </script>
 {% endblock %}
