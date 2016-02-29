@@ -63,6 +63,10 @@ def raw_xccy(dao):
     q = [ [str(date.fromtimestamp(x['date'])), x['From'], x['To'], x['rate']] for x in dao.query('select * from xccy_hist')]        
     return Report.to_json_packed({'data':q})
 
+def raw_trans(dao):
+    q = [ [str(date.fromtimestamp(x['date'])), x['name'], x['type'],x['price'], x['shares'], x['fee']] for x in dao.query('select date,name,type,price,shares,fee from stock_trans')]        
+    return Report.to_json_packed({'data':q})
+
 
 if __name__ == "__main__":
     args,others = cmdline_args(sys.argv[1:])

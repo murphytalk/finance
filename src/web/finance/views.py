@@ -17,7 +17,7 @@ if common_folder not in sys.path:
 
 # from utils import get_utc_offset,get_current_date_epoch,epoch2datetime
 from dao import factory
-from report import Report, raw_quote, raw_xccy
+from report import Report, raw_quote, raw_xccy, raw_trans
 
 
 @app.before_request
@@ -85,3 +85,7 @@ def db_quote_json():
 @app.route('/db/xccy.json')
 def db_xccy_json():
     return raw_xccy(g.dao)
+
+@app.route('/db/trans.json')
+def db_trans_json():
+    return raw_trans(g.dao)

@@ -53,6 +53,10 @@
         build_header(['Date', 'Symbol', 'Price']);
         populdate_data("{{url_for('db_quote_json')}}");
     });
+    $("#t").click(function () {
+        build_header(['Date', 'Symbol', 'Type', 'Price','Shares','Fee']);
+        populdate_data("{{url_for('db_trans_json')}}");
+    });
     $("#x").click(function () {
         build_header(['Date', 'From', 'To','Rate']);
         populdate_data("{{url_for('db_xccy_json')}}");
