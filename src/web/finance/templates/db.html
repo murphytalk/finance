@@ -54,10 +54,6 @@
         populdate_data("{{url_for('db_quote_json')}}");
     });
     $("#x").click(function () {
-        if ($.fn.dataTable.isDataTable('#dbtable')) {
-            table = $('#dbtable').DataTable();
-            table.destroy();
-        }
         build_header(['Date', 'From', 'To','Rate']);
         populdate_data("{{url_for('db_xccy_json')}}");
     });
