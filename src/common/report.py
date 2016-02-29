@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 import sys
 from utils import cmdline_args
-from dao import Dao
+from dao import Dao, Raw
 from calculate import CalcPosition
 from json import dumps,encoder
+from datetime import date
 
 #format float value in json
 encoder.FLOAT_REPR = lambda o: format(o, '.2f')
@@ -54,6 +55,10 @@ class Report:
     def to_json_packed(j):
         return dumps(j)
 
+def raw_quote(dao,pretty):
+    #q = [ {'name':x['name'], 'price': x['price'], 'date':str(date.fromtimestamp(x['date']))} for x in dao.query('select * from stock_quote')]        
+    q = [ [str(date.fromtimestamp(x['date'])), x['name'], x['price']] for x in dao.query('select * from stock_quote order by date desc')]        
+    return Report.to_json_packed({'data':q})
 
 if __name__ == "__main__":
     args,others = cmdline_args(sys.argv[1:])

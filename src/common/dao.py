@@ -6,8 +6,7 @@ from time import mktime
 from model import *
 from utils import get_utc_offset
 
-
-class Dao:
+class Raw:
     def __init__(self, dbpath):
         self.conn = sqlite3.connect(dbpath)
         self.conn.row_factory = sqlite3.Row
@@ -22,6 +21,10 @@ class Dao:
         else:
             self.c.execute(sql)
         return self.c.fetchall()
+
+class Dao(Raw):
+    def __init__(self,dbpath):
+        Raw.__init__(self,dbpath)
 
     def iterate_transaction(self, start_date, end_date, callback):
         """

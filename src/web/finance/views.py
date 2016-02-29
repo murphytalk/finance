@@ -17,7 +17,7 @@ if common_folder not in sys.path:
 
 # from utils import get_utc_offset,get_current_date_epoch,epoch2datetime
 from dao import factory
-from report import Report
+from report import Report, raw_quote
 
 
 @app.before_request
@@ -69,3 +69,14 @@ def fund():
             title='Mutual Funds',
             year=datetime.now().year
     )
+
+@app.route('/db')
+def db():
+    return render_template(
+            'db.html',
+            title='Data Viewer'
+    )
+
+@app.route('/db/quote.json')
+def db_quote_json():
+    return raw_quote(g.dao, True)
