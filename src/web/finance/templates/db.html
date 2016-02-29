@@ -34,6 +34,10 @@
         $("#dbtable thead").replaceWith(head);
     };
     populdate_data = function (url) {
+        if ($.fn.dataTable.isDataTable('#dbtable')) {
+            table = $('#dbtable').DataTable();
+            table.destroy();
+        }
         $("#dbtable").DataTable({
             'ajax': url,
             "order": [[0, 'desc'], [1, 'asc']],
