@@ -34,7 +34,9 @@
         $("#dbtable thead").replaceWith(head);
 
         $("#dbtable").DataTable({
-            'ajax': "{{url_for('db_quote_json')}}"
+            'ajax': "{{url_for('db_quote_json')}}",
+            "order": [[0, 'desc'], [1, 'asc']],
+            'pageLength': 100
         });
     });
 </script>
