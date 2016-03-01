@@ -22,10 +22,6 @@ In `common` folder, most of them can be launched individually, they accept the f
 
 Project [finance_scraper](https://bitbucket.org/murphytalk/finance_scraper) (private repository hosted on butbucket.com) depdends on some of the common scripts here.
 
-# The Daily Scraping Jobs
-
-These are jobs that scrape market data and portfolio performance. See [finance_scraper](https://bitbucket.org/murphytalk/finance_scraper/overview).
-
 # Deployment
 
 ## Use Nginx as proxy
