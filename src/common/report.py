@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
 import sys
-from utils import cmdline_args
+from utils import cmdline_args, get_utc_offset
 from dao import Dao, Raw
 from calculate import CalcPosition
 from json import dumps,encoder
@@ -56,15 +56,15 @@ class Report:
         return dumps(j)
 
 def raw_quote(dao):
-    q = [ [str(date.fromtimestamp(x['date'])), x['name'], x['price']] for x in dao.query('select * from stock_quote order by date desc')]        
+    q = [ [str(date.fromtimestamp(x['date'] + get_utc_offset())), x['name'], x['price']] for x in dao.query('select * from stock_quote order by date desc')]        
     return Report.to_json_packed({'data':q})
 
 def raw_xccy(dao):
-    q = [ [str(date.fromtimestamp(x['date'])), x['From'], x['To'], x['rate']] for x in dao.query('select * from xccy_hist')]        
+    q = [ [str(date.fromtimestamp(x['date'] + get_utc_offset())), x['From'], x['To'], x['rate']] for x in dao.query('select * from xccy_hist')]        
     return Report.to_json_packed({'data':q})
 
 def raw_trans(dao):
-    q = [ [str(date.fromtimestamp(x['date'])), x['name'], x['type'],x['price'], x['shares'], x['fee']] for x in dao.query('select date,name,type,price,shares,fee from stock_trans')]        
+    q = [ [str(date.fromtimestamp(x['date']+ get_utc_offset())), x['name'], x['type'],x['price'], x['shares'], x['fee']] for x in dao.query('select date,name,type,price,shares,fee from stock_trans')]        
     return Report.to_json_packed({'data':q})
 
 
