@@ -76,6 +76,8 @@ if __name__ == "__main__":
         print 'Need a db file'
     else:
         dao = Dao(db)
-        r = Report(dao,args['end_date'])
-        print r.to_json(r.list())
+
+        if 'report' in args:
+            r = Report(dao,args['end_date'])
+            print r.to_json(r.list())
         dao.close()
