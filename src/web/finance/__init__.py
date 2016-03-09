@@ -7,7 +7,7 @@ from platform import node
 from flask import Flask
 
 env_db = environ.get('FINANCE_DB')
-DATABASE = r"C:\Users\murph\Documents\work\finance.db" if env_db is None else env_db
+DATABASE = r"C:\work\finance.db" if env_db is None else env_db
 if not isfile(DATABASE):
     DATABASE = None  #FakeDao will be used
 
