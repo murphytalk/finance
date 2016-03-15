@@ -77,7 +77,14 @@ if __name__ == "__main__":
     else:
         dao = Dao(db)
 
-        if 'report' in args:
+        if 'report' in others:
             r = Report(dao,args['end_date'])
             print r.to_json(r.list())
-        dao.close()
+        elif 'quote' in others:
+	    print Report.to_json(raw_quote(dao))
+        elif 'xccy' in others:
+	    print Report.to_json(raw_xccy(dao))
+        elif 'trans' in others:
+	    print Report.to_json(raw_trans(dao))
+
+	dao.close()

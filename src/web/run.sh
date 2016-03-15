@@ -43,6 +43,7 @@ case $cmd in
 start)
 	check_status
 	if [ $status -eq 0 ];then
+		echo DB file is $FINANCE_DB
 		nohup ${CUR}/runserver.py > $LOGF 2>&1 &
 		echo $! > $PIDF
 	else
