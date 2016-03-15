@@ -3,7 +3,7 @@ Routes and views for the flask application.
 """
 
 from datetime import datetime, date
-from flask import render_template, g, current_app
+from flask import render_template, g, current_app, Response
 from finance import app
 
 # add ../../common to path
@@ -35,7 +35,6 @@ def teardown_request(exception):
 
 
 @app.route('/')
-@app.route('/summary')
 def summary():
     """Renders the home page."""
     return render_template(
@@ -48,7 +47,7 @@ def summary():
 @app.route('/stock.json')
 def stock_json():
     r = Report(g.dao, date.today())
-    return r.to_json(r.list())
+    return Response(r.to_json(r.list()),mimetype='application/json')
 
 
 @app.route('/stock')
@@ -80,12 +79,12 @@ def db():
 
 @app.route('/db/quote.json')
 def db_quote_json():
-    return raw_quote(g.dao)
+    return Response(raw_quote(g.dao),mimetype='application/json')
 
 @app.route('/db/xccy.json')
 def db_xccy_json():
-    return raw_xccy(g.dao)
+    return Response(raw_xccy(g.dao),mimetype='application/json')
 
 @app.route('/db/trans.json')
 def db_trans_json():
-    return raw_trans(g.dao)
+    return Response(raw_trans(g.dao),mimetype='application/json')
