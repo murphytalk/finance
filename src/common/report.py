@@ -81,10 +81,10 @@ if __name__ == "__main__":
             r = Report(dao,args['end_date'])
             print r.to_json(r.list())
         elif 'quote' in others:
-	    print Report.to_json(raw_quote(dao))
+            print Report.to_json(raw_quote(dao))
         elif 'xccy' in others:
-	    print Report.to_json(raw_xccy(dao))
+            print Report.to_json(raw_xccy(dao))
         elif 'trans' in others:
-	    print Report.to_json(raw_trans(dao))
+            print Report.to_json(raw_trans(dao))
 
-	dao.close()
+        dao.close()
