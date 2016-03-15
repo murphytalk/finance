@@ -12,6 +12,12 @@
             padding-right:10px;
             padding-left:10px;
         }    
+        .top5{
+            padding-top:5px;
+        }
+        .bottom5{
+            padding-bottom:5px;
+        }    
     </style>
     {% block head %}{% endblock %}
 </head>
@@ -29,9 +35,9 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="{{ url_for('summary') }}">Summary</a></li>
                     <li><a href="{{ url_for('stock') }}">Stock 	&amp; ETF</a></li>
                     <li><a href="{{ url_for('fund') }}">Mutual Funds</a></li>
+                    <li><a href="{{ url_for('db') }}">Raw Data Viewer</a></li>
                 </ul>
             </div>
         </div>

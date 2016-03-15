@@ -4,7 +4,7 @@
 {% endblock %}
 {% block content %}
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-12 top5 bottom5">
         <div class="btn-group">
             <button type="button" class="btn btn-primary" id="q">quote</button>
             <button type="button" class="btn btn-primary" id="t">transaction</button>
@@ -24,14 +24,14 @@
 {% block scripts %}
 <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
 <script>
-    clear_table = function () {
+    function clear_table() {
         if ($.fn.dataTable.isDataTable('#dbtable')) {
             table = $('#dbtable').DataTable();
             table.destroy();
             $('#dbtable tbody').remove();
         }
     }
-    build_header = function (headers) {
+    function build_header(headers) {
         var head = $("<thead>").append();
         var tr = $("<tr>");
         clear_table();
@@ -41,7 +41,7 @@
         head.append(tr);
         $("#dbtable thead").replaceWith(head);
     };
-    populdate_data = function (url) {
+    function populdate_data(url) {
         $("#dbtable").DataTable({
             'ajax': url,
             "order": [[0, 'desc'], [1, 'asc']],
