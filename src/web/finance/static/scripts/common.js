@@ -42,7 +42,7 @@ function build_header(table_selector,headers) {
     $(table_selector+" thead").replaceWith(head);
 };
 
- function populate_data(table_selector,url,col_order,row_per_page,lengthMenu,colDefs) {
+ function populate_data(table_selector,url,col_order,row_per_page,lengthMenu,colDefs,footer) {
     var lenMenu;
     if(lengthMenu==null){
         lenMenu = [10, 25, 50, 100];
@@ -66,6 +66,9 @@ function build_header(table_selector,headers) {
         parameter['columnDefs'] = colDefs;
     }
 
+     if(footer != null){
+         parameter["footerCallback"] = footer;
+     }
 
     $(table_selector).DataTable(parameter);
     $(table_selector).on( 'length.dt', function ( e, settings, len ) {

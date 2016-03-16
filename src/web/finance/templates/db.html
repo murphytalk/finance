@@ -24,42 +24,17 @@
 {% block scripts %}
 <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
 <script>
-    function clear_table() {
-        if ($.fn.dataTable.isDataTable('#dbtable')) {
-            table = $('#dbtable').DataTable();
-            table.destroy();
-            $('#dbtable tbody').remove();
-        }
-    }
-    function build_header(headers) {
-        var head = $("<thead>").append();
-        var tr = $("<tr>");
-        clear_table();
-        $.each(headers, function (idx, h) {
-            tr.append($("<th>").append(h));
-        });
-        head.append(tr);
-        $("#dbtable thead").replaceWith(head);
-    };
-    function populdate_data(url) {
-        $("#dbtable").DataTable({
-            'ajax': url,
-            "order": [[0, 'desc'], [1, 'asc']],
-            'pageLength': 100
-        });
-
-    };
     $("#q").click(function () {
-        build_header(['Date', 'Symbol', 'Price']);
-        populdate_data("{{url_for('db_quote_json')}}");
+        build_header('#dbtable',['Date', 'Symbol', 'Price']);
+        populdate_data('#dbtable',"{{url_for('db_quote_json')}}",[[0, 'asc'], [1, 'asc']],100,[50,100,200],null,null);
     });
     $("#t").click(function () {
-        build_header(['Date', 'Symbol', 'Type', 'Price','Shares','Fee']);
-        populdate_data("{{url_for('db_trans_json')}}");
+        build_header('#dbtable',['Date', 'Symbol', 'Type', 'Price','Shares','Fee']);
+        populdate_data('#dbtable',"{{url_for('db_trans_json')}}",[[0, 'asc'], [1, 'asc']],100,[50,100,200],null,null);
     });
     $("#x").click(function () {
-        build_header(['Date', 'From', 'To','Rate']);
-        populdate_data("{{url_for('db_xccy_json')}}");
+        build_header('#dbtable',['Date', 'From', 'To','Rate']);
+        populdate_data('#dbtable',"{{url_for('db_xccy_json')}}",[[0, 'asc'], [1, 'asc']],100,[50,100,200],null,null);
     });
 </script>
 {% endblock %}

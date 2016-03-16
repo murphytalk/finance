@@ -1,7 +1,7 @@
 {% extends "datatable.html" %}
 
 {% block content %}
-<div class="row">
+<div class="row top5 bottom5">
     <div class="col-md-12">
         <table class="table table-hover" id="stocks">
             <thead>
@@ -18,8 +18,7 @@
                     <th>Xccy Date</th>
                 </tr>
             </thead>
-            <tbody></tbody>
-            <thead>
+            <tfoot>
                 <tr>
                     <th>SUM</th>
                     <th/>
@@ -32,7 +31,7 @@
                     <th class="text-right"><div id="liq-jpy"/></th>
                     <th/>
                 </tr>
-            </thead>
+            </tfoot>
          </table>
     </div>
 </div>
@@ -45,32 +44,49 @@
     $(document).ready(function () {
         $.getJSON("{{ url_for('stock_json')}}",
             function (data) {
-                var body = $('<tbody>');
-                var td = '<td class="text-right">';
                 var sum = {"value":0,"value_jpy":0,"liquidated":0,"liquidated_jpy":0};
+                var rows = [];
                 $.each(data,function(instrument_type,v){
+                    var row = [instrument_type];
                     $.each(v,function(idx,d){
-                        var row = $('<tr>');
                         var value = d["value"];
                         var liquidated = d["liquidated"];
                         sum["value"] += value[value["ccy"]];
                         sum["value_jpy"] += value["JPY"];
                         sum["liquidated"] += liquidated[liquidated["ccy"]];
                         sum["liquidated_jpy"] += liquidated["JPY"];
-                        row.append($(td).append(instrument_type))
-                            .append($(td).append(d["symbol"]))
-                            .append($(td).append(d["price"].toLocaleString()))
-                            .append($(td).append(d["shares"]))
-                            .append($(td).append(value["ccy"]))
-                            .append($(td).append(value[value["ccy"]].toLocaleString()))
-                            .append($(td).append(value["JPY"].toLocaleString()))
-                            .append($(td).append(liquidated[liquidated["ccy"]].toLocaleString()))
-                            .append($(td).append(liquidated["JPY"].toLocaleString()))
-                            .append($('<td>').append(liquidated["rate_date"]));
-                        body.append(row);
+                        row.push(
+                                d["symbol"],
+                                d["price"].toLocaleString(),
+                                d["shares"],
+                                value["ccy"],
+                                value[value["ccy"]].toLocaleString(),
+                                value["JPY"].toLocaleString(),
+                                liquidated[liquidated["ccy"]].toLocaleString(),
+                                liquidated["JPY"].toLocaleString(),
+                                liquidated["rate_date"]
+                        );
+                        rows.push(row);
                     });
                 });
-                $("#stocks tbody").replaceWith(body);
+
+                //build_header('#stocks',['Date', 'Symbol', 'Price']);
+                populate_data(
+                        '#stocks',
+                        function(d,callback,s){callback({'data':rows});},
+                        [[0, 'asc'], [1, 'asc']],
+                        10,
+                        null,
+                        [
+                            { "className": "text-right", "targets": [0,1,2,3,4,5,6,7,8] }
+                        ],
+                        null
+                        /*
+                        function (row, data, start, end, display ){
+                            var api = this.api(), data;
+                            $( api.column( 5 ).footer() ).html(sum["value"]);
+                        }*/
+                );
                 $("#value").text(sum["value"].toLocaleString());
                 $("#value-jpy").text(sum["value_jpy"].toLocaleString());
                 $("#liq").text(sum["liquidated"].toLocaleString());
