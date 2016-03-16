@@ -47,8 +47,8 @@
                 var sum = {"value":0,"value_jpy":0,"liquidated":0,"liquidated_jpy":0};
                 var rows = [];
                 $.each(data,function(instrument_type,v){
-                    var row = [instrument_type];
                     $.each(v,function(idx,d){
+                        var row = [instrument_type];
                         var value = d["value"];
                         var liquidated = d["liquidated"];
                         sum["value"] += value[value["ccy"]];
