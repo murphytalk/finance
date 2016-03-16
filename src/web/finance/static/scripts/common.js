@@ -34,7 +34,7 @@ function clear_table(table_selector) {
 function build_header(table_selector,headers) {
     var head = $("<thead>").append();
     var tr = $("<tr>");
-    clear_table();
+    clear_table(table_selector);
     $.each(headers, function (idx, h) {
         tr.append($("<th>").append(h));
     });

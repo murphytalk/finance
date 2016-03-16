@@ -1,7 +1,4 @@
-{% extends "layout.html" %}
-{% block head %}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css" type="text/css" />
-{% endblock %}
+{% extends "datatable.html" %}
 {% block content %}
 <div class="row">
     <div class="col-md-12 top5 bottom5">
@@ -22,19 +19,19 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+{{ super() }}
 <script>
     $("#q").click(function () {
         build_header('#dbtable',['Date', 'Symbol', 'Price']);
-        populdate_data('#dbtable',"{{url_for('db_quote_json')}}",[[0, 'asc'], [1, 'asc']],100,[50,100,200],null,null);
+        populate_data('#dbtable',"{{url_for('db_quote_json')}}",[[0, 'asc'], [1, 'asc']],100,[50,100,200],null,null);
     });
     $("#t").click(function () {
         build_header('#dbtable',['Date', 'Symbol', 'Type', 'Price','Shares','Fee']);
-        populdate_data('#dbtable',"{{url_for('db_trans_json')}}",[[0, 'asc'], [1, 'asc']],100,[50,100,200],null,null);
+        populate_data('#dbtable',"{{url_for('db_trans_json')}}",[[0, 'asc'], [1, 'asc']],100,[50,100,200],null,null);
     });
     $("#x").click(function () {
         build_header('#dbtable',['Date', 'From', 'To','Rate']);
-        populdate_data('#dbtable',"{{url_for('db_xccy_json')}}",[[0, 'asc'], [1, 'asc']],100,[50,100,200],null,null);
+        populate_data('#dbtable',"{{url_for('db_xccy_json')}}",[[0, 'asc'], [1, 'asc']],100,[50,100,200],null,null);
     });
 </script>
 {% endblock %}
