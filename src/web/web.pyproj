@@ -29,6 +29,8 @@
     <Content Include="finance\static\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="finance\static\scripts\bootstrap.js" />
     <Content Include="finance\static\scripts\bootstrap.min.js" />
+    <Content Include="finance\static\scripts\common.js" />
+    <Content Include="finance\static\scripts\finance.js" />
     <Content Include="finance\static\scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="finance\static\scripts\jquery-1.10.2.js" />
     <Content Include="finance\static\scripts\jquery-1.10.2.min.js" />
@@ -41,6 +43,8 @@
     <Content Include="finance\static\scripts\respond.js" />
     <Content Include="finance\static\scripts\respond.min.js" />
     <Content Include="finance\static\scripts\_references.js" />
+    <Content Include="finance\templates\datatable.html" />
+    <Content Include="finance\templates\fund.html" />
     <Content Include="finance\templates\stock.html" />
     <Content Include="finance\templates\db.html" />
     <Content Include="finance\templates\index.html" />
