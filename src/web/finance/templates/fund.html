@@ -46,6 +46,7 @@
                     sum["value"] += d[5];
                     sum["profit"] += d[6];
                 });
+                const num_cols = [2,3,4,5,6];
                 populate_data(
                         '#funds',
                         function(d,callback,s){callback({'data':data});},
@@ -53,7 +54,8 @@
                         50,
                         null,
                         [
-                            { "className": "text-right", "targets": [2,3,4,5,6] }
+                            { "render": function(data, type, row){return data.toLocaleString();} ,"targets": num_cols },
+                            { "className": "text-right", "targets": num_cols }
                         ],
                         null
                 );

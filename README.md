@@ -8,9 +8,11 @@ Configurations are defined as uppercase variables in [module fiance](src/web/fin
 
  1. `DATABASE` the full path to the sqlite3 db file. It would try environment variable `FINANCE_DB` first, if that does not exist then use the value defined there. The final value will be tested as a valid file path, if succesful a `Dao` object is created to load data from it, otherwise a `FakeDao` object will be created to generate random static and market data.
 
-## DB Viewer
+## DataTables
 
-Access `/db` to show the db viewer, which display data of the daily updated stocks/ETFs quotes, currency exchanges and stock/ETFs transactions table.
+Use DataTables jQuery control to display data.
+
+[DataTables Download](https://datatables.net/download/)
 
 # The Common Python Scripts
 

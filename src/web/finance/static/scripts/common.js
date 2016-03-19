@@ -58,18 +58,15 @@ function build_header(table_selector,headers) {
     else lenMenu = lengthMenu;
 
     var pageLen =  getDataTablePageLength(table_selector);
-    console.log("pageLen retrieved : "+pageLen);
     if(pageLen == null){
          pageLen = row_per_page;
     }
 
-    console.log(jQuery.browser.mobile );
-
     var parameter = {
-        'ajax': url,
-        "order": col_order,
-        'pageLength': pageLen,
-        'lengthMenu': lenMenu,
+        ajax: url,
+        order: col_order,
+        pageLength: pageLen,
+        lengthMenu: lenMenu,
         responsive: jQuery.browser.mobile
     };
 
@@ -83,7 +80,6 @@ function build_header(table_selector,headers) {
 
     $(table_selector).DataTable(parameter);
     $(table_selector).on( 'length.dt', function ( e, settings, len ) {
-        console.log( 'New page length: '+len );
         setDataTablePageLength(table_selector,len);
     });
 };
