@@ -1,5 +1,81 @@
-{% extends "layout.html" %}
+{% extends "datatable.html" %}
 
 {% block content %}
+<div class="row top5 bottom5">
+    <div class="col-md-12">
+        <table class="table table-hover" id="funds">
+            <thead>
+                <tr>
+                    <th class="text-left`">Broker</th>
+                    <th class="text-left">Name</th>
+                    <th class="text-right">Price</th>
+                    <th class="text-right">Amount</th>
+                    <th class="text-right">Capital</th>
+                    <th class="text-right">Value</th>
+                    <th class="text-right">Profit</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <th>SUM</th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th class="text-right"><div id="capital" ></div></th>
+                    <th class="text-right"><div id="value" ></div></th>
+                    <th class="text-right"><div id="profit"/></th>
+                    <th></th>
+                </tr>
+            </tfoot>
+         </table>
+    </div>
+</div>
 
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    $(document).ready(function () {
+        $.getJSON("{{ url_for('fund_json')}}",
+            function (data) {
+                var sum = {"value":0,"capital":0,"profit":0};
+                var rows = [];
+                $.each(data,function(broker,v){
+                    $.each(v,function(idx,d){
+                        var row = [broker];
+                        sum["value"] += d["value"];
+                        sum["capital"] += d["capital"];
+                        sum["profit"] += d["profit"];
+                        row.push(
+                                d["name"],
+                                d["price"].toLocaleString(),
+                                d["amount"].toLocaleString(),
+                                d["capital"].toLocaleString(),
+                                d["value"].toLocaleString(),
+                                d["profit"].toLocaleString(),
+                                d["date"]
+                        );
+                        rows.push(row);
+                    });
+                });
+                populate_data(
+                        '#funds',
+                        function(d,callback,s){callback({'data':rows});},
+                        [[0, 'asc'], [1, 'asc']],
+                        50,
+                        null,
+                        [
+                            { "className": "text-right", "targets": [2,3,4,5,6] }
+                        ],
+                        null
+                );
+                $("#value").text(sum["value"].toLocaleString());
+                $("#capital").text(sum["capital"].toLocaleString());
+                $("#profit").text(sum["profit"].toLocaleString());
+            });
+        });
+
+</script>
 {% endblock %}
