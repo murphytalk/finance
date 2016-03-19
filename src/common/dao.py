@@ -106,13 +106,13 @@ on i.currency = x.from_id
                                             x['rate'],
                                             x['rate_date']) for x in self.query(sql, (epoch,))}
 
-    def get_funds_positions(self, instruments, callback, date):
+    def get_funds_positions(self, date):
         sql = """
 select broker,name,amount,price,value,profit,capital,date from fund_performance where
 date = (select max(date) from fund_performance where date<= :date)
 """
         for r in self.query(sql, {'date': date}):
-            callback(r['broker'], r['name'], r['amount'], r['price'], r['value'], r['profit'], r['capital'], r['date'])
+            yield (r['broker'], r['name'], r['price'], r['amount'], r['capital'], r['value'], r['profit'], r['date'])
 
 
 class FakeDao(Dao):

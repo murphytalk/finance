@@ -63,28 +63,7 @@ class StockReport(Report):
 
 class FundReport(Report):
     def __init__(self, dao, date):
-        def build(broker, name, amount, price, value, profit, capital, the_date):
-            r = {}
-            r['name'] = name
-            r['amount'] = amount
-            r['price'] = price
-            r['value'] = value
-            r['profit'] = profit
-            r['capital'] = capital
-            r['date'] = str(date.fromtimestamp(the_date))
-            if broker in self.positions:
-                by_broker = self.positions[broker]
-            else:
-                by_broker = []
-                self.positions[broker] = by_broker
-
-            by_broker.append(r)
-
-        super(self.__class__, self).__init__(dao, date)
-        self.positions = {}
-        dao.get_funds_positions([i for i in self.i.values()if i.instrument_type.id == 3],
-                                build,
-                                date)
+        self.positions =  [[x[0], x[1], x[2], x[3], x[4], x[5], x[6], str(date.fromtimestamp(x[7]))] for x in dao.get_funds_positions(date)]
 
 
 def raw_quote(dao):

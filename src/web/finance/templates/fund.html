@@ -10,7 +10,7 @@
                     <th class="text-left">Name</th>
                     <th class="text-right">Price</th>
                     <th class="text-right">Amount</th>
-                    <th class="text-right">Capital</th>
+                    <th class="text-right">Capital</th> <!-- idx 4 -->
                     <th class="text-right">Value</th>
                     <th class="text-right">Profit</th>
                     <th>Date</th>
@@ -41,28 +41,14 @@
         $.getJSON("{{ url_for('fund_json')}}",
             function (data) {
                 var sum = {"value":0,"capital":0,"profit":0};
-                var rows = [];
-                $.each(data,function(broker,v){
-                    $.each(v,function(idx,d){
-                        var row = [broker];
-                        sum["value"] += d["value"];
-                        sum["capital"] += d["capital"];
-                        sum["profit"] += d["profit"];
-                        row.push(
-                                d["name"],
-                                d["price"].toLocaleString(),
-                                d["amount"].toLocaleString(),
-                                d["capital"].toLocaleString(),
-                                d["value"].toLocaleString(),
-                                d["profit"].toLocaleString(),
-                                d["date"]
-                        );
-                        rows.push(row);
-                    });
+                $.each(data,function(idx,d){
+                    sum["capital"] += d[4];
+                    sum["value"] += d[5];
+                    sum["profit"] += d[6];
                 });
                 populate_data(
                         '#funds',
-                        function(d,callback,s){callback({'data':rows});},
+                        function(d,callback,s){callback({'data':data});},
                         [[0, 'asc'], [1, 'asc']],
                         50,
                         null,
