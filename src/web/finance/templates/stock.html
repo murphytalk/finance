@@ -15,6 +15,8 @@
                     <th class="text-right">JPY</th>
                     <th class="text-right">Liquidated</th>
                     <th class="text-right">JPY</th>
+                    <th class="text-right">Profit</th>
+                    <th class="text-right">JPY</th>
                     <th>Xccy Date</th>
                 </tr>
             </thead>
@@ -29,6 +31,8 @@
                     <th class="text-right"><div id="value-jpy" ></div></th>
                     <th class="text-right"><div id="liq" ></div></th>
                     <th class="text-right"><div id="liq-jpy"></div></th>
+                    <th class="text-right"><div id="profit" ></div></th>
+                    <th class="text-right"><div id="profit-jpy" ></div></th>
                     <th/>
                 </tr>
             </tfoot>
@@ -64,13 +68,13 @@
                                 value["JPY"].toLocaleString(),
                                 liquidated[liquidated["ccy"]].toLocaleString(),
                                 liquidated["JPY"].toLocaleString(),
+                                (value[value["ccy"]]+liquidated[liquidated["ccy"]]).toLocaleString(),
+                                (value["JPY"]+liquidated["JPY"]).toLocaleString(),
                                 liquidated["rate_date"]
                         );
                         rows.push(row);
                     });
                 });
-
-                //build_header('#stocks',['Date', 'Symbol', 'Price']);
                 populate_data(
                         '#stocks',
                         function(d,callback,s){callback({'data':rows});},
@@ -78,19 +82,16 @@
                         10,
                         null,
                         [
-                            { "className": "text-right", "targets": [0,1,2,3,4,5,6,7,8] }
+                            { "className": "text-right", "targets": [0,1,2,3,4,5,6,7,8,9,10] }
                         ],
                         null
-                        /*
-                        function (row, data, start, end, display ){
-                            var api = this.api(), data;
-                            $( api.column( 5 ).footer() ).html(sum["value"]);
-                        }*/
                 );
                 $("#value").text(sum["value"].toLocaleString());
                 $("#value-jpy").text(sum["value_jpy"].toLocaleString());
                 $("#liq").text(sum["liquidated"].toLocaleString());
                 $("#liq-jpy").text(sum["liquidated_jpy"].toLocaleString());
+                $("#profit").text((sum["value"]+sum["liquidated"]).toLocaleString());
+                $("#profit-jpy").text((sum["value_jpy"]+sum["liquidated_jpy"]).toLocaleString());
             });
         });
 
