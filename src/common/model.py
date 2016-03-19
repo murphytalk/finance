@@ -23,7 +23,7 @@ class Position(Model):
         else:
             s = shares if trans_type == 'BUY' else -1 * shares
             self.shares = self.shares + s
-            self.liquidated = self.liquidated - price * s
+            self.liquidated -= price * s
             self.fee = self.fee + fee
 
     def __str__(self):
@@ -51,10 +51,14 @@ class InstrumentType(Model):
 
 
 class Instrument(Model):
-    def __init__(self, id, name, instrument_type, instrument_type_name, currency, xccy_rate, xccy_rate_date):
+    def __init__(self, id, name, instrument_type, instrument_type_name, currency=None, xccy_rate=None, xccy_rate_date=None):
         self.id = id
         self.name = name
         self.instrument_type = InstrumentType(instrument_type, instrument_type_name)
-        self.currency = currency
-        self.xccy_rate = xccy_rate
-        self.xccy_date = date.fromtimestamp(xccy_rate_date)
+        if currency is not None:
+            self.currency = currency
+            self.xccy_rate = xccy_rate
+            self.xccy_date = date.fromtimestamp(xccy_rate_date)
+
+    def __str__(self):
+        return "id={},type={}".format(self.id, self.instrument_type)

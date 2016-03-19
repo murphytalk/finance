@@ -17,7 +17,7 @@ if common_folder not in sys.path:
 
 # from utils import get_utc_offset,get_current_date_epoch,epoch2datetime
 from dao import factory
-from report import Report, raw_quote, raw_xccy, raw_trans
+from report import *
 
 
 @app.before_request
@@ -46,8 +46,8 @@ def summary():
 
 @app.route('/stock.json')
 def stock_json():
-    r = Report(g.dao, date.today())
-    return Response(r.to_json(r.list()), mimetype='application/json')
+    r = StockReport(g.dao, date.today())
+    return Response(r.to_json(r.stock_positions()), mimetype='application/json')
 
 
 @app.route('/stock')
@@ -68,6 +68,12 @@ def fund():
         title='Mutual Funds',
         year=datetime.now().year
     )
+
+@app.route('/fund.json')
+def fund_json():
+    r = FundReport(g.dao, date.today())
+    return Response(r.to_json(r.positions), mimetype='application/json')
+
 
 
 @app.route('/db')

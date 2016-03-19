@@ -43,7 +43,7 @@ WHERE t.instrument = i.rowid AND date >=? AND date<=? ORDER BY date
         for f in self.query(sql,(epoch1, epoch2)):
             callback(f['instrument'], f['name'], f['type'], f['price'], f['shares'], f['fee'], f['date'])
 
-    def populate_from_instruments(self, filter, create_new_obj_func):
+    def populate_from_instruments(self, filter, create_new_obj_func = None):
         """
         Populate a dict {instrument id : user defined data type} by
         querying from table instrument , filter should be a valid SQL where clause
@@ -56,10 +56,11 @@ WHERE t.instrument = i.rowid AND date >=? AND date<=? ORDER BY date
           the new object
 
         """
-        sql = 'SELECT ROWID,[NAME] FROM INSTRUMENT'
+        c = create_new_obj_func if create_new_obj_func is not None else lambda id,name,type_id,type_name : Instrument(id,name,type_id,type_name)
+        sql = 'SELECT i.rowid,i.name,it.rowid AS type_id, it.type AS type FROM instrument i,instrument_type it WHERE i.type = it.rowid'
         if filter is not None:
-            sql = sql + ' where ' + filter
-        return {x['ROWID']: create_new_obj_func(x['ROWID'], x['NAME']) for x in self.query(sql)}
+            sql = sql + ' and ' + filter
+        return {x['rowid']: c(x['rowid'], x['name'],x['type_id'],x['type']) for x in self.query(sql)}
 
     def get_stock_quote(self, date):
         """
@@ -94,7 +95,8 @@ from instrument i
 join instrument_type a on i.type = a.rowid
 join currency c on i.currency = c.rowid
 left join ( select * from xccy_hist where date = (select max(date) from xccy_hist where date<=?)) x 
-on i.currency = x.from_id"""
+on i.currency = x.from_id
+"""
 
         return {x['instrument']: Instrument(x['instrument'],
                                             x['name'],
@@ -103,6 +105,15 @@ on i.currency = x.from_id"""
                                             x['currency'],
                                             x['rate'],
                                             x['rate_date']) for x in self.query(sql, (epoch,))}
+
+    def get_funds_positions(self, instruments, callback, date=None):
+        sql = """
+select broker,name,amount,price,value,profit,capital,date from fund_performance where id = :id and
+date = (select max(date) from fund_performance where id = :id)
+"""
+        for i in instruments:
+            for r in self.query(sql, {'id': i.id}):
+                callback(r['broker'], r['name'], r['amount'], r['price'], r['value'], r['profit'], r['capital'], r['date'])
 
 
 class FakeDao(Dao):

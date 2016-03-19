@@ -11,17 +11,30 @@ from datetime import date
 encoder.FLOAT_REPR = lambda o: format(o, '.2f')
 
 
-class Report:
+class Report(object):
     def __init__(self, dao, date):
-        self.q = dao.get_stock_quote(date)
         self.i = dao.get_instrument_with_xccy_rate(date)
-        self.stock_position = CalcPosition(date)
-        self.stock_position.calc(dao)
 
     def gen_price_with_xccy(self, org, currency, to_jpy_rate, rate_date):
         return {'ccy': currency, currency: org, 'JPY': org * to_jpy_rate, 'rate_date': str(rate_date)}
 
-    def list(self, rr=None):
+    @staticmethod
+    def to_json(j):
+        return dumps(j, indent=4, sort_keys=True)
+
+    @staticmethod
+    def to_json_packed(j):
+        return dumps(j)
+
+
+class StockReport(Report):
+    def __init__(self, dao, date):
+        super(self.__class__, self).__init__(dao, date)
+        self.q = dao.get_stock_quote(date)
+        self.stock_position = CalcPosition(date)
+        self.stock_position.calc(dao)
+
+    def stock_positions(self, rr=None):
         def calc_stock(instrument, position):
             v = position.shares * self.q[instrument].price
             r = {}
@@ -47,37 +60,54 @@ class Report:
         self.stock_position.dump(calc_stock)
         return rr
 
-    def summary(self):
-        pass
 
-    @staticmethod
-    def to_json(j):
-        return dumps(j, indent=4, sort_keys=True)
+class FundReport(Report):
+    def __init__(self, dao, date):
+        def build(broker, name, amount, price, value, profit, capital, the_date):
+            r = {}
+            r['name'] = name
+            r['amount'] = amount
+            r['price'] = price
+            r['value'] = value
+            r['profit'] = profit
+            r['capital'] = capital
+            r['date'] = str(date.fromtimestamp(the_date))
+            if broker in self.positions:
+                by_broker = self.positions[broker]
+            else:
+                by_broker = []
+                self.positions[broker] = by_broker
 
-    @staticmethod
-    def to_json_packed(j):
-        return dumps(j)
+            by_broker.append(r)
+
+        super(self.__class__, self).__init__(dao, date)
+        self.positions = {}
+        dao.get_funds_positions([i for i in self.i.values()if i.instrument_type.id == 3],
+                                build,
+                                date)
 
 
 def raw_quote(dao):
     q = [[str(date.fromtimestamp(x['date'])), x['name'], x['price']] for x in
-         dao.query('select * from stock_quote order by date desc')]
+         dao.query('SELECT * FROM stock_quote ORDER BY date DESC')]
     return Report.to_json_packed({'data': q})
 
 
 def raw_xccy(dao):
     q = [[str(date.fromtimestamp(x['date'])), x['From'], x['To'], x['rate']] for x in
-         dao.query('select * from xccy_hist')]
+         dao.query('SELECT * FROM xccy_hist')]
     return Report.to_json_packed({'data': q})
 
 
 def raw_trans(dao):
     q = [[str(date.fromtimestamp(x['date'])), x['name'], x['type'], x['price'], x['shares'], x['fee']] for x in
-         dao.query('select date,name,type,price,shares,fee from stock_trans')]
+         dao.query('SELECT date,name,type,price,shares,fee FROM stock_trans')]
     return Report.to_json_packed({'data': q})
 
 
 if __name__ == "__main__":
+    # import codecs,locale
+    # sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
     args, others = cmdline_args(sys.argv[1:])
     db = args['dbfile']
 
@@ -86,9 +116,11 @@ if __name__ == "__main__":
     else:
         dao = Dao(db)
 
-        if 'report' in others:
-            r = Report(dao, args['end_date'])
-            print r.to_json(r.list())
+        if 'stock' in others:
+            r = StockReport(dao, args['end_date'])
+            print r.to_json(r.stock_positions())
+        elif 'fund' in others:
+            r = FundReport(dao, args['end_date'])
         elif 'quote' in others:
             print Report.to_json(raw_quote(dao))
         elif 'xccy' in others:
