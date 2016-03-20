@@ -84,23 +84,22 @@ function build_header(table_selector,headers) {
     });
 };
 
-function selectDataTableRow(table_selector, rowSelector){
-    var table = $(table_selector).DataTable();
-    table.row(rowSelector).addClass('selected');
+function fuzzy_eq(a,b){
+    const EPSILON=0.01;
+    if(Math.abs(a-b)<=EPSILON)
+        return true;
+    else
+        return false;
 }
 
-function table_row_selection(table_selector, editTableCallback){
-    var table = $(table_selector).DataTable();
-    $(table_selector+' tbody').on( 'click', 'tr', function () {
-        if ( $(this).hasClass('selected') ) {
-            $(this).removeClass('selected');
-        }
-        else {
-            table.$('tr.selected').removeClass('selected');
-            $(this).addClass('selected');
-        }
-        editTableCallback(table_selector);
-    });
+function update_sum(table,col_idx,total_value,footer_id){
+    var data = table.column(col_idx,{search:'applied'}).data();
+    var v = data.reduce(function(a, b) { return a + b; }, 0);
+    if(fuzzy_eq(v,total_value)){
+    //if(v==total_value){
+        $(footer_id).html('¥'+total_value.toLocaleString());
+    }
+    else{
+        $(footer_id).html('¥'+total_value.toLocaleString() + '<br><div class="filtered_sum">¥'+v.toLocaleString()+'</div>');
+    }
 }
-
-

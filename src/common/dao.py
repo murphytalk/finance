@@ -107,6 +107,10 @@ on i.currency = x.from_id
                                             x['rate_date']) for x in self.query(sql, (epoch,))}
 
     def get_funds_positions(self, date):
+        """
+        Query funds performance view, query the latest day's data no late than give date,
+        return a generator which generates a stream of (broker,name,price,amount,capital,value,profit,date in epoch)
+        """
         sql = """
 select broker,name,amount,price,value,profit,capital,date from fund_performance where
 date = (select max(date) from fund_performance where date<= :date)

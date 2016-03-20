@@ -22,7 +22,7 @@
             </thead>
             <tfoot>
                 <tr>
-                    <th>SUM</th>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
@@ -86,12 +86,12 @@
                         ],
                         null
                 );
-                $("#value").text(sum["value"].toLocaleString());
-                $("#value-jpy").text(sum["value_jpy"].toLocaleString());
-                $("#liq").text(sum["liquidated"].toLocaleString());
-                $("#liq-jpy").text(sum["liquidated_jpy"].toLocaleString());
-                $("#profit").text((sum["value"]+sum["liquidated"]).toLocaleString());
-                $("#profit-jpy").text((sum["value_jpy"]+sum["liquidated_jpy"]).toLocaleString());
+                $("#value").text('$'+sum["value"].toLocaleString());
+                $("#value-jpy").text('¥'+sum["value_jpy"].toLocaleString());
+                $("#liq").text('$'+sum["liquidated"].toLocaleString());
+                $("#liq-jpy").text('¥'+sum["liquidated_jpy"].toLocaleString());
+                $("#profit").text('$'+(sum["value"]+sum["liquidated"]).toLocaleString());
+                $("#profit-jpy").text('¥'+(sum["value_jpy"]+sum["liquidated_jpy"]).toLocaleString());
             });
         });
 

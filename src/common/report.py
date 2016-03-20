@@ -34,7 +34,7 @@ class StockReport(Report):
         self.stock_position = CalcPosition(date)
         self.stock_position.calc(dao)
 
-    def stock_positions(self, rr=None):
+    def stock_positions(self, positions=None):
         def calc_stock(instrument, position):
             v = position.shares * self.q[instrument].price
             r = {}
@@ -47,23 +47,23 @@ class StockReport(Report):
                                                        self.i[instrument].xccy_rate, self.i[instrument].xccy_date)
 
             t = self.i[instrument].instrument_type.name
-            if t in rr:
-                by_instrument = rr[t]
+            if t in positions:
+                by_instrument = positions[t]
             else:
                 by_instrument = []
 
             by_instrument.append(r)
-            rr[t] = by_instrument
+            positions[t] = by_instrument
 
-        if rr is None:
-            rr = {}
+        if positions is None:
+            positions = {}
         self.stock_position.dump(calc_stock)
-        return rr
+        return positions
 
 
 class FundReport(Report):
     def __init__(self, dao, date):
-        self.positions =  [[x[0], x[1], x[2], x[3], x[4], x[5], x[6], str(date.fromtimestamp(x[7]))] for x in dao.get_funds_positions(date)]
+        self.positions = [[x[0], x[1], x[2], x[3], x[4], x[5], x[6], str(date.fromtimestamp(x[7]))] for x in dao.get_funds_positions(date)]
 
 
 def raw_quote(dao):

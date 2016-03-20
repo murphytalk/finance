@@ -18,7 +18,7 @@
             </thead>
             <tfoot>
                 <tr>
-                    <th>SUM</th>
+                    <th></th>
                     <th></th>
                     <th></th>
                     <th></th>
@@ -28,7 +28,7 @@
                     <th></th>
                 </tr>
             </tfoot>
-         </table>
+          </table>
     </div>
 </div>
 
@@ -37,10 +37,10 @@
 {% block scripts %}
 {{ super() }}
 <script>
+    var sum = {"value":0,"capital":0,"profit":0};
     $(document).ready(function () {
         $.getJSON("{{ url_for('fund_json')}}",
             function (data) {
-                var sum = {"value":0,"capital":0,"profit":0};
                 $.each(data,function(idx,d){
                     sum["capital"] += d[4];
                     sum["value"] += d[5];
@@ -59,9 +59,14 @@
                         ],
                         null
                 );
-                $("#value").text(sum["value"].toLocaleString());
-                $("#capital").text(sum["capital"].toLocaleString());
-                $("#profit").text(sum["profit"].toLocaleString());
+            });
+
+
+            $('#funds').on('search.dt',function(e,settings){
+                var table = $('#funds').DataTable();
+                update_sum(table,4,sum["capital"],'#capital');
+                update_sum(table,5,sum["value"],'#value');
+                update_sum(table,6,sum["profit"],'#profit');
             });
         });
 
