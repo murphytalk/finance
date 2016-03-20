@@ -56,16 +56,16 @@ function build_header(table_selector,headers) {
         lenMenu = [10, 25, 50, 100];
     }
     else lenMenu = lengthMenu;
-
+/*
     var pageLen =  getDataTablePageLength(table_selector);
     if(pageLen == null){
          pageLen = row_per_page;
     }
-
+*/
     var parameter = {
         ajax: url,
         order: col_order,
-        pageLength: pageLen,
+        pageLength: row_per_page,
         lengthMenu: lenMenu,
         responsive: jQuery.browser.mobile
     };
@@ -78,10 +78,12 @@ function build_header(table_selector,headers) {
         parameter["footerCallback"] = footer;
     }
 
-    $(table_selector).DataTable(parameter);
+    return $(table_selector).DataTable(parameter);
+/*
     $(table_selector).on( 'length.dt', function ( e, settings, len ) {
         setDataTablePageLength(table_selector,len);
     });
+*/
 };
 
 function fuzzy_eq(a,b){
