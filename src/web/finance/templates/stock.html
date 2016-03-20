@@ -45,10 +45,10 @@
 {% block scripts %}
 {{ super() }}
 <script>
+    var sum = {"value":0,"value_jpy":0,"liquidated":0,"liquidated_jpy":0};
     $(document).ready(function () {
         $.getJSON("{{ url_for('stock_json')}}",
             function (data) {
-                var sum = {"value":0,"value_jpy":0,"liquidated":0,"liquidated_jpy":0};
                 var rows = [];
                 $.each(data,function(instrument_type,v){
                     $.each(v,function(idx,d){
@@ -61,20 +61,21 @@
                         sum["liquidated_jpy"] += liquidated["JPY"];
                         row.push(
                                 d["symbol"],
-                                d["price"].toLocaleString(),
+                                d["price"],
                                 d["shares"],
                                 value["ccy"],
-                                value[value["ccy"]].toLocaleString(),
-                                value["JPY"].toLocaleString(),
-                                liquidated[liquidated["ccy"]].toLocaleString(),
-                                liquidated["JPY"].toLocaleString(),
-                                (value[value["ccy"]]+liquidated[liquidated["ccy"]]).toLocaleString(),
-                                (value["JPY"]+liquidated["JPY"]).toLocaleString(),
+                                value[value["ccy"]],
+                                value["JPY"],
+                                liquidated[liquidated["ccy"]],
+                                liquidated["JPY"],
+                                value[value["ccy"]]+liquidated[liquidated["ccy"]],
+                                value["JPY"]+liquidated["JPY"],
                                 liquidated["rate_date"]
                         );
                         rows.push(row);
                     });
                 });
+                const num_cols = [0,1,2,3,4,5,6,7,8,9,10];
                 populate_data(
                         '#stocks',
                         function(d,callback,s){callback({'data':rows});},
@@ -82,16 +83,21 @@
                         10,
                         null,
                         [
-                            { "className": "text-right", "targets": [0,1,2,3,4,5,6,7,8,9,10] }
+                            { "render": function(data, type, row){return data.toLocaleString();} ,"targets": num_cols },
+                            { "className": "text-right", "targets": num_cols }
                         ],
                         null
                 );
-                $("#value").text('$'+sum["value"].toLocaleString());
-                $("#value-jpy").text('¥'+sum["value_jpy"].toLocaleString());
-                $("#liq").text('$'+sum["liquidated"].toLocaleString());
-                $("#liq-jpy").text('¥'+sum["liquidated_jpy"].toLocaleString());
-                $("#profit").text('$'+(sum["value"]+sum["liquidated"]).toLocaleString());
-                $("#profit-jpy").text('¥'+(sum["value_jpy"]+sum["liquidated_jpy"]).toLocaleString());
+
+                $('#stocks').on('search.dt',function(e,settings){
+                    var table = $('#stocks').DataTable();
+                    update_sum(table,'$',5 ,sum["value"],'#value');
+                    update_sum(table,'¥',6 ,sum["value_jpy"],'#value-jpy');
+                    update_sum(table,'$',7 ,sum["liquidated"],'#liq');
+                    update_sum(table,'¥',8 ,sum["liquidated_jpy"],'#liq-jpy');
+                    update_sum(table,'$',9 ,sum["value"]+sum["liquidated"],'#profit');
+                    update_sum(table,'¥',10,sum["value_jpy"]+sum["liquidated_jpy"],'#profit-jpy');
+                });
             });
         });
 

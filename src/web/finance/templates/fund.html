@@ -51,8 +51,8 @@
                         '#funds',
                         function(d,callback,s){callback({'data':data});},
                         [[0, 'asc'], [1, 'asc']],
-                        50,
-                        null,
+                        20,
+                        [10, 20, 50, 100],
                         [
                             { "render": function(data, type, row){return data.toLocaleString();} ,"targets": num_cols },
                             { "className": "text-right", "targets": num_cols }
@@ -64,9 +64,9 @@
 
             $('#funds').on('search.dt',function(e,settings){
                 var table = $('#funds').DataTable();
-                update_sum(table,4,sum["capital"],'#capital');
-                update_sum(table,5,sum["value"],'#value');
-                update_sum(table,6,sum["profit"],'#profit');
+                update_sum(table,'¥',4,sum["capital"],'#capital');
+                update_sum(table,'¥',5,sum["value"],'#value');
+                update_sum(table,'¥',6,sum["profit"],'#profit');
             });
         });
 

@@ -74,9 +74,9 @@ function build_header(table_selector,headers) {
         parameter['columnDefs'] = colDefs;
     }
 
-     if(footer != null){
-         parameter["footerCallback"] = footer;
-     }
+    if(footer != null){
+        parameter["footerCallback"] = footer;
+    }
 
     $(table_selector).DataTable(parameter);
     $(table_selector).on( 'length.dt', function ( e, settings, len ) {
@@ -92,14 +92,14 @@ function fuzzy_eq(a,b){
         return false;
 }
 
-function update_sum(table,col_idx,total_value,footer_id){
+function update_sum(table,ccy_sign,col_idx,total_value,footer_id){
     var data = table.column(col_idx,{search:'applied'}).data();
+    console.log('col '+col_idx+':'+data);
     var v = data.reduce(function(a, b) { return a + b; }, 0);
     if(fuzzy_eq(v,total_value)){
-    //if(v==total_value){
-        $(footer_id).html('¥'+total_value.toLocaleString());
+        $(footer_id).html(total_value.toLocaleString());
     }
     else{
-        $(footer_id).html('¥'+total_value.toLocaleString() + '<br><div class="filtered_sum">¥'+v.toLocaleString()+'</div>');
+        $(footer_id).html(ccy_sign+total_value.toLocaleString() + '<br><div class="filtered_sum">'+ccy_sign+v.toLocaleString()+'</div>');
     }
 }
