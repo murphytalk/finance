@@ -66,6 +66,11 @@ class FundReport(Report):
         self.positions = [[x[0], x[1], x[2], x[3], x[4], x[5], x[6], str(the_date.fromtimestamp(x[7])), x[8], x[9]]
                           for x in dao.get_funds_positions(the_date)]
 
+def asset_allocation(dao, instrument_id):
+    data = []
+    for e in [x for x in dao.get_asset_allocation(instrument_id)]:
+        data.append({'name':e[0], 'y':e[1]})
+    return Report.to_json_packed(data)
 
 def raw_quote(dao):
     q = [[str(date.fromtimestamp(x['date'])), x['name'], x['price']] for x in

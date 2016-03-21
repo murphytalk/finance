@@ -14,7 +14,18 @@
                 </h4>
             </div>
             <div class="modal-body">
-                <p></p>
+                <ul class="nav nav-tabs">
+                    <li class="active"><a data-toggle="tab" href="#asset">Asset</a></li>
+                    <li><a data-toggle="tab" href="#region">Region</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div id="asset" class="tab-pane fade in active">
+                        <div id="pieAsset"></div>
+                    </div>
+                    <div id="region" class="tab-pane fade">
+                        <p>by region pie chart</p>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -27,30 +38,36 @@
     <div class="col-md-12">
         <table class="table table-hover" id="funds">
             <thead>
-                <tr>
-                    <th class="text-left`">Broker</th>
-                    <th class="text-left">Name</th>
-                    <th class="text-right">Price</th>
-                    <th class="text-right">Amount</th>
-                    <th class="text-right">Capital</th> <!-- idx 4 -->
-                    <th class="text-right">Value</th>
-                    <th class="text-right">Profit</th>
-                    <th>Date</th>
-                </tr>
+            <tr>
+                <th class="text-left`">Broker</th>
+                <th class="text-left">Name</th>
+                <th class="text-right">Price</th>
+                <th class="text-right">Amount</th>
+                <th class="text-right">Capital</th> <!-- idx 4 -->
+                <th class="text-right">Value</th>
+                <th class="text-right">Profit</th>
+                <th>Date</th>
+            </tr>
             </thead>
             <tfoot>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th class="text-right"><div id="capital" ></div></th>
-                    <th class="text-right"><div id="value" ></div></th>
-                    <th class="text-right"><div id="profit"></div></th>
-                    <th></th>
-                </tr>
+            <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th class="text-right">
+                    <div id="capital"></div>
+                </th>
+                <th class="text-right">
+                    <div id="value"></div>
+                </th>
+                <th class="text-right">
+                    <div id="profit"></div>
+                </th>
+                <th></th>
+            </tr>
             </tfoot>
-          </table>
+        </table>
     </div>
 </div>
 
@@ -58,66 +75,130 @@
 
 {% block scripts %}
 {{ super() }}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script>
     var table;
-    var selected_row_data;
-    function showInstrumentDetail(instrument_id){
-        var data = table.rows({page:'current'}).data();
+    var sum = {"value": 0, "capital": 0, "profit": 0};
+    var detail_instrument_id;
+    //url_for is a jinjia2 function and will only be evaluated on server side once,
+    //that is before we know the clicked instrument id.
+    //As a workaround we use 0 here and then use regex to replace it with real id later
+    var get_asset_allocation_url = "{{url_for('asset_allocation_json',instrument=0)}}";
+
+    function showInstrumentDetail(instrument_id) {
+        var data = table.rows({page: 'current'}).data();
         var row_idx = -1;
-        $.each(data,function(idx,r){
-           if(instrument_id==r[8]){
-               row_idx = idx;
-               return false;
-           }
+        $.each(data, function (idx, r) {
+            if (instrument_id == r[8]) {
+                row_idx = idx;
+                return false;
+            }
         });
-        if(row_idx<0){
-            alert("Cannot find instrument with id="+instrument_id);
+        if (row_idx < 0) {
+            alert("Cannot find instrument with id=" + instrument_id);
         }
         else {
             var row_data = data[row_idx];
-            var a =$('#detail_link');
+            var a = $('#detail_link');
             a.text(row_data[1]);
-            a.attr("href",row_data[9]);
+            a.attr("href", row_data[9]);
+            //we are putting highcharts inside the modal window, it
+            //does not know when to reflow itself to fit the container.
+            //so we defer the chart building until modal is shown, we remember the instrument id here
+            detail_instrument_id = instrument_id;
             $("#detail").modal();
         }
     }
-    var sum = {"value":0,"capital":0,"profit":0};
+
+    function detailShown() {
+        var url = get_asset_allocation_url.replace(/0/,detail_instrument_id);
+        $.getJSON(url, function (the_data) {
+            $('#pieAsset').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'pie'
+                },
+                title: {
+                    text: 'Asset Allocation'
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Asset',
+                    colorByPoint: true,
+                    data: the_data
+                }]
+            });
+            //do the reflow below to force it to refit again - and the animation will be gone
+            /*
+            var chart = $("#pieAsset").highcharts();
+            chart.reflow();
+            */
+        });
+    }
+
     $(document).ready(function () {
         $.getJSON("{{ url_for('fund_json')}}",
-            function (data) {
-                $.each(data,function(idx,d){
-                    sum["capital"] += d[4];
-                    sum["value"] += d[5];
-                    sum["profit"] += d[6];
+                function (data) {
+                    $.each(data, function (idx, d) {
+                        sum["capital"] += d[4];
+                        sum["value"] += d[5];
+                        sum["profit"] += d[6];
+                    });
+                    const num_cols = [2, 3, 4, 5, 6];
+                    table = populate_data(
+                            '#funds',
+                            function (d, callback, s) {
+                                callback({'data': data});
+                            },
+                            [[0, 'asc'], [1, 'asc']],
+                            20,
+                            [10, 20, 50, 100],
+                            [
+                                {
+                                    "render": function (data, type, row) {
+                                        //row[8] => index 8 in the json array assigned to this row, see FundReport
+                                        return '<a href="#" onclick="showInstrumentDetail(' + row[8] + ');return false;">' + data + '</a>'
+                                    }, "targets": 1
+                                },
+                                {
+                                    "render": function (data, type, row) {
+                                        return data.toLocaleString();
+                                    }, "targets": num_cols
+                                },
+                                {"className": "text-right", "targets": num_cols}
+                            ],
+                            null
+                    );
                 });
-                const num_cols = [2,3,4,5,6];
-                table = populate_data(
-                        '#funds',
-                        function(d,callback,s){callback({'data':data});},
-                        [[0, 'asc'], [1, 'asc']],
-                        20,
-                        [10, 20, 50, 100],
-                        [
-                            { "render": function(data, type, row){
-                                            //row[8] => index 8 in the json array assigned to this row, see FundReport
-                                            return '<a href="#" onclick="showInstrumentDetail('+row[8]+');return false;">'+data+'</a>'
-                                        }, "targets":1},
-                            { "render": function(data, type, row){return data.toLocaleString();} ,"targets": num_cols },
-                            { "className": "text-right", "targets": num_cols }
-                        ],
-                        null
-                );
-            });
 
+        $('#detail').on('shown.bs.modal', detailShown);
 
-            $('#funds').on('search.dt',function(e,settings){
-                var table = $('#funds').DataTable();
-                update_sum(table,'¥',4,sum["capital"],'#capital');
-                update_sum(table,'¥',5,sum["value"],'#value');
-                update_sum(table,'¥',6,sum["profit"],'#profit');
-            });
-
+        $('#funds').on('search.dt', function (e, settings) {
+            var table = $('#funds').DataTable();
+            update_sum(table, '¥', 4, sum["capital"], '#capital');
+            update_sum(table, '¥', 5, sum["value"], '#value');
+            update_sum(table, '¥', 6, sum["profit"], '#profit');
         });
+
+    });
 
 </script>
 {% endblock %}

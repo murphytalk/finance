@@ -21,7 +21,8 @@ class Raw:
             self.c.execute(sql, parameters)
         else:
             self.c.execute(sql)
-        return self.c.fetchall()
+        r=self.c.fetchall()
+        return r
 
 
 class Dao(Raw):
@@ -129,6 +130,12 @@ date = (SELECT max(date) FROM fund_performance WHERE date<= :date)
         for r in self.query(sql, {'date': the_date}):
             yield (r['broker'], r['name'], r['price'], r['amount'], r['capital'],
                    r['value'], r['profit'], r['date'], r['instrument_id'], r['url'])
+
+    def get_asset_allocation(self, instrument_id):
+        sql = '''select t.type,a.ratio from asset_allocation a, asset t where a.instrument = ? and a.asset=t.rowid
+order by a.asset'''
+        for r in self.query(sql, (int(instrument_id),)):
+            yield (r['type'], r['ratio'])
 
 
 class FakeDao(Dao):

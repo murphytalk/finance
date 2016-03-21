@@ -69,11 +69,16 @@ def fund():
         year=datetime.now().year
     )
 
+
 @app.route('/fund.json')
 def fund_json():
     r = FundReport(g.dao, date.today())
     return Response(r.to_json(r.positions), mimetype='application/json')
 
+
+@app.route('/asset.allocation/<instrument>')
+def asset_allocation_json(instrument):
+    return Response(asset_allocation(g.dao,instrument), mimetype='application/json')
 
 
 @app.route('/db')
