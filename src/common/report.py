@@ -73,7 +73,7 @@ def get_pie_chart_data_json(generator):
     generator should return a tuple of (name, ratio) for each iteration
     """
     data = []
-    for e in [x for x in generator]:
+    for e in generator:
         data.append({'name': e[0], 'y': e[1]})
     return Report.to_json_packed(data)
 
