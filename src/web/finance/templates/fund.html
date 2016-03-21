@@ -9,10 +9,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title" id="detail_name"></h4>
+                <h4 class="modal-title">
+                    <a id="detail_link" target="_blank">link</a>
+                </h4>
             </div>
             <div class="modal-body">
-                <p>Some text in the modal.</p>
+                <p></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -73,7 +75,9 @@
         }
         else {
             var row_data = data[row_idx];
-            $('#detail_name').text(row_data[1]);
+            var a =$('#detail_link');
+            a.text(row_data[1]);
+            a.attr("href",row_data[9]);
             $("#detail").modal();
         }
     }

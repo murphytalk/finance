@@ -63,7 +63,7 @@ class StockReport(Report):
 
 class FundReport(Report):
     def __init__(self, dao, the_date):
-        self.positions = [[x[0], x[1], x[2], x[3], x[4], x[5], x[6], str(the_date.fromtimestamp(x[7])), x[8]]
+        self.positions = [[x[0], x[1], x[2], x[3], x[4], x[5], x[6], str(the_date.fromtimestamp(x[7])), x[8], x[9]]
                           for x in dao.get_funds_positions(the_date)]
 
 
