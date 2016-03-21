@@ -103,8 +103,8 @@
         else {
             var row_data = data[row_idx];
             var a = $('#detail_link');
-            instrument_name = row_data[1];
-            a.text(row_data[1]);
+            instrument_name = row_data[1].replace(/（.*）/i,"");
+            a.text(instrument_name);
             a.attr("href", row_data[9]);
             //We are putting highcharts inside the modal window.
             //The problem is the chart does not know when to reflow itself to fit the container.
@@ -124,7 +124,7 @@
                     type: 'pie'
                 },
                 title: {
-                    text: instrument_name + '<br>'+title,
+                    text: instrument_name+ '<br>'+title
                 },
                 tooltip: {
                     pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
