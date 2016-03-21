@@ -3,7 +3,7 @@
 {% block content %}
 <!-- Modal -->
 <div class="modal fade" id="detail" role="dialog">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
 
         <!-- Modal content-->
         <div class="modal-content">
@@ -80,7 +80,7 @@
 <script>
     var table;
     var sum = {"value": 0, "capital": 0, "profit": 0};
-    var detail_instrument_id;
+    var detail_instrument_id, instrument_name;
     //url_for is a jinjia2 function and will only be evaluated on server side once,
     //that is before we know the clicked instrument's id.
     //As a workaround we use 0 here and then use regex to replace it with real id later.
@@ -103,6 +103,7 @@
         else {
             var row_data = data[row_idx];
             var a = $('#detail_link');
+            instrument_name = row_data[1];
             a.text(row_data[1]);
             a.attr("href", row_data[9]);
             //We are putting highcharts inside the modal window.
@@ -114,6 +115,7 @@
     }
 
     function pieChartOptions(title, name, data){
+        console.log('pie:'+data);
         return {
                 chart: {
                     plotBackgroundColor: null,
@@ -122,7 +124,7 @@
                     type: 'pie'
                 },
                 title: {
-                    text: title
+                    text: instrument_name + '<br>'+title,
                 },
                 tooltip: {
                     pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
