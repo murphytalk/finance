@@ -4,6 +4,9 @@ from json import dumps
 
 
 class Model:
+    def __init__(self):
+        pass
+
     def to_json(self):
         return dumps(self.__dict__)
 

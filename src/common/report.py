@@ -66,11 +66,25 @@ class FundReport(Report):
         self.positions = [[x[0], x[1], x[2], x[3], x[4], x[5], x[6], str(the_date.fromtimestamp(x[7])), x[8], x[9]]
                           for x in dao.get_funds_positions(the_date)]
 
-def asset_allocation(dao, instrument_id):
+
+def get_pie_chart_data_json(generator):
+    """
+    return an array to be fed to HighCharts to plot pie chart
+    generator should return a tuple of (name, ratio) for each iteration
+    """
     data = []
-    for e in [x for x in dao.get_asset_allocation(instrument_id)]:
-        data.append({'name':e[0], 'y':e[1]})
+    for e in [x for x in generator]:
+        data.append({'name': e[0], 'y': e[1]})
     return Report.to_json_packed(data)
+
+
+def asset_allocation(dao, instrument_id):
+    return get_pie_chart_data_json(dao.get_asset_allocation(instrument_id))
+
+
+def region_allocation(dao, instrument_id):
+    return get_pie_chart_data_json(dao.get_region_allocation(instrument_id))
+
 
 def raw_quote(dao):
     q = [[str(date.fromtimestamp(x['date'])), x['name'], x['price']] for x in

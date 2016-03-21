@@ -78,7 +78,12 @@ def fund_json():
 
 @app.route('/asset.allocation/<instrument>')
 def asset_allocation_json(instrument):
-    return Response(asset_allocation(g.dao,instrument), mimetype='application/json')
+    return Response(asset_allocation(g.dao, instrument), mimetype='application/json')
+
+
+@app.route('/region.allocation/<instrument>')
+def region_allocation_json(instrument):
+    return Response(region_allocation(g.dao, instrument), mimetype='application/json')
 
 
 @app.route('/db')

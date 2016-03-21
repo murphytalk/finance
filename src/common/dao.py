@@ -137,6 +137,12 @@ order by a.asset'''
         for r in self.query(sql, (int(instrument_id),)):
             yield (r['type'], r['ratio'])
 
+    def get_region_allocation(self, instrument_id):
+        sql = '''select t.name,a.ratio from region_allocation a, region t where a.instrument = ? and a.region=t.rowid
+order by a.region'''
+        for r in self.query(sql, (int(instrument_id),)):
+            yield (r['name'], r['ratio'])
+
 
 class FakeDao(Dao):
     """
