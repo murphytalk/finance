@@ -51,10 +51,14 @@ class InstrumentType(Model):
 
 
 class Instrument(Model):
-    def __init__(self, id, name, instrument_type, instrument_type_name, currency=None, xccy_rate=None, xccy_rate_date=None):
-        self.id = id
+    def __init__(self, instrument_id, name, instrument_type, instrument_type_name,
+                 url, expense_ratio,
+                 currency=None, xccy_rate=None, xccy_rate_date=None):
+        self.id = instrument_id
         self.name = name
         self.instrument_type = InstrumentType(instrument_type, instrument_type_name)
+        self.url = url
+        self.expense_ratio = expense_ratio
         if currency is not None:
             self.currency = currency
             self.xccy_rate = xccy_rate

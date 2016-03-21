@@ -19,9 +19,10 @@ class CalcPosition:
     def __init__(self, date2):
         self.date1 = STOCK_START_DATE
         self.date2 = date2
+        self.positions = None
 
     def calc(self, db):
-        def on_each_transaction(instrument, name, transaction_type, price, shares, fee, date):
+        def on_each_transaction(instrument, name, transaction_type, price, shares, fee, the_date):
             pos = self.positions[instrument]
             pos.transaction(transaction_type, price, shares, fee)
 
@@ -30,7 +31,9 @@ class CalcPosition:
         else:
             d = Dao(db)
 
-        self.positions = d.populate_from_instruments('(i.type = 2 or i.type = 1)', lambda id, name, tid, t: Position(id, name))
+        self.positions = d.populate_from_instruments('(i.type = 2 or i.type = 1)',
+                                                     lambda instrument_id, name, tid, t, u, e: Position(instrument_id,
+                                                                                                        name))
         d.iterate_transaction(self.date1, self.date2, on_each_transaction)
 
         d.close()

@@ -8,8 +8,8 @@ from utils import get_utc_offset
 
 
 class Raw:
-    def __init__(self, dbpath):
-        self.conn = sqlite3.connect(dbpath)
+    def __init__(self, db_path):
+        self.conn = sqlite3.connect(db_path)
         self.conn.row_factory = sqlite3.Row
         self.c = self.conn.cursor()
 
@@ -25,8 +25,8 @@ class Raw:
 
 
 class Dao(Raw):
-    def __init__(self, dbpath):
-        Raw.__init__(self, dbpath)
+    def __init__(self, db_path):
+        Raw.__init__(self, db_path)
 
     def iterate_transaction(self, start_date, end_date, callback):
         """
@@ -40,10 +40,10 @@ WHERE t.instrument = i.rowid AND date >=? AND date<=? ORDER BY date
         epoch1 = int(mktime(start_date.timetuple()) + get_utc_offset())
         epoch2 = int(mktime(end_date.timetuple()) + get_utc_offset())
 
-        for f in self.query(sql,(epoch1, epoch2)):
+        for f in self.query(sql, (epoch1, epoch2)):
             callback(f['instrument'], f['name'], f['type'], f['price'], f['shares'], f['fee'], f['date'])
 
-    def populate_from_instruments(self, filter, create_new_obj_func = None):
+    def populate_from_instruments(self, instrument_filter, create_new_obj_func=None):
         """
         Populate a dict {instrument id : user defined data type} by
         querying from table instrument , filter should be a valid SQL where clause
@@ -56,67 +56,79 @@ WHERE t.instrument = i.rowid AND date >=? AND date<=? ORDER BY date
           the new object
 
         """
-        c = create_new_obj_func if create_new_obj_func is not None else lambda id,name,type_id,type_name : Instrument(id,name,type_id,type_name)
-        sql = 'SELECT i.rowid,i.name,it.rowid AS type_id, it.type AS type FROM instrument i,instrument_type it WHERE i.type = it.rowid'
-        if filter is not None:
-            sql = sql + ' and ' + filter
-        return {x['rowid']: c(x['rowid'], x['name'],x['type_id'],x['type']) for x in self.query(sql)}
+        c = create_new_obj_func if create_new_obj_func is not None else \
+            lambda instrument_id, name, type_id, type_name, url, expense_ratio: Instrument(instrument_id, name, type_id,
+                                                                                           type_name,
+                                                                                           url, expense_ratio)
+        sql = '''
+SELECT i.rowid,i.name,it.rowid AS type_id, it.type AS type, i.url, i.expense_ratio FROM instrument i,instrument_type it
+WHERE i.type = it.rowid
+'''
+        if instrument_filter is not None:
+            sql = sql + ' and ' + instrument_filter
+        return {x['rowid']: c(x['rowid'], x['name'], x['type_id'], x['type'], x['url'], x['expense_ratio'])
+                for x in self.query(sql)}
 
-    def get_stock_quote(self, date):
+    def get_stock_quote(self, quote_date):
         """
         return a dict {instrument id : Quote}
         """
-        epoch = int(mktime(date.timetuple()) + get_utc_offset())
+        epoch = int(mktime(quote_date.timetuple()) + get_utc_offset())
         sql = """
-select 
-q.instrument,i.name,q.price, q.date from quote q, instrument i 
-where date = (select max(date) from quote where  date<=?) and
+SELECT
+q.instrument,i.name,q.price, q.date FROM quote q, instrument i
+WHERE date = (SELECT max(date) FROM quote WHERE  date<=?) AND
 q.instrument = i.rowid"""
 
         r = self.query(sql, (epoch,))
         return {x['instrument']: Quote(x['instrument'], x['name'], x['price'], x['date']) for x in r}
 
-    def get_instrument_with_xccy_rate(self, date):
+    def get_instrument_with_xccy_rate(self, the_date):
         """
         if the xccy rate on specified date does not exist, then use rate on the closet earlier date
         return a dict {instrument id : Instrument}
         """
-        epoch = int(mktime(date.timetuple()) + get_utc_offset())
+        epoch = int(mktime(the_date.timetuple()) + get_utc_offset())
         sql = """
-select
+SELECT
 i.rowid instrument, 
 i.name, 
 i.type instrument_type_id, 
-a.type instrument_type, 
+a.type instrument_type,
+i.url,
+i.expense_ratio,
 c.name currency, 
 ifnull(x.rate,1) rate,
 ifnull(x.date,0) rate_date
-from instrument i
-join instrument_type a on i.type = a.rowid
-join currency c on i.currency = c.rowid
-left join ( select * from xccy_hist where date = (select max(date) from xccy_hist where date<=?)) x 
-on i.currency = x.from_id
+FROM instrument i
+JOIN instrument_type a ON i.type = a.rowid
+JOIN currency c ON i.currency = c.rowid
+LEFT JOIN ( SELECT * FROM xccy_hist WHERE date = (SELECT max(date) FROM xccy_hist WHERE date<=?)) x
+ON i.currency = x.from_id
 """
 
         return {x['instrument']: Instrument(x['instrument'],
                                             x['name'],
                                             x['instrument_type_id'],
                                             x['instrument_type'],
+                                            x['url'],
+                                            x['expense_ratio'],
                                             x['currency'],
                                             x['rate'],
                                             x['rate_date']) for x in self.query(sql, (epoch,))}
 
-    def get_funds_positions(self, date):
+    def get_funds_positions(self, the_date):
         """
         Query funds performance view, query the latest day's data no late than give date,
         return a generator which generates a stream of (broker,name,price,amount,capital,value,profit,date in epoch)
         """
         sql = """
-select broker,name,amount,price,value,profit,capital,date from fund_performance where
-date = (select max(date) from fund_performance where date<= :date)
+SELECT broker,name,instrument_id,amount,price,value,profit,capital,date FROM fund_performance WHERE
+date = (SELECT max(date) FROM fund_performance WHERE date<= :date)
 """
-        for r in self.query(sql, {'date': date}):
-            yield (r['broker'], r['name'], r['price'], r['amount'], r['capital'], r['value'], r['profit'], r['date'])
+        for r in self.query(sql, {'date': the_date}):
+            yield (r['broker'], r['name'], r['price'], r['amount'], r['capital'],
+                   r['value'], r['profit'], r['date'], r['instrument_id'])
 
 
 class FakeDao(Dao):
@@ -161,10 +173,10 @@ class FakeDao(Dao):
         return random.randint(FakeDao.DAY1, FakeDao.today)
 
     @classmethod
-    def gen_price(cls, min, max):
-        return random.uniform(min, max);
+    def gen_price(cls, min_price, max_price):
+        return random.uniform(min_price, max_price)
 
-    def __init__(self, dbpath):
+    def __init__(self, db_path):
         self.stocks = {}
         instrument_id = 1
         while len(self.stocks) < FakeDao.STOCK_NUM:
@@ -210,9 +222,10 @@ class FakeDao(Dao):
 
     def q_quote(self):
         return (
-        {'instrument': s.instrument, 'name': s.name, 'price': FakeDao.gen_price(20, 1000), 'date': FakeDao.today} for s
-        in
-        self.stocks.values())
+            {'instrument': s.instrument, 'name': s.name, 'price': FakeDao.gen_price(20, 1000), 'date': FakeDao.today}
+            for s
+            in
+            self.stocks.values())
 
     def q_instrument_xccy(self):
         return ({'instrument': s.instrument,
@@ -230,7 +243,7 @@ class FakeDao(Dao):
             q_func = self.q_transaction
         elif sql.find('FROM INSTRUMENT') > 0:
             q_func = self.q_instrument
-        elif sql.find('select max(date) from quote') > 0:
+        elif sql.find('SELECT max(date) FROM quote') > 0:
             q_func = self.q_quote
         elif sql.find('ifnull(x.rate,1) rate') > 0:
             q_func = self.q_instrument_xccy
