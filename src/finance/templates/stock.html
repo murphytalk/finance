@@ -88,21 +88,21 @@
                         ],
                         null
                 );
-                update_footer(table,'$',5 ,sum["value"],'#value');
-                update_footer(table,'¥',6 ,sum["value_jpy"],'#value-jpy');
-                update_footer(table,'$',7 ,sum["liquidated"],'#liq');
-                update_footer(table,'¥',8 ,sum["liquidated_jpy"],'#liq-jpy');
-                update_footer(table,'$',9 ,sum["value"]+sum["liquidated"],'#profit');
-                update_footer(table,'¥',10,sum["value_jpy"]+sum["liquidated_jpy"],'#profit-jpy');
+                update_sum(table,'$',5 ,sum["value"],'#value');
+                update_sum(table,'¥',6 ,sum["value_jpy"],'#value-jpy');
+                update_sum(table,'$',7 ,sum["liquidated"],'#liq');
+                update_sum(table,'¥',8 ,sum["liquidated_jpy"],'#liq-jpy');
+                update_sum(table,'$',9 ,sum["value"]+sum["liquidated"],'#profit');
+                update_sum(table,'¥',10,sum["value_jpy"]+sum["liquidated_jpy"],'#profit-jpy');
 
                 $('#stocks').on('search.dt',function(e,settings){
                     var table = $('#stocks').DataTable();
-                    update_footer(table,'$',5 ,sum["value"],'#value');
-                    update_footer(table,'¥',6 ,sum["value_jpy"],'#value-jpy');
-                    update_footer(table,'$',7 ,sum["liquidated"],'#liq');
-                    update_footer(table,'¥',8 ,sum["liquidated_jpy"],'#liq-jpy');
-                    update_footer(table,'$',9 ,sum["value"]+sum["liquidated"],'#profit');
-                    update_footer(table,'¥',10,sum["value_jpy"]+sum["liquidated_jpy"],'#profit-jpy');
+                    update_sum(table,'$',5 ,sum["value"],'#value');
+                    update_sum(table,'¥',6 ,sum["value_jpy"],'#value-jpy');
+                    update_sum(table,'$',7 ,sum["liquidated"],'#liq');
+                    update_sum(table,'¥',8 ,sum["liquidated_jpy"],'#liq-jpy');
+                    update_sum(table,'$',9 ,sum["value"]+sum["liquidated"],'#profit');
+                    update_sum(table,'¥',10,sum["value_jpy"]+sum["liquidated_jpy"],'#profit-jpy');
                 });
             });
         });
