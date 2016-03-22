@@ -11,6 +11,7 @@ export FINANCE_DB
 export SERVER_PORT=8080
 
 CUR=`dirname $0`
+SRC=$CUR/../src
 LOG=$CUR/../log
 LOGF=${LOG}/run.`date +%Y%m%d`.log
 PIDF=${LOG}/run.pid
@@ -44,7 +45,7 @@ start)
 	check_status
 	if [ $status -eq 0 ];then
 		echo DB file is $FINANCE_DB
-		nohup ${CUR}/runserver.py > $LOGF 2>&1 &
+		nohup ${SRC}/runserver.py > $LOGF 2>&1 &
 		echo $! > $PIDF
 	else
 		echo Already started!
