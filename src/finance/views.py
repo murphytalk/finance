@@ -5,19 +5,8 @@ Routes and views for the flask application.
 from datetime import datetime, date
 from flask import render_template, g, current_app, Response
 from finance import app
-
-# add ../../common to path
-import os, sys, inspect
-from os.path import sep
-
-common_folder = os.path.realpath(os.path.abspath(
-    os.path.split(inspect.getfile(inspect.currentframe()))[0])) + sep + '..' + sep + '..' + sep + 'common'
-if common_folder not in sys.path:
-    sys.path.insert(0, common_folder)
-
-# from utils import get_utc_offset,get_current_date_epoch,epoch2datetime
-from dao import factory
-from report import *
+from finance.common.dao import factory
+from finance.common.report import *
 
 
 @app.before_request

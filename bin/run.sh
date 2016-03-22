@@ -11,7 +11,7 @@ export FINANCE_DB
 export SERVER_PORT=8080
 
 CUR=`dirname $0`
-LOG=$CUR/log
+LOG=$CUR/../log
 LOGF=${LOG}/run.`date +%Y%m%d`.log
 PIDF=${LOG}/run.pid
 cmd=$1
