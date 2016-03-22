@@ -5,8 +5,8 @@ Routes and views for the flask application.
 from datetime import datetime, date
 from flask import render_template, g, current_app, Response
 from finance import app
-from finance.common.dao import factory
-from finance.common.report import *
+from common.dao import factory
+from common.report import *
 
 
 @app.before_request
@@ -55,7 +55,8 @@ def fund():
     return render_template(
         'fund.html',
         title='Mutual Funds',
-        year=datetime.now().year
+        year=datetime.now().year,
+        instrument_id_idx=9
     )
 
 

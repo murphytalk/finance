@@ -1,39 +1,7 @@
-{% extends "datatable.html" %}
+{% extends "position.html" %}
 
 {% block content %}
-<!-- Modal -->
-<div class="modal fade" id="detail" role="dialog">
-    <div class="modal-dialog">
-
-        <!-- Modal content-->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">
-                    <a id="detail_link" target="_blank">link</a>
-                </h4>
-            </div>
-            <div class="modal-body">
-                <ul class="nav nav-tabs">
-                    <li class="active"><a data-toggle="tab" href="#asset">Asset</a></li>
-                    <li><a data-toggle="tab" href="#region">Region</a></li>
-                </ul>
-                <div class="tab-content">
-                    <div id="asset" class="tab-pane fade in active">
-                        <div id="pieAsset"></div>
-                    </div>
-                    <div id="region" class="tab-pane fade">
-                        <div id="pieRegion"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-
-    </div>
-</div>
+{{ super() }}
 <div class="row top5 bottom5">
     <div class="col-md-12">
         <table class="table table-hover" id="funds">
@@ -74,102 +42,14 @@
         </table>
     </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
-<script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
 <script>
     var table;
     var sum = {value: 0, capital: 0, profit: 0, expense: 0};
-    var detail_instrument_id, instrument_name;
-    //url_for is a jinjia2 function and will only be evaluated on server side once,
-    //that is before we know the clicked instrument's id.
-    //As a workaround we use 0 here and then use regex to replace it with real id later.
-    //We prefer to use url_for as it solves the server side path automatically for us
-    const get_asset_allocation_url  = "{{url_for('asset_allocation_json',instrument=0)}}";
-    const get_region_allocation_url = "{{url_for('region_allocation_json',instrument=0)}}";
-
-    function showInstrumentDetail(instrument_id) {
-        var data = table.rows({page: 'current'}).data();
-        var row_idx = -1;
-        $.each(data, function (idx, r) {
-            if (instrument_id == r[9]) {
-                row_idx = idx;
-                return false;
-            }
-        });
-        if (row_idx < 0) {
-            alert("Cannot find instrument with id=" + instrument_id);
-        }
-        else {
-            var row_data = data[row_idx];
-            var a = $('#detail_link');
-            instrument_name = row_data[1].replace(/（.*）/i,"");
-            a.text(instrument_name);
-            a.attr("href", row_data[10]);
-            //We are putting highcharts inside the modal window.
-            //The problem is the chart does not know when to reflow itself to fit the container.
-            //So we defer the chart building until modal is shown, we remember the instrument id here
-            detail_instrument_id = instrument_id;
-            $("#detail").modal();
-        }
-    }
-
-    function pieChartOptions(title, name, data){
-        console.log('pie:'+data);
-        return {
-                chart: {
-                    plotBackgroundColor: null,
-                    plotBorderWidth: null,
-                    plotShadow: false,
-                    type: 'pie'
-                },
-                title: {
-                    text: instrument_name+ '<br>'+title
-                },
-                tooltip: {
-                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-                },
-                plotOptions: {
-                    pie: {
-                        allowPointSelect: true,
-                        cursor: 'pointer',
-                        dataLabels: {
-                            enabled: true,
-                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-                            style: {
-                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-                            }
-                        }
-                    }
-                },
-                series: [{
-                    name: name,
-                    colorByPoint: true,
-                    data: data
-                }]
-        };
-    }
-
-    function detailShown() {
-        var url = get_asset_allocation_url.replace(/0/,detail_instrument_id);
-        $.getJSON(url, function (data) {
-            $('#pieAsset').highcharts(pieChartOptions('Asset Allocation', 'Asset', data));
-           //do the reflow below to force it to refit again - and the animation will be gone
-            /*
-            var chart = $("#pieAsset").highcharts();
-            chart.reflow();
-            */
-        });
-
-        url = get_region_allocation_url.replace(/0/,detail_instrument_id);
-        $.getJSON(url, function (data) {
-            $('#pieRegion').highcharts(pieChartOptions('Region Allocation', 'Region', data));
-        });
-     }
 
     $(document).ready(function () {
         $.getJSON("{{ url_for('fund_json')}}",
@@ -206,26 +86,9 @@
                             ],
                             null
                     );
-                    //$("#expense").text((sum["expense"]/table.data().length).toLocaleString());
-                });
-
-        $('#detail').on('shown.bs.modal', detailShown);
-
-        $('.nav-tabs a').on('shown.bs.tab', function(event){
-            var x = $(event.target).text();         // active tab
-            //var y = $(event.relatedTarget).text();  // previous tab
-            //console.log(y+'=>'+x);
-            var chart_selector;
-            if(x=='Asset'){
-                chart_selector = "#pieAsset";
-            }
-            else{
-                chart_selector = "#pieRegion";
-            }
-            var chart = $(chart_selector).highcharts();
-            chart.reflow();
         });
 
+        install_detail_event_callback();
 
         $('#funds').on('search.dt', function (e, settings) {
             var table = $('#funds').DataTable();
