@@ -206,7 +206,7 @@
                             ],
                             null
                     );
-                    $("#expense").text((sum["expense"]/table.data().length).toLocaleString());
+                    //$("#expense").text((sum["expense"]/table.data().length).toLocaleString());
                 });
 
         $('#detail').on('shown.bs.modal', detailShown);
@@ -232,6 +232,7 @@
             update_sum(table, '¥', 5, sum["capital"], '#capital');
             update_sum(table, '¥', 6, sum["value"], '#value');
             update_sum(table, '¥', 7, sum["profit"], '#profit');
+            update_avg(table, '', 2, sum["expense"], '#expense');
         });
 
     });

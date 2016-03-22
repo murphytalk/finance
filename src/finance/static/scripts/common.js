@@ -94,14 +94,22 @@ function fuzzy_eq(a,b){
         return false;
 }
 
-function update_sum(table,ccy_sign,col_idx,total_value,footer_id){
+function update_footer(table, ccy_sign, col_idx, total_value, footer_id,calc){
     var data = table.column(col_idx,{search:'applied'}).data();
     console.log('col '+col_idx+':'+data);
     var v = data.reduce(function(a, b) { return a + b; }, 0);
     if(fuzzy_eq(v,total_value)){
-        $(footer_id).html(total_value.toLocaleString());
+        $(footer_id).html(calc(table,total_value).toLocaleString());
     }
     else{
-        $(footer_id).html(ccy_sign+total_value.toLocaleString() + '<br><div class="filtered_sum">'+ccy_sign+v.toLocaleString()+'</div>');
+        $(footer_id).html(ccy_sign+calc(table,total_value).toLocaleString() + '<br><div class="filtered_sum">'+ccy_sign+calc(table,v).toLocaleString()+'</div>');
     }
+}
+
+function update_sum(table, ccy_sign, col_idx, total_value, footer_id){
+    update_footer(table,ccy_sign,col_idx,total_value,footer_id,function(t,v){return v;});
+}
+
+function update_avg(table, ccy_sign, col_idx, total_value, footer_id){
+    update_footer(table,ccy_sign,col_idx,total_value,footer_id,function(t,v){return v/ t.data().length;});
 }
