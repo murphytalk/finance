@@ -44,7 +44,7 @@
                 <th class="text-Right">Expense</th>
                 <th class="text-right">Price</th>
                 <th class="text-right">Amount</th>
-                <th class="text-right">Capital</th> <!-- idx 4 -->
+                <th class="text-right">Capital</th> <!-- idx 5 -->
                 <th class="text-right">Value</th>
                 <th class="text-right">Profit</th>
                 <th>Date</th>
@@ -54,7 +54,9 @@
             <tr>
                 <th></th>
                 <th></th>
-                <th></th>
+                <th class="text-right">
+                    <div id="expense"></div>
+                </th>
                 <th></th>
                 <th></th>
                 <th class="text-right">
@@ -204,6 +206,7 @@
                             ],
                             null
                     );
+                    $("#expense").text((sum["expense"]/table.data().length).toLocaleString());
                 });
 
         $('#detail').on('shown.bs.modal', detailShown);
@@ -222,6 +225,7 @@
             var chart = $(chart_selector).highcharts();
             chart.reflow();
         });
+
 
         $('#funds').on('search.dt', function (e, settings) {
             var table = $('#funds').DataTable();
