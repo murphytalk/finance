@@ -124,11 +124,11 @@ ON i.currency = x.from_id
         return a generator which generates a stream of (broker,name,price,amount,capital,value,profit,date in epoch)
         """
         sql = """
-SELECT broker,name,instrument_id,url,amount,price,value,profit,capital,date FROM fund_performance WHERE
+SELECT broker,name,instrument_id,url,expense_ratio,amount,price,value,profit,capital,date FROM fund_performance WHERE
 date = (SELECT max(date) FROM fund_performance WHERE date<= :date)
 """
         for r in self.query(sql, {'date': the_date}):
-            yield (r['broker'], r['name'], r['price'], r['amount'], r['capital'],
+            yield (r['broker'], r['name'], r['expense_ratio'] ,r['price'], r['amount'], r['capital'],
                    r['value'], r['profit'], r['date'], r['instrument_id'], r['url'])
 
     def get_asset_allocation(self, instrument_id):
