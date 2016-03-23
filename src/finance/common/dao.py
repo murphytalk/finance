@@ -55,12 +55,13 @@ WHERE t.instrument = i.rowid AND date >=? AND date<=? ORDER BY date
           instrument name
         return:
           the new object
+          :param create_new_obj_func:
+          :param instrument_filter: a valid SQL where clause
 
         """
         c = create_new_obj_func if create_new_obj_func is not None else \
-            lambda instrument_id, name, type_id, type_name, url, expense_ratio: Instrument(instrument_id, name, type_id,
-                                                                                           type_name,
-                                                                                           url, expense_ratio)
+            lambda instrument_id, name, type_id, type_name, url, expense_ratio: Instrument.create(
+                    instrument_id, name, type_id, type_name, url, expense_ratio)
         sql = '''
 SELECT i.rowid,i.name,it.rowid AS type_id, it.type AS type, i.url, i.expense_ratio FROM instrument i,instrument_type it
 WHERE i.type = it.rowid
@@ -108,7 +109,8 @@ LEFT JOIN ( SELECT * FROM xccy_hist WHERE date = (SELECT max(date) FROM xccy_his
 ON i.currency = x.from_id
 """
 
-        return {x['instrument']: Instrument(x['instrument'],
+        return {x['instrument']: Instrument.create(
+                                            x['instrument'],
                                             x['name'],
                                             x['instrument_type_id'],
                                             x['instrument_type'],
@@ -163,14 +165,7 @@ def factory(db_file_path):
             STOCK_NUM = 20
             URL = 'http://finance.yahoo.com/'
 
-            class Stock:
-                def __init__(self, instrument, name, itype):
-                    self.instrument = instrument
-                    self.name = name
-                    self.type = itype
-
             from time import time
-
             today = int(time())
 
             @classmethod
@@ -209,7 +204,7 @@ def factory(db_file_path):
                     symbol = FakeDao.gen_stock_symbol()
                     if symbol in self.stocks:
                         continue
-                    self.stocks[instrument_id] = FakeDao.Stock(instrument_id, symbol, random.choice(
+                    self.stocks[instrument_id] = Instrument(instrument_id, symbol, random.choice(
                             (InstrumentType(1, 'Stock'), InstrumentType(2, 'ETF'))))
                     instrument_id += 1
 
@@ -221,7 +216,7 @@ def factory(db_file_path):
 
                 for s in self.stocks.values():
                     # buy >1000 shares for each on day one
-                    l.append({'instrument': s.instrument,
+                    l.append({'instrument': s.id,
                               'name': s.name,
                               'type': 'BUY',
                               'price': FakeDao.gen_price(20, 1000),
@@ -232,7 +227,7 @@ def factory(db_file_path):
 
                     # sell < 400 for each one we bought on a random day after day one
                     for i in range(2):
-                        l.append({'instrument': s.instrument,
+                        l.append({'instrument': s.id,
                                   'name': s.name,
                                   'type': 'SELL',
                                   'price': FakeDao.gen_price(20, 1000),
@@ -244,27 +239,27 @@ def factory(db_file_path):
                 return l
 
             def q_instrument(self):
-                return ({'rowid': s.instrument,
+                return ({'rowid': s.id,
                          'name': s.name,
-                         'type_id': s.type.id,
-                         'type': s.type.name,
+                         'type_id': s.instrument_type.id,
+                         'type': s.instrument_type.name,
                          'url': FakeDao.URL,
                          'expense_ratio': FakeDao.gen_expense_ration()
                          } for s in self.stocks.values())
 
             def q_quote(self):
                 return (
-                    {'instrument': s.instrument, 'name': s.name, 'price': FakeDao.gen_price(20, 1000),
+                    {'instrument': s.id, 'name': s.name, 'price': FakeDao.gen_price(20, 1000),
                      'date': FakeDao.today}
                     for s
                     in
                     self.stocks.values())
 
             def q_instrument_xccy(self):
-                return ({'instrument': s.instrument,
+                return ({'instrument': s.id,
                          'name': s.name,
-                         'instrument_type_id': s.type.id,
-                         'instrument_type': s.type.name,
+                         'instrument_type_id': s.instrument_type.id,
+                         'instrument_type': s.instrument_type.name,
                          'url': FakeDao.URL,
                          'currency': 'USD',
                          'expense_ratio': FakeDao.gen_expense_ration(),

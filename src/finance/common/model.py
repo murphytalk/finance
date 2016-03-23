@@ -54,18 +54,23 @@ class InstrumentType(Model):
 
 
 class Instrument(Model):
-    def __init__(self, instrument_id, name, instrument_type, instrument_type_name,
-                 url, expense_ratio,
-                 currency=None, xccy_rate=None, xccy_rate_date=None):
+    def __init__(self, instrument_id, name, instrument_type, url=None,
+                 expense_ratio=None, currency=None, xccy_rate=None, xccy_rate_date=None):
         self.id = instrument_id
         self.name = name
-        self.instrument_type = InstrumentType(instrument_type, instrument_type_name)
+        self.instrument_type = instrument_type
         self.url = url
         self.expense_ratio = expense_ratio
         if currency is not None:
             self.currency = currency
             self.xccy_rate = xccy_rate
             self.xccy_date = date.fromtimestamp(xccy_rate_date)
+
+    @classmethod
+    def create(cls, instrument_id, name, instrument_type, instrument_type_name,
+               url, expense_ratio,currency=None, xccy_rate=None, xccy_rate_date=None):
+        return Instrument(instrument_id, name, InstrumentType(instrument_type, instrument_type_name),
+                          url, expense_ratio,currency, xccy_rate, xccy_rate_date)
 
     def __str__(self):
         return "id={},type={}".format(self.id, self.instrument_type)
