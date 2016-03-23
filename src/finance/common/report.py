@@ -1,5 +1,7 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
+from __future__ import division
+
 import sys
 from utils import cmdline_args
 from dao import Dao
@@ -15,7 +17,8 @@ class Report(object):
     def __init__(self, dao, date):
         self.i = dao.get_instrument_with_xccy_rate(date)
 
-    def gen_price_with_xccy(self, org, currency, to_jpy_rate, rate_date):
+    @staticmethod
+    def gen_price_with_xccy(org, currency, to_jpy_rate, rate_date):
         return {'ccy': currency, currency: org, 'JPY': org * to_jpy_rate, 'rate_date': str(rate_date)}
 
     @staticmethod
@@ -25,6 +28,13 @@ class Report(object):
     @staticmethod
     def to_json_packed(j):
         return dumps(j)
+
+    @staticmethod
+    def put(d, k, v):
+        if k in d:
+            d[k] += v
+        else:
+            d[k] = v
 
 
 class StockReport(Report):
@@ -65,11 +75,52 @@ class StockReport(Report):
 
 class FundReport(Report):
     def __init__(self, dao, the_date):
-        self.positions = [[x[0], x[1], x[2], x[3], x[4], x[5], x[6],x[7], str(the_date.fromtimestamp(x[8])), x[9], x[10]]
-                          for x in dao.get_funds_positions(the_date)]
+        self.positions = [
+            [x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], str(the_date.fromtimestamp(x[8])), x[9], x[10]]
+            for x in dao.get_funds_positions(the_date)]
 
 
-def get_pie_chart_data_json(generator):
+class SummaryReport(Report):
+    def __init__(self, dao, the_date):
+        def get_stock_positions(stock_positions):
+            for v in stock_positions.values():
+                for p in v:
+                    yield (p['instrument'], p['value']['JPY'])
+
+        def get_fund_positions(positions):
+            for x in positions:
+                yield (x[9], x[6])
+
+        stock = StockReport(dao, the_date)
+        funds = FundReport(dao, the_date)
+        self.positions = [x for x in get_stock_positions(stock.stock_positions())] + [x for x in get_fund_positions(
+                funds.positions)]
+
+    def report(self, dao):
+        def asset_class_generator(dao):
+            asset_class = {}
+            for instrument, value in self.positions:
+                for asset, ratio in dao.get_asset_allocation(instrument):
+                    self.put(asset_class, asset, value * ratio / 100)
+            for k, v in asset_class.items():
+                yield (k, v)
+
+        def region_generator(dao):
+            region = {}
+            for instrument, value in self.positions:
+                for rg, ratio in dao.get_region_allocation(instrument):
+                    self.put(region, rg, value * ratio / 100)
+            for k, v in region.items():
+                yield (k, v)
+
+        print self.positions
+        #return {'total': reduce(lambda a, b: a[1]+b[1], self.positions),
+        return {'total': reduce(lambda a, b: a+b, [x[1] for x in self.positions]),
+                'asset': get_pie_chart_data(asset_class_generator(dao)),
+                'region': get_pie_chart_data(region_generator(dao))}
+
+
+def get_pie_chart_data(generator):
     """
     return an array to be fed to HighCharts to plot pie chart
     generator should return a tuple of (name, ratio) for each iteration
@@ -77,7 +128,11 @@ def get_pie_chart_data_json(generator):
     data = []
     for e in generator:
         data.append({'name': e[0], 'y': e[1]})
-    return Report.to_json_packed(data)
+    return data
+
+
+def get_pie_chart_data_json(generator):
+    return Report.to_json_packed(get_pie_chart_data(generator))
 
 
 def asset_allocation(dao, instrument_id):
@@ -128,5 +183,8 @@ if __name__ == "__main__":
             print Report.to_json(raw_xccy(dao))
         elif 'trans' in others:
             print Report.to_json(raw_trans(dao))
+        elif 'sum' in others:
+            r = SummaryReport(dao, args['end_date'])
+            print Report.to_json(r.report(dao))
 
         dao.close()

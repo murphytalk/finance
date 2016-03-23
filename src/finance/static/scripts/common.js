@@ -113,3 +113,4 @@ function update_sum(table, ccy_sign, col_idx, total_value, footer_id){
 function update_avg(table, ccy_sign, col_idx, total_value, footer_id){
     update_footer(table,ccy_sign,col_idx,total_value,footer_id,function(t,v,n){return v/n;});
 }
+

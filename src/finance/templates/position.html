@@ -38,9 +38,7 @@
 
 {% block scripts %}
 {{ super() }}
-
-<script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="/static/scripts/chart.js"></script>
 <script>
     var detail_instrument_id, instrument_name;
     //url_for is a jinjia2 function and will only be evaluated on server side once,
@@ -77,46 +75,11 @@
         }
     }
 
-    function pieChartOptions(title, name, data){
-        console.log('pie:'+data);
-        return {
-            chart: {
-                plotBackgroundColor: null,
-                plotBorderWidth: null,
-                plotShadow: false,
-                type: 'pie'
-            },
-            title: {
-                text: instrument_name+ '<br>'+title
-            },
-            tooltip: {
-                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-            },
-            plotOptions: {
-                pie: {
-                    allowPointSelect: true,
-                    cursor: 'pointer',
-                    dataLabels: {
-                        enabled: true,
-                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-                        style: {
-                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-                        }
-                    }
-                }
-            },
-            series: [{
-                name: name,
-                colorByPoint: true,
-                data: data
-            }]
-        };
-    }
 
     function detailShown() {
         var url = asset_allocation_url.replace(/0/,detail_instrument_id);
         $.getJSON(url, function (data) {
-            $('#pieAsset').highcharts(pieChartOptions('Asset Allocation', 'Asset', data));
+            $('#pieAsset').highcharts(pieChartOptions(instrument_name, 'Asset', data, true));
             //do the reflow below to force it to refit again - and the animation will be gone
             /*
              var chart = $("#pieAsset").highcharts();
@@ -126,7 +89,7 @@
 
         url = region_allocation_url.replace(/0/,detail_instrument_id);
         $.getJSON(url, function (data) {
-            $('#pieRegion').highcharts(pieChartOptions('Region Allocation', 'Region', data));
+            $('#pieRegion').highcharts(pieChartOptions(instrument_name, 'Region', data, true));
         });
     }
 
