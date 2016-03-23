@@ -45,7 +45,9 @@ def stock():
     return render_template(
         'stock.html',
         title='Stock & ETF',
-        year=datetime.now().year
+        year=datetime.now().year,
+        instrument_id_idx=12,
+        url_idx=13
     )
 
 
@@ -56,7 +58,8 @@ def fund():
         'fund.html',
         title='Mutual Funds',
         year=datetime.now().year,
-        instrument_id_idx=9
+        instrument_id_idx=9,
+        url_idx=10
     )
 
 

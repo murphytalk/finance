@@ -68,7 +68,7 @@
             var a = $('#detail_link');
             instrument_name = row_data[1].replace(/（.*）/i,"");
             a.text(instrument_name);
-            a.attr("href", row_data[10]);
+            a.attr("href", row_data[{{url_idx}}]);
             //We are putting highcharts inside the modal window.
             //The problem is the chart does not know when to reflow itself to fit the container.
             //So we defer the chart building until modal is shown, we remember the instrument id here

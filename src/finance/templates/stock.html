@@ -1,6 +1,7 @@
-{% extends "datatable.html" %}
+{% extends "position.html" %}
 
 {% block content %}
+{{ super() }}
 <div class="row top5 bottom5">
     <div class="col-md-12">
         <table class="table table-hover" id="stocks">
@@ -45,6 +46,7 @@
 {% block scripts %}
 {{ super() }}
 <script>
+    var table;
     var sum = {"value":0,"value_jpy":0,"liquidated":0,"liquidated_jpy":0};
     $(document).ready(function () {
         $.getJSON("{{ url_for('stock_json')}}",
@@ -70,24 +72,37 @@
                                 liquidated["JPY"],
                                 value[value["ccy"]]+liquidated[liquidated["ccy"]],
                                 value["JPY"]+liquidated["JPY"],
-                                liquidated["rate_date"]
+                                liquidated["rate_date"],
+                                d["instrument"],
+                                d["url"]
+
                         );
                         rows.push(row);
                     });
                 });
                 const num_cols = [0,1,2,3,4,5,6,7,8,9,10];
-                var table = populate_data(
+                table = populate_data(
                         '#stocks',
                         function(d,callback,s){callback({'data':rows});},
                         [[0, 'asc'], [1, 'asc']],
                         10,
                         null,
                         [
+                            {
+                                "render": function (data, type, row) {
+                                //row[12] => instrument id =>index 12 in the json array assigned to this row
+                                //see FundReport
+                                return '<a href="#" onclick="showInstrumentDetail(' + row[12] + ');return false;">' + data + '</a>'
+                                }, "targets": 1
+                            },
                             { "render": function(data, type, row){return data.toLocaleString();} ,"targets": num_cols },
                             { "className": "text-right", "targets": num_cols }
                         ],
                         null
                 );
+
+                install_detail_event_callback();
+
                 update_sum(table,'$',5 ,sum["value"],'#value');
                 update_sum(table,'¥',6 ,sum["value_jpy"],'#value-jpy');
                 update_sum(table,'$',7 ,sum["liquidated"],'#liq');
@@ -96,7 +111,6 @@
                 update_sum(table,'¥',10,sum["value_jpy"]+sum["liquidated_jpy"],'#profit-jpy');
 
                 $('#stocks').on('search.dt',function(e,settings){
-                    var table = $('#stocks').DataTable();
                     update_sum(table,'$',5 ,sum["value"],'#value');
                     update_sum(table,'¥',6 ,sum["value_jpy"],'#value-jpy');
                     update_sum(table,'$',7 ,sum["liquidated"],'#liq');

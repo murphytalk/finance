@@ -38,6 +38,8 @@ class StockReport(Report):
         def calc_stock(instrument, position):
             v = position.shares * self.q[instrument].price
             r = {}
+            r['instrument'] = instrument
+            r['url'] = self.i[instrument].url
             r['symbol'] = position.name
             r['shares'] = position.shares
             r['price'] = self.q[instrument].price
