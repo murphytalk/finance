@@ -113,7 +113,6 @@ class SummaryReport(Report):
             for k, v in region.items():
                 yield (k, v)
 
-        print self.positions
         #return {'total': reduce(lambda a, b: a[1]+b[1], self.positions),
         return {'total': reduce(lambda a, b: a+b, [x[1] for x in self.positions]),
                 'asset': get_pie_chart_data(asset_class_generator(dao)),
