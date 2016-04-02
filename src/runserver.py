@@ -3,10 +3,9 @@
 This script runs the finance application using a development server.
 """
 from os import environ
-
 from werkzeug.serving import run_simple
 
-from finance import application, app
+from finance import application, DEBUG
 
 if __name__ == '__main__':
     HOST = environ.get('SERVER_HOST', 'localhost')
@@ -15,4 +14,4 @@ if __name__ == '__main__':
     except ValueError:
         PORT = 5555
 
-    run_simple(HOST, PORT, application, use_reloader=app.debug)
+    run_simple(HOST, PORT, application, use_reloader=DEBUG)
