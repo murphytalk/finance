@@ -15,4 +15,6 @@ app = Flask(__name__)
 # load all uppercase variables ad configuration
 app.config.from_object(__name__)
 app.debug = (node() != "anchor")  # anchor is the production box's hostname
-import finance.views
+app.config["APPLICATION_ROOT"] = "/finance"
+
+import views

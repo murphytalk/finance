@@ -3,7 +3,7 @@ Routes and views for the flask application.
 """
 
 from datetime import datetime, date
-from flask import render_template, g, current_app, Response
+from flask import render_template, g, current_app, Response, url_for
 from finance import app
 from common.dao import factory
 from common.report import *
@@ -26,6 +26,7 @@ def teardown_request(exception):
 @app.route('/')
 def summary():
     """Renders the home page."""
+    current_app.logger.debug('idx=%s', url_for("summary"))
     return render_template(
         'index.html',
         title='Home Page',

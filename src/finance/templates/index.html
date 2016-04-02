@@ -22,7 +22,7 @@
 
 {% block scripts %}
 {{ super() }}
-<script src="/static/scripts/chart.js"></script>
+<script src="/static/finance/scripts/chart.js"></script>
 <script>
     $(document).ready(function(){
         $.getJSON("{{ url_for('sum_json')}}",
