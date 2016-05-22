@@ -16,7 +16,7 @@ def get_utc_offset():
 
 
 def get_current_date_epoch():
-    return int((time.time() + get_utc_offset()) / SECONDS_PER_DAY) * SECONDS_PER_DAY
+    return int((time.time()) / SECONDS_PER_DAY) * SECONDS_PER_DAY
 
 
 def epoch2datetime(epoch):
@@ -58,8 +58,7 @@ def cmdline_args(argv, db_adapter_clz=None):
     debug_mode_option = '-d'
     args = [x for x in argv if x != debug_mode_option]
 
-    result = {}
-    result['debug'] = debug_mode_option in argv
+    result = {'debug': debug_mode_option in argv}
 
     others = [x for x in args if x[:2] != '-f' and x[:2] != '-s' and x[:2] != '-e']
     db = [x for x in args if x[:2] == '-f']
