@@ -1,8 +1,8 @@
 #!/bin/bash
 
-FINANCE_DB=`find $HOME -type f -name finance.db`
+[ -z "$FINANCE_DB" ] &&  FINANCE_DB=`find $HOME -type f -name finance.db`
 
-if [ -z "$FINANCE_DB" ];then
+if [[ -z "$FINANCE_DB" || ! -f $FINANCE_DB ]];then
 	echo Cannot find finance.db !
 	exit 1
 fi
