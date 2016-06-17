@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import random
 import sqlite3
-from time import mktime
-
+from calendar import timegm
 from model import *
-from utils import get_utc_offset
 
 
 class Raw:
@@ -38,8 +36,8 @@ class Dao(Raw):
 SELECT i.name,t.instrument,t.type,t.price,t.shares,t.fee,t.date FROM [transaction] t, instrument i
 WHERE t.instrument = i.rowid AND date >=? AND date<=? ORDER BY date
 """
-        epoch1 = int(mktime(start_date.timetuple()) + get_utc_offset())
-        epoch2 = int(mktime(end_date.timetuple()) + get_utc_offset())
+        epoch1 = int(timegm(start_date.timetuple()))
+        epoch2 = int(timegm(end_date.timetuple()))
 
         for f in self.query(sql, (epoch1, epoch2)):
             callback(f['instrument'], f['name'], f['type'], f['price'], f['shares'], f['fee'], f['date'])
@@ -75,7 +73,7 @@ WHERE i.type = it.rowid
         """
         return a dict {instrument id : Quote}
         """
-        epoch = int(mktime(quote_date.timetuple()) + get_utc_offset())
+        epoch = int(timegm(quote_date.timetuple()))
         sql = """
 SELECT
 q.instrument,i.name,q.price, q.date FROM quote q, instrument i
@@ -90,7 +88,7 @@ q.instrument = i.rowid"""
         if the xccy rate on specified date does not exist, then use rate on the closet earlier date
         return a dict {instrument id : Instrument}
         """
-        epoch = int(mktime(the_date.timetuple()) + get_utc_offset())
+        epoch = int(timegm(the_date.timetuple()))
         sql = """
 SELECT
 i.rowid instrument, 
@@ -129,7 +127,8 @@ ON i.currency = x.from_id
 SELECT broker,name,instrument_id,url,expense_ratio,amount,price,value,profit,capital,date FROM fund_performance WHERE
 date = (SELECT max(date) FROM fund_performance WHERE date<= :date)
 """
-        for r in self.query(sql, {'date': the_date}):
+        epoch = int(timegm(the_date.timetuple()))
+        for r in self.query(sql, {'date': epoch}):
             yield (r['broker'], r['name'], r['expense_ratio'], r['price'], r['amount'], r['capital'],
                    r['value'], r['profit'], r['date'], r['instrument_id'], r['url'])
 
