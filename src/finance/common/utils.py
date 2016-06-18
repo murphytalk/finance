@@ -1,7 +1,8 @@
 ﻿import sys
 import time
-from const import STOCK_START_DATE
 from datetime import datetime, date
+from const import STOCK_START_DATE
+
 SECONDS_PER_DAY = 3600 * 24
 
 
@@ -18,7 +19,7 @@ def epoch2date(epoch):
     """
     epoch is in UTC, convert it to local date by applying timezone offset
     """
-    return date.fromtimestamp(epoch+time.timezone)
+    return date.fromtimestamp(epoch + time.timezone)
 
 
 def cmdline_args(argv, db_adapter_clz=None):

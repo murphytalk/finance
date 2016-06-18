@@ -2,6 +2,7 @@
 import random
 import sqlite3
 from calendar import timegm
+
 from model import *
 
 
@@ -32,10 +33,8 @@ class Dao(Raw):
         iterate stock transactions, callback signature:
         callback(instrument id,instrument name,transaction type,price, shares,fee, date)
         """
-        sql = """
-SELECT i.name,t.instrument,t.type,t.price,t.shares,t.fee,t.date FROM [transaction] t, instrument i
-WHERE t.instrument = i.rowid AND date >=? AND date<=? ORDER BY date
-"""
+        sql = ('SELECT i.name,t.instrument,t.type,t.price,t.shares,t.fee,t.date FROM [transaction] t, instrument i '
+               'WHERE t.instrument = i.rowid AND date >=? AND date<=? ORDER BY date')
         epoch1 = int(timegm(start_date.timetuple()))
         epoch2 = int(timegm(end_date.timetuple()))
 
@@ -59,11 +58,9 @@ WHERE t.instrument = i.rowid AND date >=? AND date<=? ORDER BY date
         """
         c = create_new_obj_func if create_new_obj_func is not None else \
             lambda instrument_id, name, type_id, type_name, url, expense_ratio: Instrument.create(
-                    instrument_id, name, type_id, type_name, url, expense_ratio)
-        sql = '''
-SELECT i.rowid,i.name,it.rowid AS type_id, it.type AS type, i.url, i.expense_ratio FROM instrument i,instrument_type it
-WHERE i.type = it.rowid
-'''
+                instrument_id, name, type_id, type_name, url, expense_ratio)
+        sql = ('SELECT i.rowid,i.name,it.rowid AS type_id, it.type AS type, i.url, i.expense_ratio FROM '
+               'instrument i,instrument_type it WHERE i.type = it.rowid')
         if instrument_filter is not None:
             sql = sql + ' and ' + instrument_filter
         return {x['rowid']: c(x['rowid'], x['name'], x['type_id'], x['type'], x['url'], x['expense_ratio'])
@@ -74,11 +71,8 @@ WHERE i.type = it.rowid
         return a dict {instrument id : Quote}
         """
         epoch = int(timegm(quote_date.timetuple()))
-        sql = """
-SELECT
-q.instrument,i.name,q.price, q.date FROM quote q, instrument i
-WHERE date = (SELECT max(date) FROM quote WHERE  date<=?) AND
-q.instrument = i.rowid"""
+        sql = ('SELECT q.instrument,i.name,q.price, q.date FROM quote q, instrument i '
+               'WHERE date = (SELECT max(date) FROM quote WHERE  date<=?) AND q.instrument = i.rowid')
 
         r = self.query(sql, (epoch,))
         return {x['instrument']: Quote(x['instrument'], x['name'], x['price'], x['date']) for x in r}
@@ -89,58 +83,56 @@ q.instrument = i.rowid"""
         return a dict {instrument id : Instrument}
         """
         epoch = int(timegm(the_date.timetuple()))
-        sql = """
-SELECT
-i.rowid instrument, 
-i.name, 
-i.type instrument_type_id, 
-a.type instrument_type,
-i.url,
-i.expense_ratio,
-c.name currency, 
-ifnull(x.rate,1) rate,
-ifnull(x.date,0) rate_date
-FROM instrument i
-JOIN instrument_type a ON i.type = a.rowid
-JOIN currency c ON i.currency = c.rowid
-LEFT JOIN ( SELECT * FROM xccy_hist WHERE date = (SELECT max(date) FROM xccy_hist WHERE date<=?)) x
-ON i.currency = x.from_id
-"""
+        sql = ('SELECT '
+               'i.rowid instrument,'
+               'i.name,'
+               'i.type instrument_type_id,'
+               'a.type instrument_type,'
+               'i.url,'
+               'i.expense_ratio,'
+               'c.name currency,'
+               'ifnull(x.rate,1) rate,'
+               'ifnull(x.date,0) rate_date '
+               'FROM instrument i '
+               'JOIN instrument_type a ON i.type = a.rowid '
+               'JOIN currency c ON i.currency = c.rowid '
+               'LEFT JOIN ( SELECT * FROM xccy_hist WHERE date = (SELECT max(date) FROM xccy_hist WHERE date<=?)) x '
+               'ON i.currency = x.from_id')
 
-        return {x['instrument']: Instrument.create(
-                                            x['instrument'],
-                                            x['name'],
-                                            x['instrument_type_id'],
-                                            x['instrument_type'],
-                                            x['url'],
-                                            x['expense_ratio'],
-                                            x['currency'],
-                                            x['rate'],
-                                            x['rate_date']) for x in self.query(sql, (epoch,))}
+        return {
+            x['instrument']: Instrument.create(
+            x['instrument'],
+            x['name'],
+            x['instrument_type_id'],
+            x['instrument_type'],
+            x['url'],
+            x['expense_ratio'],
+            x['currency'],
+            x['rate'],
+            x['rate_date']) for x in self.query(sql, (epoch,))}
 
     def get_funds_positions(self, the_date):
         """
         Query funds performance view, query the latest day's data no late than give date,
         return a generator which generates a stream of (broker,name,price,amount,capital,value,profit,date in epoch)
         """
-        sql = """
-SELECT broker,name,instrument_id,url,expense_ratio,amount,price,value,profit,capital,date FROM fund_performance WHERE
-date = (SELECT max(date) FROM fund_performance WHERE date<= :date)
-"""
+        sql = ('SELECT broker,name,instrument_id,url,expense_ratio,amount,price,value,profit,capital,date '
+               'FROM fund_performance WHERE '
+               'date = (SELECT max(date) FROM fund_performance WHERE date<= :date)')
         epoch = int(timegm(the_date.timetuple()))
         for r in self.query(sql, {'date': epoch}):
             yield (r['broker'], r['name'], r['expense_ratio'], r['price'], r['amount'], r['capital'],
                    r['value'], r['profit'], r['date'], r['instrument_id'], r['url'])
 
     def get_asset_allocation(self, instrument_id):
-        sql = '''select t.type,a.ratio from asset_allocation a, asset t where a.instrument = ? and a.asset=t.rowid
-order by a.asset'''
+        sql = ('SELECT t.type,a.ratio FROM asset_allocation a, asset t WHERE a.instrument = ? AND a.asset=t.rowid '
+               'ORDER BY a.asset')
         for r in self.query(sql, (int(instrument_id),)):
             yield (r['type'], r['ratio'])
 
     def get_region_allocation(self, instrument_id):
-        sql = '''select t.name,a.ratio from region_allocation a, region t where a.instrument = ? and a.region=t.rowid
-order by a.region'''
+        sql = ('SELECT t.name,a.ratio FROM region_allocation a, region t WHERE a.instrument = ? AND a.region=t.rowid '
+               'ORDER BY a.region')
         for r in self.query(sql, (int(instrument_id),)):
             yield (r['name'], r['ratio'])
 
@@ -204,7 +196,7 @@ def factory(db_file_path):
                     if symbol in self.stocks:
                         continue
                     self.stocks[instrument_id] = Instrument(instrument_id, symbol, random.choice(
-                            (InstrumentType(1, 'Stock'), InstrumentType(2, 'ETF'))))
+                        (InstrumentType(1, 'Stock'), InstrumentType(2, 'ETF'))))
                     instrument_id += 1
 
             def close(self):
@@ -268,12 +260,12 @@ def factory(db_file_path):
 
             @staticmethod
             def q_region_allocation():
-                return ({'name': r, 'ratio':random.randint(10, 30)}
+                return ({'name': r, 'ratio': random.randint(10, 30)}
                         for r in ('US', 'Europe', 'Japan', 'Emerging Market'))
 
             @staticmethod
             def q_asset_allocation():
-                return ({'type': r, 'ratio':random.randint(10, 30)}
+                return ({'type': r, 'ratio': random.randint(10, 30)}
                         for r in ('Bond', 'Stock', 'Cash'))
 
             def query(self, sql, parameters=None):

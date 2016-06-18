@@ -3,11 +3,11 @@
 from __future__ import division
 
 import sys
-from utils import cmdline_args, epoch2date
-from dao import Dao
-from calculate import CalcPosition
 from json import dumps, encoder
-from datetime import date
+
+from calculate import CalcPosition
+from dao import Dao
+from utils import cmdline_args, epoch2date
 
 # format float value in json
 encoder.FLOAT_REPR = lambda o: format(o, '.2f')
@@ -94,7 +94,7 @@ class SummaryReport(Report):
         stock = StockReport(dao, the_date)
         funds = FundReport(dao, the_date)
         self.positions = [x for x in get_stock_positions(stock.stock_positions())] + [x for x in get_fund_positions(
-                funds.positions)]
+            funds.positions)]
 
     def report(self, dao):
         def asset_class_generator(dao):
@@ -113,8 +113,8 @@ class SummaryReport(Report):
             for k, v in region.items():
                 yield (k, v)
 
-        #return {'total': reduce(lambda a, b: a[1]+b[1], self.positions),
-        return {'total': reduce(lambda a, b: a+b, [x[1] for x in self.positions]),
+        # return {'total': reduce(lambda a, b: a[1]+b[1], self.positions),
+        return {'total': reduce(lambda a, b: a + b, [x[1] for x in self.positions]),
                 'asset': get_pie_chart_data(asset_class_generator(dao)),
                 'region': get_pie_chart_data(region_generator(dao))}
 

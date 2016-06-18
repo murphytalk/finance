@@ -2,6 +2,7 @@
 from json import dumps
 from utils import epoch2date
 
+
 class Model:
     def __init__(self):
         pass
@@ -67,9 +68,9 @@ class Instrument(Model):
 
     @classmethod
     def create(cls, instrument_id, name, instrument_type, instrument_type_name,
-               url, expense_ratio,currency=None, xccy_rate=None, xccy_rate_date=None):
+               url, expense_ratio, currency=None, xccy_rate=None, xccy_rate_date=None):
         return Instrument(instrument_id, name, InstrumentType(instrument_type, instrument_type_name),
-                          url, expense_ratio,currency, xccy_rate, xccy_rate_date)
+                          url, expense_ratio, currency, xccy_rate, xccy_rate_date)
 
     def __str__(self):
         return "id={},type={}".format(self.id, self.instrument_type)

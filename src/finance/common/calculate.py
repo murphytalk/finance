@@ -7,12 +7,12 @@ parameter:
  -i        do not update db file
 
 """
-import sys, sqlite3
-from datetime import date
-from utils import cmdline_args
+import sys
+
+from const import STOCK_START_DATE
 from dao import Dao
 from model import Position
-from const import STOCK_START_DATE
+from utils import cmdline_args
 
 
 class CalcPosition:
