@@ -45,7 +45,7 @@ class Dao(Raw):
         """
         Populate a dict {instrument id : user defined data type} by
         querying from table instrument , filter should be a valid SQL where clause
-        
+
         create_new_obj_func signature:
         parameter:
           instrument id
@@ -148,7 +148,7 @@ def factory(db_file_path):
         class FakeDao(Dao):
             """
             randomly generate static and market data instead of reading from DB
-        
+
             STOCK_NUM - how many stocks to generate
             """
 

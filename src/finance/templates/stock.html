@@ -3,38 +3,46 @@
 {% block content %}
 {{ super() }}
 <div class="row top5 bottom5">
-    <div class="col-md-12">
+   <div class="col-md-12">
         <table class="table table-hover" id="stocks">
             <thead>
-                <tr>
-                    <th class="text-right">Type</th>
-                    <th class="text-right">Symbol</th>
-                    <th class="text-right">Price</th>
-                    <th class="text-right">Shares</th>
-                    <th class="text-right">Ccy</th>
-                    <th class="text-right">Value</th>
-                    <th class="text-right">JPY</th>
-                    <th class="text-right">Liquidated</th>
-                    <th class="text-right">JPY</th>
-                    <th class="text-right">Profit</th>
-                    <th class="text-right">JPY</th>
-                    <th>Xccy Date</th>
-                </tr>
+            <tr>
+                <th rowspan="2" class="text-right">Type</th>
+                <th rowspan="2" class="text-right">Symbol</th>
+                <th rowspan="2" class="text-right">Price</th>
+                <th rowspan="2" class="text-right">Shares</th>
+                <th rowspan="2" class="text-right">CCY</th>
+                <th colspan="2" class="text-right">Market Value</th>
+                <th colspan="2" class="text-right">Market Profit</th>
+                <th colspan="2" class="text-right">Liquidated</th>
+                <th colspan="2" class="text-right">Profit</th>
+            </tr>
+            <tr>
+                <th class="text-right">CCY</th>
+                <th class="text-right">JPY</th>
+                <th class="text-right">CCY</th>
+                <th class="text-right">JPY</th>
+                <th class="text-right">CCY</th>
+                <th class="text-right">JPY</th>
+                <th class="text-right">CCY</th>
+                <th class="text-right">JPY</th>
+            </tr>
             </thead>
             <tfoot>
                 <tr>
-                    <th></th>
-                    <th></th>
+                    <th>Xccy Date</th>
+                    <th><div id="xccy_date"></div></th>
                     <th></th>
                     <th></th>
                     <th></th>
                     <th class="text-right"><div id="value"></div></th>
                     <th class="text-right"><div id="value-jpy" ></div></th>
+                    <th class="text-right"><div id="market-profit" ></div></th>
+                    <th class="text-right"><div id="market-profit-jpy" ></div></th>
                     <th class="text-right"><div id="liq" ></div></th>
                     <th class="text-right"><div id="liq-jpy"></div></th>
                     <th class="text-right"><div id="profit" ></div></th>
                     <th class="text-right"><div id="profit-jpy" ></div></th>
-                    <th/>
                 </tr>
             </tfoot>
          </table>
@@ -68,56 +76,62 @@
                                 value["ccy"],
                                 value[value["ccy"]],
                                 value["JPY"],
+                                0,
+                                0,
                                 liquidated[liquidated["ccy"]],
                                 liquidated["JPY"],
-                                value[value["ccy"]]+liquidated[liquidated["ccy"]],
+                                value[value["ccy"]]+liquidated[liquidated["ccy"]], //profit
                                 value["JPY"]+liquidated["JPY"],
                                 liquidated["rate_date"],
                                 d["instrument"],
                                 d["url"]
-
                         );
                         rows.push(row);
                     });
                 });
-                const num_cols = [0,1,2,3,4,5,6,7,8,9,10];
+                const num_cols = [2,3,5,6,7,8,9,10,11,12];
+                const txt_cols = [0,1,4];
                 table = populate_data(
                         '#stocks',
                         function(d,callback,s){callback({'data':rows});},
                         [[0, 'asc'], [1, 'asc']],
-                        10,
+                        15,
                         null,
                         [
                             {
                                 "render": function (data, type, row) {
-                                //row[12] => instrument id =>index 12 in the json array assigned to this row
-                                //see FundReport
-                                return '<a href="#" onclick="showInstrumentDetail(' + row[12] + ');return false;">' + data + '</a>'
+                                //row[14] => instrument id =>index 14 in the json array assigned to this row
+                                //see view.stock
+                                return '<a href="#" onclick="showInstrumentDetail(' + row[14] + ');return false;">' + data + '</a>'
                                 }, "targets": 1
                             },
                             { "render": function(data, type, row){return data.toLocaleString();} ,"targets": num_cols },
-                            { "className": "text-right", "targets": num_cols }
+                            { "className": "text-right", "targets": num_cols },
+                            { "className": "text-center", "targets": txt_cols },
                         ],
                         null
                 );
 
                 install_detail_event_callback();
 
+                $('#xccy_date').html(rows[0][13]);
+
                 update_sum(table,'$',5 ,sum["value"],'#value');
                 update_sum(table,'¥',6 ,sum["value_jpy"],'#value-jpy');
-                update_sum(table,'$',7 ,sum["liquidated"],'#liq');
-                update_sum(table,'¥',8 ,sum["liquidated_jpy"],'#liq-jpy');
-                update_sum(table,'$',9 ,sum["value"]+sum["liquidated"],'#profit');
-                update_sum(table,'¥',10,sum["value_jpy"]+sum["liquidated_jpy"],'#profit-jpy');
+                update_sum(table,'$',9 ,sum["liquidated"],'#liq');
+                update_sum(table,'¥',10 ,sum["liquidated_jpy"],'#liq-jpy');
+                update_sum(table,'$',11 ,sum["value"]+sum["liquidated"],'#profit');
+                update_sum(table,'¥',12,sum["value_jpy"]+sum["liquidated_jpy"],'#profit-jpy');
 
                 $('#stocks').on('search.dt',function(e,settings){
                     update_sum(table,'$',5 ,sum["value"],'#value');
                     update_sum(table,'¥',6 ,sum["value_jpy"],'#value-jpy');
-                    update_sum(table,'$',7 ,sum["liquidated"],'#liq');
-                    update_sum(table,'¥',8 ,sum["liquidated_jpy"],'#liq-jpy');
-                    update_sum(table,'$',9 ,sum["value"]+sum["liquidated"],'#profit');
-                    update_sum(table,'¥',10,sum["value_jpy"]+sum["liquidated_jpy"],'#profit-jpy');
+                    update_sum(table,'$',9 ,sum["liquidated"],'#liq');
+                    update_sum(table,'¥',10 ,sum["liquidated_jpy"],'#liq-jpy');
+                    update_sum(table,'$',11 ,sum["value"]+sum["liquidated"],'#profit');
+                    update_sum(table,'¥',12,sum["value_jpy"]+sum["liquidated_jpy"],'#profit-jpy');
                 });
+
             });
         });
 

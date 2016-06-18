@@ -47,8 +47,8 @@ def stock():
         'stock.html',
         title='Stock & ETF',
         year=datetime.now().year,
-        instrument_id_idx=12,
-        url_idx=13
+        instrument_id_idx=14,
+        url_idx=15
     )
 
 

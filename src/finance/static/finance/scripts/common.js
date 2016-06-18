@@ -53,15 +53,15 @@ function build_header(table_selector,headers) {
  function populate_data(table_selector,url,col_order,row_per_page,lengthMenu,colDefs,footer) {
     var lenMenu;
     if(lengthMenu==null){
-        lenMenu = [10, 25, 50, 100];
+        lenMenu = [10, 15, 50, 100];
     }
     else lenMenu = lengthMenu;
-/*
-    var pageLen =  getDataTablePageLength(table_selector);
-    if(pageLen == null){
-         pageLen = row_per_page;
-    }
-*/
+
+//    var pageLen =  getDataTablePageLength(table_selector);
+//    if(pageLen == null){
+//         pageLen = row_per_page;
+//    }
+     
     var parameter = {
         ajax: url,
         order: col_order,
