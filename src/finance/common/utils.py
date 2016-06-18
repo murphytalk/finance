@@ -11,16 +11,15 @@ def add_lib_to_path(zip):
         sys.path.insert(0, zip)
 
 
-def get_utc_offset():
-    return -time.timezone
-
-
 def get_current_date_epoch():
     return int((time.time()) / SECONDS_PER_DAY) * SECONDS_PER_DAY
 
 
-def epoch2datetime(epoch):
-    return datetime.fromtimestamp(epoch)
+def epoch2date(epoch):
+    """
+    epoch is in UTC, convert it to local date by applying timezone offset
+    """
+    return date.fromtimestamp(epoch-time.timezone)
 
 
 def cmdline_args(argv, db_adapter_clz=None):
@@ -31,7 +30,7 @@ def cmdline_args(argv, db_adapter_clz=None):
          argv : sys.argv[1:]
 
     process the following cmd line arguments:
-    
+  
         -d debug mode
         -fxxxxxx  path to sqlite db file xxxxx
                   if -f not spcified then output to stdout
@@ -39,7 +38,7 @@ def cmdline_args(argv, db_adapter_clz=None):
         -sYYYYMMDD start date
         -eYYYYMMDD end date
 
-    return: ({processed arg name:value},[not processed arguments])               
+    return: ({processed arg name:value},[not processed arguments])
         processed arg names :
           start_date
           end_date

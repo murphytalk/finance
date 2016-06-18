@@ -3,7 +3,7 @@
 from __future__ import division
 
 import sys
-from utils import cmdline_args
+from utils import cmdline_args, epoch2date
 from dao import Dao
 from calculate import CalcPosition
 from json import dumps, encoder
@@ -76,7 +76,7 @@ class StockReport(Report):
 class FundReport(Report):
     def __init__(self, dao, the_date):
         self.positions = [
-            [x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], str(the_date.fromtimestamp(x[8])), x[9], x[10]]
+            [x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], str(epoch2date(x[8])), x[9], x[10]]
             for x in dao.get_funds_positions(the_date)]
 
 
@@ -143,19 +143,19 @@ def region_allocation(dao, instrument_id):
 
 
 def raw_quote(dao):
-    q = [[str(date.fromtimestamp(x['date'])), x['name'], x['price']] for x in
+    q = [[str(epoch2date(x['date'])), x['name'], x['price']] for x in
          dao.query('SELECT * FROM stock_quote ORDER BY date DESC')]
     return Report.to_json_packed({'data': q})
 
 
 def raw_xccy(dao):
-    q = [[str(date.fromtimestamp(x['date'])), x['From'], x['To'], x['rate']] for x in
+    q = [[str(epoch2date(x['date'])), x['From'], x['To'], x['rate']] for x in
          dao.query('SELECT * FROM xccy_hist')]
     return Report.to_json_packed({'data': q})
 
 
 def raw_trans(dao):
-    q = [[str(date.fromtimestamp(x['date'])), x['name'], x['type'], x['price'], x['shares'], x['fee']] for x in
+    q = [[str(epoch2date(x['date'])), x['name'], x['type'], x['price'], x['shares'], x['fee']] for x in
          dao.query('SELECT date,name,type,price,shares,fee FROM stock_trans')]
     return Report.to_json_packed({'data': q})
 

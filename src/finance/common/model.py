@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from datetime import date
 from json import dumps
-
+from utils import epoch2date
 
 class Model:
     def __init__(self):
@@ -38,7 +37,7 @@ class Quote(Model):
         self.instrument = instrument
         self.symbol = name
         self.price = price
-        self.date = date.fromtimestamp(quote_date)  # the actual date
+        self.date = epoch2date(quote_date)  # the actual date
 
     def __str__(self):
         return "Date={},symbol={},id={},price={}".format(self.date, self.symbol, self.instrument, self.price)
@@ -64,7 +63,7 @@ class Instrument(Model):
         if currency is not None:
             self.currency = currency
             self.xccy_rate = xccy_rate
-            self.xccy_date = date.fromtimestamp(xccy_rate_date)
+            self.xccy_date = epoch2date(xccy_rate_date)
 
     @classmethod
     def create(cls, instrument_id, name, instrument_type, instrument_type_name,
