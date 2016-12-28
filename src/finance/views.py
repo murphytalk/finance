@@ -28,7 +28,7 @@ def summary():
     """Renders the home page."""
     current_app.logger.debug('idx=%s', url_for("summary"))
     return render_template(
-        'index.html',
+        'index.jinja2',
         title='Home Page',
         year=datetime.now().year,
     )
@@ -44,7 +44,7 @@ def stock_json():
 def stock():
     """Renders the contact page."""
     return render_template(
-        'stock.html',
+        'stock.jinja2',
         title='Stock & ETF',
         year=datetime.now().year,
         instrument_id_idx=14,
@@ -56,7 +56,7 @@ def stock():
 def fund():
     """Renders the about page."""
     return render_template(
-        'fund.html',
+        'fund.jinja2',
         title='Mutual Funds',
         year=datetime.now().year,
         instrument_id_idx=9,
@@ -89,7 +89,7 @@ def sum_json():
 @app.route('/db')
 def db():
     return render_template(
-        'db.html',
+        'db.jinja2',
         title='Data Viewer',
         year=datetime.now().year
     )

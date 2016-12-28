@@ -1,13 +1,12 @@
-#!/usr/bin/python2
 # -*- coding: utf-8 -*-
-from __future__ import division
-
 import sys
 from json import dumps, encoder
+from functools import reduce
 
 from calculate import CalcPosition
 from dao import Dao
 from utils import cmdline_args, epoch2date
+
 
 # format float value in json
 encoder.FLOAT_REPR = lambda o: format(o, '.2f')
@@ -47,16 +46,13 @@ class StockReport(Report):
     def stock_positions(self, positions=None):
         def calc_stock(instrument, position):
             v = position.shares * self.q[instrument].price
-            r = {}
-            r['instrument'] = instrument
-            r['url'] = self.i[instrument].url
-            r['symbol'] = position.name
-            r['shares'] = position.shares
-            r['price'] = self.q[instrument].price
-            r['value'] = self.gen_price_with_xccy(v, self.i[instrument].currency, self.i[instrument].xccy_rate,
-                                                  self.i[instrument].xccy_date)
-            r['liquidated'] = self.gen_price_with_xccy(position.liquidated, self.i[instrument].currency,
-                                                       self.i[instrument].xccy_rate, self.i[instrument].xccy_date)
+            rpt = {
+                'instrument': instrument, 'url': self.i[instrument].url, 'symbol': position.name,
+                'shares': position.shares, 'price': self.q[instrument].price,
+                'value': self.gen_price_with_xccy(v, self.i[instrument].currency, self.i[instrument].xccy_rate,
+                                                  self.i[instrument].xccy_date),
+                'liquidated': self.gen_price_with_xccy(position.liquidated, self.i[instrument].currency,
+                                                       self.i[instrument].xccy_rate, self.i[instrument].xccy_date)}
 
             t = self.i[instrument].instrument_type.name
             if t in positions:
@@ -64,7 +60,7 @@ class StockReport(Report):
             else:
                 by_instrument = []
 
-            by_instrument.append(r)
+            by_instrument.append(rpt)
             positions[t] = by_instrument
 
         if positions is None:
@@ -167,23 +163,22 @@ if __name__ == "__main__":
     db = args['dbfile']
 
     if db is None:
-        print 'Need a db file'
+        print('Need a db file')
     else:
         dao = Dao(db)
-
         if 'stock' in others:
             r = StockReport(dao, args['end_date'])
-            print r.to_json(r.stock_positions())
+            print(r.to_json(r.stock_positions()))
         elif 'fund' in others:
             r = FundReport(dao, args['end_date'])
         elif 'quote' in others:
-            print Report.to_json(raw_quote(dao))
+            print(Report.to_json(raw_quote(dao)))
         elif 'xccy' in others:
-            print Report.to_json(raw_xccy(dao))
+            print(Report.to_json(raw_xccy(dao)))
         elif 'trans' in others:
-            print Report.to_json(raw_trans(dao))
+            print(Report.to_json(raw_trans(dao)))
         elif 'sum' in others:
             r = SummaryReport(dao, args['end_date'])
-            print Report.to_json(r.report(dao))
+            print(Report.to_json(r.report(dao)))
 
         dao.close()

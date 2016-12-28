@@ -42,9 +42,9 @@ class CalcPosition:
             d.close()
 
     def dump(self, callback=None):
-        for k, v in self.positions.iteritems():
+        for k, v in self.positions.items():
             if callback is None:
-                print k, v
+                print(k, v)
             else:
                 callback(k, v)
 
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     db = args['dbfile']
 
     if db is None:
-        print 'Need a db file'
+        print('Need a db file')
     else:
         c = CalcPosition(args['end_date'])
         c.calc(db)

@@ -16,7 +16,7 @@ DEBUG = not deployed_in_production
 URL_ROOT = "/finance" if deployed_in_production else None
 
 env_db = environ.get('FINANCE_DB')
-DATABASE = r"C:\work\finance.db" if env_db is None else env_db
+DATABASE = r"E:\work\finance\finance.db" if env_db is None else env_db
 if not isfile(DATABASE):
     DATABASE = None  # FakeDao will be used
 

@@ -23,7 +23,7 @@ if __name__ == "__main__":
     instrument = [x for x in sys.argv[1:] if x[:2] == '-i']
 
     if len(ratios) == 0 or len(db) == 0:
-        print "Bad paramter"
+        print ("Bad paramter")
     else:
         db = db[0][2:]
         instrument = instrument[0][2:]
