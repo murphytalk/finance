@@ -5,8 +5,8 @@ Routes and views for the flask application.
 from datetime import datetime, date
 from flask import render_template, g, current_app, Response, url_for
 from finance import app
-from common.dao import factory
-from common.report import *
+from finance.common.dao import factory
+from finance.common.report import *
 
 
 @app.before_request

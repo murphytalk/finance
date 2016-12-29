@@ -16,7 +16,7 @@ DEBUG = not deployed_in_production
 URL_ROOT = "/finance" if deployed_in_production else None
 
 env_db = environ.get('FINANCE_DB')
-DATABASE = r"E:\work\finance\finance.db" if env_db is None else env_db
+DATABASE = r"d:\work\finance.db" if env_db is None else env_db
 if not isfile(DATABASE):
     DATABASE = None  # FakeDao will be used
 
@@ -31,4 +31,4 @@ if URL_ROOT is not None:
 else:
     application = app
 
-import views
+from finance import views

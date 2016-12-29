@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from json import dumps
-from utils import epoch2date
+from finance.common.utils import epoch2date
 
 
 class Model:

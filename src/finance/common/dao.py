@@ -3,7 +3,7 @@ import random
 import sqlite3
 from calendar import timegm
 
-from model import *
+from finance.common.model import *
 
 
 class Raw:
