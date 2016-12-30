@@ -24,7 +24,7 @@ class Raw:
         return self.c.fetchall()
 
     def exec_many(self, sql, parameters):
-        self.c.executemany(sql,parameters)
+        self.c.executemany(sql, parameters)
         return self.c.fetchall()
 
 
@@ -96,7 +96,7 @@ class Dao(Raw):
                'i.expense_ratio,'
                'c.name currency,'
                'ifnull(x.rate,1) rate,'
-               'ifnull(x.date,?) rate_date ' #if instrument is denoted in JPY there is no xccy date
+               'ifnull(x.date,?) rate_date '  # if instrument is denoted in JPY there is no xccy date
                'FROM instrument i '
                'JOIN instrument_type a ON i.type = a.rowid '
                'JOIN currency c ON i.currency = c.rowid '
@@ -105,15 +105,15 @@ class Dao(Raw):
 
         return {
             x['instrument']: Instrument.create(
-            x['instrument'],
-            x['name'],
-            x['instrument_type_id'],
-            x['instrument_type'],
-            x['url'],
-            x['expense_ratio'],
-            x['currency'],
-            x['rate'],
-            x['rate_date']) for x in self.exec(sql, (epoch, epoch))}
+                x['instrument'],
+                x['name'],
+                x['instrument_type_id'],
+                x['instrument_type'],
+                x['url'],
+                x['expense_ratio'],
+                x['currency'],
+                x['rate'],
+                x['rate_date']) for x in self.exec(sql, (epoch, epoch))}
 
     def get_funds_positions(self, the_date):
         """
@@ -153,25 +153,28 @@ def factory(db_file_path):
 
             STOCK_NUM - how many stocks to generate
             """
-            # 2014-1-1
+            # 2014-1-1 (epoch seconds)
             DAY1 = 1388534400
             STOCK_NUM = 20
+            FUNDS_NUM = 10
+            SECONDS_PER_DAY = 60*60*24
+
             URL = 'http://finance.yahoo.com/'
 
             from time import time
             today = int(time())
 
             @classmethod
-            def gen_stock_symbol(cls):
+            def gen_symbol(cls, length):
                 """
-                generate a 4 letter symbol
+                generate a len letter symbol
                 """
 
                 def c():
                     return chr(random.randint(ord('A'), ord('Z')))
 
                 s = ''
-                for i in range(4):
+                for i in range(length):
                     s += c()
                 return s
 
@@ -183,15 +186,39 @@ def factory(db_file_path):
                 return random.randint(FakeDao.DAY1, FakeDao.today)
 
             @classmethod
-            def gen_expense_ration(cls):
+            def gen_dates(cls):
+                """
+                :return: a sequence of the epoch representation of each day from DAY1 to today
+                """
+                return range(FakeDao.DAY1, FakeDao.today + FakeDao.SECONDS_PER_DAY, FakeDao.SECONDS_PER_DAY)
+
+            @classmethod
+            def gen_expense_ratio(cls):
                 return random.uniform(0.1, 3)
 
             @classmethod
             def gen_price(cls, min_price, max_price):
                 return random.uniform(min_price, max_price)
 
+            @classmethod
+            def gen_allocation(cls, parties):
+                allocations = {}
+                remain = 100
+                while True:
+                    id = random.randint(1, parties)
+                    if id in allocations:
+                        continue
+                    else:
+                        if len(allocations) == parties - 1:
+                            # the last one
+                            allocations[id] = remain
+                            break
+                        else:
+                            allocations[id] = random.randint(1, remain - 1)
+                            remain -= allocations[id]
+                return allocations
+
             def __init__(self, db_path):
-                self.stocks = {}
                 instrument_id = 1
                 while len(self.stocks) < FakeDao.STOCK_NUM:
                     symbol = FakeDao.gen_stock_symbol()
@@ -206,93 +233,92 @@ def factory(db_file_path):
                 # run the SQL script
                 self.conn.executescript(get_sql_scripts())
 
+                # read back meta data
+                instrument_type = {x['type']: x['ROWID'] for x in self.exec('SELECT ROWID,type FROM instrument_type')}
+                currencies = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,name FROM currency')}
+
+                # randomly generate instruments
+                self.gen_instruments("XYZ", currencies["USD"], (instrument_type["Stock"], instrument_type["ETF"]), 3,
+                                     FakeDao.STOCK_NUM)
+                self.gen_instruments("ABC", currencies["JPY"], (instrument_type["Funds"],), 5, FakeDao.FUNDS_NUM)
+
+                # what stocks/ETFs we have generated ?
+                stocks = [x['ROWID'] for x in self.exec('SELECT ROWID FROM instruments WHERE type = ? OR type = ?',
+                                                       (instrument_type["Stock"], instrument_type["ETF"]))]
+
+                # randomly generate stock quotes - from DAY1 to today
+                quotes = []
+                for day in FakeDao.gen_dates():
+                    for i in stocks:
+                        min_price = random.randint(5, 100)
+                        max_price = 2 * min_price
+                        # instrument id, price, date
+                        quotes.append((i, FakeDao.gen_price(min_price, max_price), day))
+                self.exec_many('insert into quote values (?,?,?)', quotes)
+
+                # randomly generate USD => JPY exchange rates - from DAY1 to today
+                xccy = []
+                for day in FakeDao.gen_dates():
+                    # from , to, rate, date
+                    xccy.append((currencies["USD"], currencies["JPY"], FakeDao.gen_price(100, 120), day))
+                self.exec_many('insert into xccy values (?,?,?,?)', xccy)
+
+                # buy >1000 shares for each stock/ETF at random price on DAY1
+                buy = []
+                for i in stocks:
+                    # instrument id, BUY, price, shares, fee, date
+                    buy.append((i, 'BUY', FakeDao.gen_price(20, 1000), random.randint(1000, 2000),
+                                FakeDao.gen_price(5, 20), FakeDao.DAY1))
+                self.exec_many('insert into [transaction] values (?,?,?,?,?,?)', buy)
+
+                # sell < 400 twice for each one we bought on random day after day one
+                sell = []
+                for x in range(2):
+                    for i in stocks:
+                        # instrument id, SELL, price, shares, fee, date
+                        sell.append((i, 'SELL', FakeDao.gen_price(20, 1000), random.randint(100, 400),
+                                     FakeDao.gen_price(5, 20), FakeDao.gen_date()))
+                self.exec_many('insert into [transaction] values (?,?,?,?,?,?)', sell)
+
+                # randomly generate mutual funds performance
+
+            def gen_instruments(self, broker, currency, instrument_types, symbol_len, count):
+                """
+                randomly generate instruments
+                :return: None
+                """
                 # read meta data
-                asset = {x['ROWID']: x['type'] for x in self.exec('select ROWID,type from asset')}
-                asset_by_type = {v: k for k, v in asset}
+                brokers = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,name FROM broker')}
 
-                broker = {x['name']: x['ROWID'] for x in self.exec('select ROWID,name from broker')}
-                currency = {x['name']: x['ROWID'] for x in self.exec('select ROWID,name from currency')}
-                region = {x['ROWID']: x['name'] for x in self.exec('select ROWID,name from region')}
-                instrument_type = {x['type']: x['ROWID'] for x in self.exec('select ROWID,type from instrument_type')}
-
-                # randomly generate Stock/ETF
-                while len(self.stocks) < FakeDao.STOCK_NUM:
-                    symbol = FakeDao.gen_stock_symbol()
-
-                    row = self.exec('select count(*) as c from instrument where name=?', (symbol,))
-                    if row['c'] > 0:
+                instruments = set()
+                while len(instruments) < count:
+                    symbol = FakeDao.gen_symbol(symbol_len)
+                    if symbol in instruments:
                         continue
 
-                    self.stocks[instrument_id] = Instrument(instrument_id, symbol, random.choice(
-                        (InstrumentType(1, 'Stock'), InstrumentType(2, 'ETF'))))
+                    # name, instrument type, broker, currency, url, expense ratio
+                    self.exec('INSERT INTO instrument VALUES (?,?,?,?,?,?)',
+                              (symbol,
+                               random.choice(instrument_types),
+                               brokers[broker],
+                               currency,
+                               FakeDao.URL,
+                               FakeDao.gen_expense_ratio()
+                               ))
+                    # get instrument id
+                    instrument_id = self.exec('SELECT rowid FROM instrument WHERE name=?', (symbol,))['ROWID']
 
+                    # asset allocation
+                    for k, v in FakeDao.gen_allocation(7):
+                        # instrument id, asset id, ratio
+                        self.exec('INSERT INTO asset_allocation VALUES (?,?,?)',
+                                  (instrument_id, k, v))
 
-
-            def q_transaction(self):
-                l = []
-
-                for s in self.stocks.values():
-                    # buy >1000 shares for each on day one
-                    l.append({'instrument': s.id,
-                              'name': s.name,
-                              'type': 'BUY',
-                              'price': FakeDao.gen_price(20, 1000),
-                              'shares': random.randint(1000, 2000),
-                              'fee': FakeDao.gen_price(5, 20),
-                              'date': FakeDao.DAY1
-                              })
-
-                    # sell < 400 for each one we bought on a random day after day one
-                    for i in range(2):
-                        l.append({'instrument': s.id,
-                                  'name': s.name,
-                                  'type': 'SELL',
-                                  'price': FakeDao.gen_price(20, 1000),
-                                  'shares': random.randint(100, 400),
-                                  'fee': FakeDao.gen_price(5, 20),
-                                  'date': FakeDao.gen_date()
-                                  })
-
-                return l
-
-            def q_instrument(self):
-                return ({'rowid': s.id,
-                         'name': s.name,
-                         'type_id': s.instrument_type.id,
-                         'type': s.instrument_type.name,
-                         'url': FakeDao.URL,
-                         'expense_ratio': FakeDao.gen_expense_ration()
-                         } for s in self.stocks.values())
-
-            def q_quote(self):
-                return (
-                    {'instrument': s.id, 'name': s.name, 'price': FakeDao.gen_price(20, 1000),
-                     'date': FakeDao.today}
-                    for s
-                    in
-                    self.stocks.values())
-
-            def q_instrument_xccy(self):
-                return ({'instrument': s.id,
-                         'name': s.name,
-                         'instrument_type_id': s.instrument_type.id,
-                         'instrument_type': s.instrument_type.name,
-                         'url': FakeDao.URL,
-                         'currency': 'USD',
-                         'expense_ratio': FakeDao.gen_expense_ration(),
-                         'rate': FakeDao.gen_price(1, 130),
-                         'rate_date': FakeDao.today
-                         } for s in self.stocks.values())
-
-            @staticmethod
-            def q_region_allocation():
-                return ({'name': r, 'ratio': random.randint(10, 30)}
-                        for r in ('US', 'Europe', 'Japan', 'Emerging Market'))
-
-            @staticmethod
-            def q_asset_allocation():
-                return ({'type': r, 'ratio': random.randint(10, 30)}
-                        for r in ('Bond', 'Stock', 'Cash'))
+                    # region allocation
+                    for k, v in FakeDao.gen_allocation(7):
+                        # instrument id, region id, ratio
+                        self.exec('INSERT INTO region_allocation VALUES (?,?,?)',
+                                  (instrument_id, k, v))
 
         return FakeDao(db_file_path)
     else:
@@ -302,8 +328,7 @@ def factory(db_file_path):
 if __name__ == "__main__":
     d = factory(None)
 
-    d.exec_many("insert into region VALUES (?)", [("US",), ("Europe",), ("Japan",), ("Emerge",)])
+    d.exec_many("INSERT INTO region VALUES (?)", [("US",), ("Europe",), ("Japan",), ("Emerge",)])
 
-    for f in d.exec("select ROWID,name from region"):
-
-        print("%d\t%s"%(f["ROWID"], f["name"]))
+    for f in d.exec("SELECT ROWID,name FROM region"):
+        print("%d\t%s" % (f["ROWID"], f["name"]))
