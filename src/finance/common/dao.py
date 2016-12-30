@@ -16,11 +16,15 @@ class Raw:
     def close(self):
         self.conn.close()
 
-    def query(self, sql, parameters=None):
+    def exec(self, sql, parameters=None):
         if parameters:
             self.c.execute(sql, parameters)
         else:
             self.c.execute(sql)
+        return self.c.fetchall()
+
+    def exec_many(self, sql, parameters):
+        self.c.executemany(sql,parameters)
         return self.c.fetchall()
 
 
@@ -38,7 +42,7 @@ class Dao(Raw):
         epoch1 = int(timegm(start_date.timetuple()))
         epoch2 = int(timegm(end_date.timetuple()))
 
-        for f in self.query(sql, (epoch1, epoch2)):
+        for f in self.exec(sql, (epoch1, epoch2)):
             callback(f['instrument'], f['name'], f['type'], f['price'], f['shares'], f['fee'], f['date'])
 
     def populate_from_instruments(self, instrument_filter, create_new_obj_func=None):
@@ -64,7 +68,7 @@ class Dao(Raw):
         if instrument_filter is not None:
             sql = sql + ' and ' + instrument_filter
         return {x['rowid']: c(x['rowid'], x['name'], x['type_id'], x['type'], x['url'], x['expense_ratio'])
-                for x in self.query(sql)}
+                for x in self.exec(sql)}
 
     def get_stock_quote(self, quote_date):
         """
@@ -74,7 +78,7 @@ class Dao(Raw):
         sql = ('SELECT q.instrument,i.name,q.price, q.date FROM quote q, instrument i '
                'WHERE date = (SELECT max(date) FROM quote WHERE  date<=?) AND q.instrument = i.rowid')
 
-        r = self.query(sql, (epoch,))
+        r = self.exec(sql, (epoch,))
         return {x['instrument']: Quote(x['instrument'], x['name'], x['price'], x['date']) for x in r}
 
     def get_instrument_with_xccy_rate(self, the_date):
@@ -109,7 +113,7 @@ class Dao(Raw):
             x['expense_ratio'],
             x['currency'],
             x['rate'],
-            x['rate_date']) for x in self.query(sql, (epoch,))}
+            x['rate_date']) for x in self.exec(sql, (epoch,))}
 
     def get_funds_positions(self, the_date):
         """
@@ -120,20 +124,20 @@ class Dao(Raw):
                'FROM fund_performance WHERE '
                'date = (SELECT max(date) FROM fund_performance WHERE date<= :date)')
         epoch = int(timegm(the_date.timetuple()))
-        for r in self.query(sql, {'date': epoch}):
+        for r in self.exec(sql, {'date': epoch}):
             yield (r['broker'], r['name'], r['expense_ratio'], r['price'], r['amount'], r['capital'],
                    r['value'], r['profit'], r['date'], r['instrument_id'], r['url'])
 
     def get_asset_allocation(self, instrument_id):
         sql = ('SELECT t.type,a.ratio FROM asset_allocation a, asset t WHERE a.instrument = ? AND a.asset=t.rowid '
                'ORDER BY a.asset')
-        for r in self.query(sql, (int(instrument_id),)):
+        for r in self.exec(sql, (int(instrument_id),)):
             yield (r['type'], r['ratio'])
 
     def get_region_allocation(self, instrument_id):
         sql = ('SELECT t.name,a.ratio FROM region_allocation a, region t WHERE a.instrument = ? AND a.region=t.rowid '
                'ORDER BY a.region')
-        for r in self.query(sql, (int(instrument_id),)):
+        for r in self.exec(sql, (int(instrument_id),)):
             yield (r['name'], r['ratio'])
 
 
@@ -201,7 +205,7 @@ def factory(db_file_path):
                 Dao.__init__(self, ":memory:")
 
                 for sql in get_sql_statements():
-                    self.query(sql)
+                    self.exec(sql)
 
             def q_transaction(self):
                 l = []
@@ -277,8 +281,8 @@ def factory(db_file_path):
 if __name__ == "__main__":
     d = factory(None)
 
-    for r in ("US", "Europe", "Japan", "Emerge"):
-        d.query("insert into region VALUES (?)", (r,))
+    d.exec_many("insert into region VALUES (?)", [("US",), ("Europe",), ("Japan",), ("Emerge",)])
 
-    for f in d.query("select ROWID,name from region"):
+    for f in d.exec("select ROWID,name from region"):
+
         print("%d\t%s"%(f["ROWID"], f["name"]))

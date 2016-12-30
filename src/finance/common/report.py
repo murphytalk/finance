@@ -140,19 +140,19 @@ def region_allocation(dao, instrument_id):
 
 def raw_quote(dao):
     q = [[str(epoch2date(x['date'])), x['name'], x['price']] for x in
-         dao.query('SELECT * FROM stock_quote ORDER BY date DESC')]
+         dao.exec('SELECT * FROM stock_quote ORDER BY date DESC')]
     return Report.to_json_packed({'data': q})
 
 
 def raw_xccy(dao):
     q = [[str(epoch2date(x['date'])), x['From'], x['To'], x['rate']] for x in
-         dao.query('SELECT * FROM xccy_hist')]
+         dao.exec('SELECT * FROM xccy_hist')]
     return Report.to_json_packed({'data': q})
 
 
 def raw_trans(dao):
     q = [[str(epoch2date(x['date'])), x['name'], x['type'], x['price'], x['shares'], x['fee']] for x in
-         dao.query('SELECT date,name,type,price,shares,fee FROM stock_trans')]
+         dao.exec('SELECT date,name,type,price,shares,fee FROM stock_trans')]
     return Report.to_json_packed({'data': q})
 
 
