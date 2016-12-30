@@ -153,16 +153,17 @@ def factory(db_file_path):
 
             STOCK_NUM - how many stocks to generate
             """
-            # 2014-1-1 (epoch seconds)
-            DAY1 = 1388534400
+            from time import time
+            today = int(time())
+
+            # 2 years ago (epoch seconds)
+            SECONDS_PER_DAY = 60 * 60 * 24
+            DAY1 = today - SECONDS_PER_DAY*356*2
             STOCK_NUM = 20
             FUNDS_NUM = 10
-            SECONDS_PER_DAY = 60 * 60 * 24
 
             URL = 'http://finance.yahoo.com/'
 
-            from time import time
-            today = int(time())
 
             @classmethod
             def gen_symbol(cls, length):
