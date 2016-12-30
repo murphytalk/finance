@@ -4,6 +4,7 @@ import sqlite3
 from calendar import timegm
 
 from finance.common.model import *
+from finance.common.db import get_sql_statements
 
 
 class Raw:
@@ -20,8 +21,7 @@ class Raw:
             self.c.execute(sql, parameters)
         else:
             self.c.execute(sql)
-        r = self.c.fetchall()
-        return r
+        return self.c.fetchall()
 
 
 class Dao(Raw):
@@ -143,8 +143,6 @@ def factory(db_file_path):
     If db path is None, a FakeDao object will be created
     """
     if db_file_path is None:
-        import inspect
-
         class FakeDao(Dao):
             """
             randomly generate static and market data instead of reading from DB
@@ -199,8 +197,11 @@ def factory(db_file_path):
                         (InstrumentType(1, 'Stock'), InstrumentType(2, 'ETF'))))
                     instrument_id += 1
 
-            def close(self):
-                pass
+                # create the DB in memory and then populate random generated data
+                Dao.__init__(self, ":memory:")
+
+                for sql in get_sql_statements():
+                    self.query(sql)
 
             def q_transaction(self):
                 l = []
@@ -268,29 +269,16 @@ def factory(db_file_path):
                 return ({'type': r, 'ratio': random.randint(10, 30)}
                         for r in ('Bond', 'Stock', 'Cash'))
 
-            def query(self, sql, parameters=None):
-                caller = inspect.stack()[1][3]
-
-                if caller == 'iterate_transaction':
-                    q_func = self.q_transaction
-                elif caller == 'populate_from_instruments':
-                    q_func = self.q_instrument
-                elif caller == 'get_stock_quote':
-                    q_func = self.q_quote
-                elif caller == 'get_instrument_with_xccy_rate':
-                    q_func = self.q_instrument_xccy
-                elif caller == 'get_asset_allocation':
-                    q_func = self.q_asset_allocation
-                elif caller == 'get_region_allocation':
-                    q_func = self.q_region_allocation
-                else:
-                    q_func = None
-
-                if q_func is not None:
-                    return q_func()
-                else:
-                    return None
-
         return FakeDao(db_file_path)
     else:
         return Dao(db_file_path)
+
+
+if __name__ == "__main__":
+    d = factory(None)
+
+    for r in ("US", "Europe", "Japan", "Emerge"):
+        d.query("insert into region VALUES (?)", (r,))
+
+    for f in d.query("select ROWID,name from region"):
+        print("%d\t%s"%(f["ROWID"], f["name"]))

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 [ -z "$FINANCE_DB" ] &&  FINANCE_DB=`find $HOME -type f -name finance.db`
 
