@@ -157,7 +157,7 @@ def factory(db_file_path):
             DAY1 = 1388534400
             STOCK_NUM = 20
             FUNDS_NUM = 10
-            SECONDS_PER_DAY = 60*60*24
+            SECONDS_PER_DAY = 60 * 60 * 24
 
             URL = 'http://finance.yahoo.com/'
 
@@ -204,18 +204,16 @@ def factory(db_file_path):
             def gen_allocation(cls, parties):
                 allocations = {}
                 remain = 100
+                id = 1
                 while True:
-                    id = random.randint(1, parties)
-                    if id in allocations:
-                        continue
+                    if len(allocations) == parties - 1:
+                        # the last one
+                        allocations[id] = remain
+                        break
                     else:
-                        if len(allocations) == parties - 1:
-                            # the last one
-                            allocations[id] = remain
-                            break
-                        else:
-                            allocations[id] = random.randint(1, remain - 1)
-                            remain -= allocations[id]
+                        allocations[id] = random.uniform(1, remain - 1)
+                        remain -= allocations[id]
+                    id += 1
                 return allocations
 
             def __init__(self):
@@ -234,8 +232,8 @@ def factory(db_file_path):
                 self.gen_instruments("ABC", currencies["JPY"], (instrument_type["Funds"],), 5, FakeDao.FUNDS_NUM)
 
                 # what stocks/ETFs we have generated ?
-                stocks = [x['ROWID'] for x in self.exec('SELECT ROWID FROM instruments WHERE type = ? OR type = ?',
-                                                       (instrument_type["Stock"], instrument_type["ETF"]))]
+                stocks = [x['ROWID'] for x in self.exec('SELECT ROWID FROM instrument WHERE type = ? OR type = ?',
+                                                        (instrument_type["Stock"], instrument_type["ETF"]))]
 
                 # randomly generate stock quotes - from DAY1 to today
                 quotes = []
@@ -287,6 +285,7 @@ def factory(db_file_path):
                     if symbol in instruments:
                         continue
 
+                    instruments.add(symbol)
                     # name, instrument type, broker, currency, url, expense ratio
                     self.exec('INSERT INTO instrument VALUES (?,?,?,?,?,?)',
                               (symbol,
@@ -297,16 +296,16 @@ def factory(db_file_path):
                                FakeDao.gen_expense_ratio()
                                ))
                     # get instrument id
-                    instrument_id = self.exec('SELECT rowid FROM instrument WHERE name=?', (symbol,))['ROWID']
+                    instrument_id = self.exec('SELECT rowid FROM instrument WHERE name=?', (symbol,))[0]['ROWID']
 
                     # asset allocation
-                    for k, v in FakeDao.gen_allocation(7):
+                    for k, v in FakeDao.gen_allocation(7).items():
                         # instrument id, asset id, ratio
                         self.exec('INSERT INTO asset_allocation VALUES (?,?,?)',
                                   (instrument_id, k, v))
 
                     # region allocation
-                    for k, v in FakeDao.gen_allocation(7):
+                    for k, v in FakeDao.gen_allocation(7).items():
                         # instrument id, region id, ratio
                         self.exec('INSERT INTO region_allocation VALUES (?,?,?)',
                                   (instrument_id, k, v))
