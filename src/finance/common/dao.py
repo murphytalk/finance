@@ -96,7 +96,7 @@ class Dao(Raw):
                'i.expense_ratio,'
                'c.name currency,'
                'ifnull(x.rate,1) rate,'
-               'ifnull(x.date,0) rate_date '
+               'ifnull(x.date,?) rate_date ' #if instrument is denoted in JPY there is no xccy date
                'FROM instrument i '
                'JOIN instrument_type a ON i.type = a.rowid '
                'JOIN currency c ON i.currency = c.rowid '
@@ -113,7 +113,7 @@ class Dao(Raw):
             x['expense_ratio'],
             x['currency'],
             x['rate'],
-            x['rate_date']) for x in self.exec(sql, (epoch,))}
+            x['rate_date']) for x in self.exec(sql, (epoch, epoch))}
 
     def get_funds_positions(self, the_date):
         """
