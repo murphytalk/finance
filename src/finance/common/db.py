@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
 
+sqlfile = os.path.dirname(os.path.realpath(__file__)) + "/db.sql"
+
 
 def get_sql_statements():
     sql = []
-    sqlfile = os.path.dirname(os.path.realpath(__file__)) + "/db.sql"
     # filter empty and comment lines
     lines = list(filter(lambda s: len(s.strip()) > 0 and s[0] != '-', open(sqlfile).readlines()))
     count = len(lines)
@@ -16,6 +17,10 @@ def get_sql_statements():
         i += 1
     for s in sql:
         yield s
+
+
+def get_sql_scripts():
+    return ''.join(open(sqlfile).readlines())
 
 
 if __name__ == "__main__":

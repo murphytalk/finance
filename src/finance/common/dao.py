@@ -4,7 +4,7 @@ import sqlite3
 from calendar import timegm
 
 from finance.common.model import *
-from finance.common.db import get_sql_statements
+from finance.common.db import get_sql_scripts
 
 
 class Raw:
@@ -153,7 +153,7 @@ def factory(db_file_path):
 
             STOCK_NUM - how many stocks to generate
             """
-
+            # 2014-1-1
             DAY1 = 1388534400
             STOCK_NUM = 20
             URL = 'http://finance.yahoo.com/'
@@ -203,9 +203,30 @@ def factory(db_file_path):
 
                 # create the DB in memory and then populate random generated data
                 Dao.__init__(self, ":memory:")
+                # run the SQL script
+                self.conn.executescript(get_sql_scripts())
 
-                for sql in get_sql_statements():
-                    self.exec(sql)
+                # read meta data
+                asset = {x['ROWID']: x['type'] for x in self.exec('select ROWID,type from asset')}
+                asset_by_type = {v: k for k, v in asset}
+
+                broker = {x['name']: x['ROWID'] for x in self.exec('select ROWID,name from broker')}
+                currency = {x['name']: x['ROWID'] for x in self.exec('select ROWID,name from currency')}
+                region = {x['ROWID']: x['name'] for x in self.exec('select ROWID,name from region')}
+                instrument_type = {x['type']: x['ROWID'] for x in self.exec('select ROWID,type from instrument_type')}
+
+                # randomly generate Stock/ETF
+                while len(self.stocks) < FakeDao.STOCK_NUM:
+                    symbol = FakeDao.gen_stock_symbol()
+
+                    row = self.exec('select count(*) as c from instrument where name=?', (symbol,))
+                    if row['c'] > 0:
+                        continue
+
+                    self.stocks[instrument_id] = Instrument(instrument_id, symbol, random.choice(
+                        (InstrumentType(1, 'Stock'), InstrumentType(2, 'ETF'))))
+
+
 
             def q_transaction(self):
                 l = []
