@@ -218,7 +218,7 @@ def factory(db_file_path):
                             remain -= allocations[id]
                 return allocations
 
-            def __init__(self, db_path):
+            def __init__(self):
                 instrument_id = 1
                 while len(self.stocks) < FakeDao.STOCK_NUM:
                     symbol = FakeDao.gen_stock_symbol()
@@ -320,7 +320,7 @@ def factory(db_file_path):
                         self.exec('INSERT INTO region_allocation VALUES (?,?,?)',
                                   (instrument_id, k, v))
 
-        return FakeDao(db_file_path)
+        return FakeDao()
     else:
         return Dao(db_file_path)
 
