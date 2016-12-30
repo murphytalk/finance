@@ -219,15 +219,6 @@ def factory(db_file_path):
                 return allocations
 
             def __init__(self):
-                instrument_id = 1
-                while len(self.stocks) < FakeDao.STOCK_NUM:
-                    symbol = FakeDao.gen_stock_symbol()
-                    if symbol in self.stocks:
-                        continue
-                    self.stocks[instrument_id] = Instrument(instrument_id, symbol, random.choice(
-                        (InstrumentType(1, 'Stock'), InstrumentType(2, 'ETF'))))
-                    instrument_id += 1
-
                 # create the DB in memory and then populate random generated data
                 Dao.__init__(self, ":memory:")
                 # run the SQL script
