@@ -2,12 +2,12 @@ BEGIN TRANSACTION;
 
 -- Tables
 
-CREATE TABLE IF NOT EXISTS asset(
+CREATE TABLE IF NOT EXISTS asset (
   type TEXT NOT NULL
 );
 
 
-CREATE TABLE IF NOT EXISTS broker(
+CREATE TABLE IF NOT EXISTS broker (
   name     TEXT NOT NULL,
   fullName TEXT
 );
@@ -17,17 +17,20 @@ CREATE TABLE IF NOT EXISTS currency (
 );
 
 
-CREATE TABLE IF NOT EXISTS region(
+CREATE TABLE IF NOT EXISTS region (
   name TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS instrument (
-  name     TEXT NOT NULL ,
-  asset    INT DEFAULT NULL,
-  broker   INT DEFAULT NULL,
-  currency TEXT NOT NULL ,
-  FOREIGN KEY (asset) REFERENCES asset(ROWID),
-  FOREIGN KEY (broker) REFERENCES broker(ROWID)
+  name          TEXT NOT NULL,
+  type          INT,
+  broker        INT,
+  currency      INT,
+  url           TEXT,
+  expense_ratio FLOAT,
+  FOREIGN KEY (currency) REFERENCES currency (rowid),
+  FOREIGN KEY (type) REFERENCES instrument_type (rowid),
+  FOREIGN KEY (broker) REFERENCES broker (rowid)
 );
 
 CREATE TABLE IF NOT EXISTS instrument_type (
@@ -35,13 +38,13 @@ CREATE TABLE IF NOT EXISTS instrument_type (
 );
 
 CREATE TABLE IF NOT EXISTS performance (
-  instrument INT  NOT NULL,
+  instrument INT NOT NULL,
   amount     INT,
   price      REAL,
   value      REAL,
   profit     REAL,
   capital    REAL,
-  date       INT  NOT NULL,
+  date       INT NOT NULL,
   FOREIGN KEY (
     instrument
   )
@@ -81,10 +84,10 @@ CREATE TABLE IF NOT EXISTS [transaction] (
 );
 
 CREATE TABLE IF NOT EXISTS xccy (
-  [from] INT  NOT NULL,
-  [to]   INT  NOT NULL,
+  [from] INT NOT NULL,
+  [to]   INT NOT NULL,
   rate   REAL,
-  date   INT  NOT NULL,
+  date   INT NOT NULL,
   FOREIGN KEY (
     [from]
   )
@@ -97,19 +100,20 @@ CREATE TABLE IF NOT EXISTS xccy (
 
 -- Views
 CREATE VIEW fund_performance AS
-  SELECT b.name AS broker,
+  SELECT
+    b.name                    AS broker,
     i.name,
-         i.rowid AS instrument_id,
+    i.rowid                   AS instrument_id,
     i.url,
     i.expense_ratio,
     t.type,
-         c.name currency,
+    c.name                       currency,
     p.amount,
     p.price,
     p.value,
     p.profit,
     p.capital,
-         date(p.date, 'unixepoch') AS datestr,
+    date(p.date, 'unixepoch') AS datestr,
     p.date
   FROM performance p,
     instrument i,
@@ -121,13 +125,62 @@ CREATE VIEW fund_performance AS
         i.type = t.rowid AND
         i.currency = c.rowid;
 
-CREATE VIEW instrument_xccy AS
-  SELECT i.rowid instrument,
+
+CREATE VIEW stock_quote AS
+  SELECT
     i.name,
-         i.type instrument_type_id,
-         a.type instrument_type,
-         c.name currency,
-         ifnull(x.rate, 1) rate
+    t.price,
+    t.date
+  FROM quote t,
+    instrument i
+  WHERE t.instrument = i.rowid;
+
+CREATE VIEW stock_trans AS
+  SELECT
+    i.name,
+    t.type,
+    t.price,
+    t.shares,
+    t.fee,
+    t.date,
+    date(t.date, 'unixepoch') AS datestr
+  FROM [transaction] t,
+    instrument i
+  WHERE t.instrument = i.rowid;
+
+CREATE VIEW xccy_hist AS
+  SELECT
+    c1.rowid AS from_id,
+    c1.name  AS [From],
+    c2.rowid AS to_id,
+    c2.name  AS [To],
+    x.rate,
+    x.date
+  FROM xccy x,
+    currency c1,
+    currency c2
+  WHERE c1.rowid = x.[from] AND
+        c2.rowid = x.[to]
+  ORDER BY x.date;
+
+CREATE VIEW xccy_hist2 AS
+  SELECT
+    from_id,
+    [From],
+    to_id,
+    [To],
+    rate,
+    datetime(date, 'unixepoch') AS datestr
+  FROM xccy_hist;
+
+CREATE VIEW instrument_xccy AS
+  SELECT
+    i.rowid           instrument,
+    i.name,
+    i.type            instrument_type_id,
+    a.type            instrument_type,
+    c.name            currency,
+    ifnull(x.rate, 1) rate
   FROM instrument i
     JOIN
     instrument_type a ON i.type = a.rowid
@@ -143,49 +196,6 @@ CREATE VIEW instrument_xccy AS
       )
     )
     x ON c.name = x.[From];
-
-CREATE VIEW stock_quote AS
-  SELECT i.name,
-    t.price,
-    t.date
-  FROM quote t,
-    instrument i
-  WHERE t.instrument = i.rowid;
-
-CREATE VIEW stock_trans AS
-  SELECT i.name,
-    t.type,
-    t.price,
-    t.shares,
-    t.fee,
-    t.date,
-    date(t.date, 'unixepoch') AS datestr
-  FROM [transaction] t,
-    instrument i
-  WHERE t.instrument = i.rowid;
-
-CREATE VIEW xccy_hist AS
-  SELECT c1.rowid AS from_id,
-         c1.name AS [From],
-         c2.rowid AS to_id,
-         c2.name AS [To],
-    x.rate,
-    x.date
-  FROM xccy x,
-    currency c1,
-    currency c2
-  WHERE c1.rowid = x.[from] AND
-        c2.rowid = x.[to]
-  ORDER BY x.date;
-
-CREATE VIEW xccy_hist2 AS
-  SELECT from_id,
-    [From],
-    to_id,
-    [To],
-    rate,
-    datetime(date, 'unixepoch') AS datestr
-  FROM xccy_hist;
 
 -- Populate meta data
 
