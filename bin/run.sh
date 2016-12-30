@@ -65,14 +65,18 @@ start)
 		echo $! > $PIDF
 	else
 		echo "Finance portal already started!"
-	fi	
-	if [ $demo_status -eq 0 ];then
-		echo "Starting finance demo"
-		unset FINANCE_DB
-		nohup ${SRC}/runserver.py ${DEMO_PORT} > $DEMO_LOGF 2>&1 &
-		echo $! > $DEMO_LOGF
+	fi
+	if [  -z "${NO_DEMO}" ];then
+	    echo "Skipping DEMO"
 	else
-		echo "Finance demo already started!"
+    	if [ $demo_status -eq 0 ];then
+	    	echo "Starting finance demo"
+		    unset FINANCE_DB
+    		nohup ${SRC}/runserver.py ${DEMO_PORT} > $DEMO_LOGF 2>&1 &
+	    	echo $! > $DEMO_LOGF
+    	else
+	    	echo "Finance demo already started!"
+	    fi
 	fi
 	;;
 stop)
