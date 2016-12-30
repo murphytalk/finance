@@ -8,13 +8,16 @@ if [[ -z "$FINANCE_DB" || ! -f $FINANCE_DB ]];then
 fi
 
 export FINANCE_DB
-export SERVER_PORT=8080
+SERVER_PORT=8080
+DEMO_PORT=8081
 
 CUR=`dirname $0`
 SRC=$CUR/../src
 LOG=$CUR/../log
 LOGF=${LOG}/run.`date +%Y%m%d`.log
 PIDF=${LOG}/run.pid
+DEMO_LOGF=${LOG}/run.demo.`date +%Y%m%d`.log
+DEMO_PIDF=${LOG}/run.demo.pid
 cmd=$1
 
 [ -z "$cmd" ] && cmd=status
@@ -24,8 +27,15 @@ cmd=$1
 check_status(){
 	status=0
 	if [ -f $PIDF ];then
-		if ps `cat $PIDF` > /dev/null;then
-			status=1
+		if ps `cat $PIDF` |grep "python.*finance.*runserver.*${SERVER_PORT}" > /dev/null;then
+			status=`cat $PIDF`
+		fi
+	fi
+
+	demo_status=0
+	if [ -f $DEMO_PIDF ];then
+		if ps `cat $DEMO_PIDF` |grep "python.*finance.*runserver.*${DEMO_PORT}"> /dev/null;then
+			demo_status=`cat $DEMO_PIDF`
 		fi
 	fi
 }
@@ -33,9 +43,15 @@ check_status(){
 report_status(){
 	check_status
 	if [ $status -eq 0 ];then
-		echo Not running 
+		echo "Finance portal is NOT running"
 	else
-		echo Running
+		echo "Finance portal (PID=${status}) is running"
+	fi
+
+	if [ $demo_status -eq 0 ];then
+		echo "Finance demo is NOT running"
+	else
+		echo "Finance demo (PID=${demo_status}) is running"
 	fi
 } 
 
@@ -44,21 +60,35 @@ case $cmd in
 start)
 	check_status
 	if [ $status -eq 0 ];then
-		echo DB file is $FINANCE_DB
-		nohup ${SRC}/runserver.py > $LOGF 2>&1 &
+		echo "Starting finance portal by using data @ $FINANCE_DB"
+		nohup ${SRC}/runserver.py ${SERVER_PORT} > $LOGF 2>&1 &
 		echo $! > $PIDF
 	else
-		echo Already started!
+		echo "Finance portal already started!"
 	fi	
+	if [ $demo_status -eq 0 ];then
+		echo "Starting finance demo"
+		unset FINANCE_DB
+		nohup ${SRC}/runserver.py ${DEMO_PORT} > $DEMO_LOGF 2>&1 &
+		echo $! > $DEMO_LOGF
+	else
+		echo "Finance demo already started!"
+	fi
 	;;
 stop)
-	if [ -f $PIDF ];then
+    check_status
+	if [ $status -eq 0 ];then
+	    echo "Finance portal already stopped"
+	else:
 		kill -9 `cat $PIDF`
 		rm -f $PIDF
-	else
-		echo PID file does not exist ... use regex to kill
-		
-	fi	
+	fi
+	if [ $demo_status -eq 0 ];then
+	    echo "Finance demo already stopped"
+	else:
+		kill -9 `cat $DEMO_PIDF`
+		rm -f $DEMO_PIDF
+	fi
 	;;
 status)
 	report_status

@@ -12,13 +12,15 @@ from werkzeug.exceptions import NotFound
 deployed_in_production = node() == "anchor"
 
 DEBUG = not deployed_in_production
-# deployed behind ngix
-URL_ROOT = "/finance" if deployed_in_production else None
 
 env_db = environ.get('FINANCE_DB')
-DATABASE = r"d:\work\finance.db" if env_db is None else env_db
-if not isfile(DATABASE):
+if env_db is None or (not isfile(env_db)):
     DATABASE = None  # FakeDao will be used
+else:
+    DATABASE = env_db
+
+# deployed behind ngix
+URL_ROOT = ("/finance" if DATABASE is not None else "/finance_demo") if deployed_in_production else None
 
 app = Flask(__name__)
 # load all uppercase variables ad configuration
