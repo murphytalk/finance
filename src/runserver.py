@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python3
 """
 This script runs the finance application using a development server.
 """
