@@ -8,6 +8,10 @@ from finance import app
 from finance.common.report import *
 
 
+def get_head_title():
+    return 'Finance' if current_app.config['DATABASE'] else 'Finance Demo'
+
+
 @app.before_request
 def before_request():
     g.dao = Dao(current_app.config['DATABASE'])
@@ -29,6 +33,7 @@ def summary():
     current_app.logger.debug('idx=%s', url_for("summary"))
     return render_template(
         'index.jinja2',
+        head_title=get_head_title(),
         title='Home Page',
         year=datetime.now().year,
     )
@@ -45,6 +50,7 @@ def stock():
     """Renders the contact page."""
     return render_template(
         'stock.jinja2',
+        head_title=get_head_title(),
         title='Stock & ETF',
         year=datetime.now().year,
         instrument_id_idx=14,
@@ -57,6 +63,7 @@ def fund():
     """Renders the about page."""
     return render_template(
         'fund.jinja2',
+        head_title=get_head_title(),
         title='Mutual Funds',
         year=datetime.now().year,
         instrument_id_idx=9,
@@ -90,6 +97,7 @@ def sum_json():
 def db():
     return render_template(
         'db.jinja2',
+        head_title=get_head_title(),
         title='Data Viewer',
         year=datetime.now().year
     )
