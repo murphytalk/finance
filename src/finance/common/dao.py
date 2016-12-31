@@ -7,33 +7,32 @@ from finance.common.model import *
 from finance.common.db import get_sql_scripts
 
 
-class Raw:
-    def __init__(self, db_path):
-        self.db_path = db_path
-        self.conn = None
-        self.c = None
-
-    def connect(self):
-        self.conn = sqlite3.connect(self.db_path)
-        self.conn.row_factory = sqlite3.Row
-        self.c = self.conn.cursor()
-
-    def close(self):
-        self.conn.close()
-
-    def exec(self, sql, parameters=None):
-        if parameters:
-            self.c.execute(sql, parameters)
-        else:
-            self.c.execute(sql)
-        return self.c.fetchall()
-
-    def exec_many(self, sql, parameters):
-        self.c.executemany(sql, parameters)
-        return self.c.fetchall()
-
-
 class Dao:
+    class Raw:
+        def __init__(self, db_path):
+            self.db_path = db_path
+            self.conn = None
+            self.c = None
+
+        def connect(self):
+            self.conn = sqlite3.connect(self.db_path)
+            self.conn.row_factory = sqlite3.Row
+            self.c = self.conn.cursor()
+
+        def close(self):
+            self.conn.close()
+
+        def exec(self, sql, parameters=None):
+            if parameters:
+                self.c.execute(sql, parameters)
+            else:
+                self.c.execute(sql)
+            return self.c.fetchall()
+
+        def exec_many(self, sql, parameters):
+            self.c.executemany(sql, parameters)
+            return self.c.fetchall()
+
     class RealDao(Raw):
         def __init__(self, db_path):
             super().__init__(db_path)
