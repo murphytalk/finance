@@ -36,7 +36,7 @@ class Raw:
 class Dao:
     class RealDao(Raw):
         def __init__(self, db_path):
-            Raw.__init__(self, db_path)
+            super().__init__(db_path)
 
         def iterate_transaction(self, start_date, end_date, callback):
             """
@@ -218,8 +218,8 @@ class Dao:
 
         def __init__(self):
             # create the DB in memory and then populate random generated data
-            Dao.RealDao.__init__(self, ":memory:")
-            Dao.RealDao.connect(self)
+            super().__init__(":memory:")
+            super().connect()
             # run the SQL script
             self.conn.executescript(get_sql_scripts())
 
