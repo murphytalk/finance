@@ -130,8 +130,7 @@ class Dao:
                    'date = (SELECT max(date) FROM fund_performance WHERE date<= :date)')
             epoch = int(timegm(the_date.timetuple()))
             for r in self.exec(sql, {'date': epoch}):
-                yield (r['broker'], r['name'], r['expense_ratio'], r['price'], r['amount'], r['capital'],
-                       r['value'], r['profit'], r['date'], r['instrument_id'], r['url'])
+                yield r
 
         def get_asset_allocation(self, instrument_id):
             sql = ('SELECT t.type,a.ratio FROM asset_allocation a, asset t WHERE a.instrument = ? AND a.asset=t.rowid '
@@ -141,8 +140,8 @@ class Dao:
 
         def get_region_allocation(self, instrument_id):
             sql = (
-            'SELECT t.name,a.ratio FROM region_allocation a, region t WHERE a.instrument = ? AND a.region=t.rowid '
-            'ORDER BY a.region')
+                'SELECT t.name,a.ratio FROM region_allocation a, region t WHERE a.instrument = ? AND a.region=t.rowid '
+                'ORDER BY a.region')
             for r in self.exec(sql, (int(instrument_id),)):
                 yield (r['name'], r['ratio'])
 
@@ -267,6 +266,20 @@ class Dao:
             self.exec_many('INSERT INTO [transaction] VALUES (?,?,?,?,?,?)', sell)
 
             # randomly generate mutual funds performance
+            funds = [x['ROWID'] for x in self.exec('SELECT ROWID FROM instrument WHERE type = ?',
+                                                   (instrument_type["Funds"],))]
+            performance = []
+            for day in Dao.FakeDao.gen_dates():
+                for i in funds:
+                    # instrument id, amount, price, value, profit, capital date
+                    amount = random.randint(100, 1000)
+                    price = Dao.FakeDao.gen_price(1000, 10000)
+                    value = amount * price
+                    profit = value * random.uniform(-1, 2)
+                    capital = price - profit
+                    performance.append((i, amount, price, value, profit, capital, day))
+
+            self.exec_many('INSERT INTO performance VALUES (?,?,?,?,?,?,?)', performance)
 
         def connect(self):
             pass
@@ -329,6 +342,7 @@ class Dao:
 
     def __setattr__(self, key, value):
         return setattr(self.singleton, key, value)
+
 
 if __name__ == "__main__":
     d = Dao(None)
