@@ -148,19 +148,16 @@ class Dao:
 
     class FakeDao(RealDao):
         """
-        randomly generate static and market data instead of reading from DB
-
-        STOCK_NUM - how many stocks to generate
+        Using in memory DB with randomly generated market and position data
         """
         from time import time
         today = int(time())
 
-        # 2 years ago (epoch seconds)
         SECONDS_PER_DAY = 60 * 60 * 24
+        # 2 years ago (epoch seconds)
         DAY1 = today - SECONDS_PER_DAY * 356 * 2
         STOCK_NUM = 20
         FUNDS_NUM = 10
-
         URL = 'http://finance.yahoo.com/'
 
         @classmethod
@@ -219,7 +216,7 @@ class Dao:
             # create the DB in memory and then populate random generated data
             super().__init__(":memory:")
             super().connect()
-            # run the SQL script
+            # run the SQL script to generate tables and views, then populate meta data
             self.conn.executescript(get_sql_scripts())
 
             # read back meta data
