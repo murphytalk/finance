@@ -27,14 +27,14 @@ cmd=$1
 check_status(){
 	status=0
 	if [ -f $PIDF ];then
-		if ps `cat $PIDF` |grep "python.*finance.*runserver.*${SERVER_PORT}" > /dev/null;then
+		if ps `cat $PIDF` |grep "python.*runserver.*${SERVER_PORT}" > /dev/null;then
 			status=`cat $PIDF`
 		fi
 	fi
 
 	demo_status=0
 	if [ -f $DEMO_PIDF ];then
-		if ps `cat $DEMO_PIDF` |grep "python.*finance.*runserver.*${DEMO_PORT}"> /dev/null;then
+		if ps `cat $DEMO_PIDF` |grep "python.*runserver.*${DEMO_PORT}"> /dev/null;then
 			demo_status=`cat $DEMO_PIDF`
 		fi
 	fi
@@ -66,15 +66,15 @@ start)
 	else
 		echo "Finance portal already started!"
 	fi
-	if [  -z "${NO_DEMO}" ];then
+	if [ ! -z "${NO_DEMO}" ];then
 	    echo "Skipping DEMO"
 	else
-    	if [ $demo_status -eq 0 ];then
-	    	echo "Starting finance demo"
-		    unset FINANCE_DB
-    		nohup ${SRC}/runserver.py ${DEMO_PORT} > $DEMO_LOGF 2>&1 &
-	    	echo $! > $DEMO_LOGF
-    	else
+            if [ $demo_status -eq 0 ];then
+    	    	echo "Starting finance demo"
+    		unset FINANCE_DB
+                nohup ${SRC}/runserver.py ${DEMO_PORT} > $DEMO_LOGF 2>&1 &
+    	    	echo $! > $DEMO_PIDF
+            else
 	    	echo "Finance demo already started!"
 	    fi
 	fi
@@ -83,13 +83,13 @@ stop)
     check_status
 	if [ $status -eq 0 ];then
 	    echo "Finance portal already stopped"
-	else:
+	else
 		kill -9 `cat $PIDF`
 		rm -f $PIDF
 	fi
 	if [ $demo_status -eq 0 ];then
 	    echo "Finance demo already stopped"
-	else:
+	else
 		kill -9 `cat $DEMO_PIDF`
 		rm -f $DEMO_PIDF
 	fi
