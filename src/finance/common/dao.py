@@ -7,6 +7,11 @@ from finance.common.model import *
 from finance.common.db import get_sql_scripts
 
 
+# import traceback
+# def g():
+#    for line in traceback.format_stack():
+#        print(line.strip())
+
 class Dao:
     class Raw:
         def __init__(self, db_path):
