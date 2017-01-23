@@ -1,7 +1,10 @@
 ﻿import sys
 import time
 from datetime import datetime, date
-from finance.common.const import STOCK_START_DATE
+try:
+    from finance.common.const import STOCK_START_DATE
+except ImportError:
+    from const import STOCK_START_DATE
 
 SECONDS_PER_DAY = 3600 * 24
 
