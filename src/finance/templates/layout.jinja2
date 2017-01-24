@@ -34,13 +34,13 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a href="{{ url_for('summary') }}" class="navbar-brand">{{head_title}}</a>
+                <a href="{{ url_for('finance_page.summary') }}" class="navbar-brand">{{head_title}}</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="{{ url_for('stock') }}">Stock 	&amp; ETF</a></li>
-                    <li><a href="{{ url_for('fund') }}">Mutual Funds</a></li>
-                    <li><a href="{{ url_for('db') }}">Raw Data Viewer</a></li>
+                    <li><a href="{{ url_for('finance_page.stock') }}">Stock 	&amp; ETF</a></li>
+                    <li><a href="{{ url_for('finance_page.fund') }}">Mutual Funds</a></li>
+                    <li><a href="{{ url_for('finance_page.db') }}">Raw Data Viewer</a></li>
                 </ul>
             </div>
         </div>

@@ -57,7 +57,7 @@
     var table;
     var sum = {"value":0,"value_jpy":0,"liquidated":0,"liquidated_jpy":0};
     $(document).ready(function () {
-        $.getJSON("{{ url_for('stock_json')}}",
+        $.getJSON("{{ url_for('finance_page.stock_json')}}",
             function (data) {
                 var rows = [];
                 $.each(data,function(instrument_type,v){

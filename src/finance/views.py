@@ -30,7 +30,7 @@ def teardown_request(exception):
 @finance_page.route('/')
 def summary():
     """Renders the home page."""
-    current_app.logger.debug('idx=%s', url_for("summary"))
+    current_app.logger.debug('idx=%s', url_for("finance_page.summary"))
     return render_template(
         'index.jinja2',
         head_title=get_head_title(),

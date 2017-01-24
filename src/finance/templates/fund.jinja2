@@ -52,7 +52,7 @@
     var sum = {value: 0, capital: 0, profit: 0, expense: 0};
 
     $(document).ready(function () {
-        $.getJSON("{{ url_for('fund_json')}}",
+        $.getJSON("{{ url_for('finance_page.fund_json')}}",
                 function (data) {
                     $.each(data, function (idx, d) {
                         sum["expense"] += d[2];
