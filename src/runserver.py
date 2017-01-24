@@ -6,7 +6,7 @@ from sys import argv
 from os import environ
 from werkzeug.serving import run_simple
 
-from finance import application, DEBUG
+from finance import app, DEBUG
 
 if __name__ == '__main__':
     if len(argv) != 2:
@@ -15,6 +15,7 @@ if __name__ == '__main__':
         HOST = environ.get('SERVER_HOST', 'localhost')
         try:
             PORT = int(argv[1])
-            run_simple(HOST, PORT, application, use_reloader=DEBUG)
+            run_simple(HOST, PORT, app, use_reloader=DEBUG)
+            #application.run()
         except ValueError:
             print('Come on, gimme a valid integer as port number!')
