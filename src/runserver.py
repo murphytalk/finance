@@ -16,6 +16,5 @@ if __name__ == '__main__':
         try:
             PORT = int(argv[1])
             run_simple(HOST, PORT, app, use_reloader=DEBUG)
-            #application.run()
         except ValueError:
             print('Come on, gimme a valid integer as port number!')

@@ -85,6 +85,22 @@ class FundReport(Report):
             x['url']] for x in dao.get_funds_positions(the_date)]
 
 
+class FundReport2(Report):
+    def __init__(self, dao, the_date):
+        self.positions = [{
+            'broker': x['broker'],
+            'name': x['name'],
+            'expense_ratio': x['expense_ratio'],
+            'price': x['price'],
+            'amount': x['amount'],
+            'capital': x['capital'],
+            'value': x['value'],
+            'profit': x['profit'],
+            'date': str(epoch2date( x['date'])),
+            'instrument_id': x['instrument_id'],
+            'url': x['url']} for x in dao.get_funds_positions(the_date)]
+
+
 class SummaryReport(Report):
     def __init__(self, dao, the_date):
         def get_stock_positions(stock_positions):

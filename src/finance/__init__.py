@@ -5,7 +5,16 @@ from os import environ
 from os.path import isfile
 from platform import node
 from flask import Flask, Blueprint
-from werkzeug.exceptions import NotFound
+from finance import settings
+from finance.api import api
+from finance.api.endpoints.report import ns as api_reports
+
+
+def configure_app(flask_app):
+    flask_app.config['SWAGGER_UI_DOC_EXPANSION'] = settings.RESTPLUS_SWAGGER_UI_DOC_EXPANSION
+    flask_app.config['RESTPLUS_VALIDATE'] = settings.RESTPLUS_VALIDATE
+    flask_app.config['RESTPLUS_MASK_SWAGGER'] = settings.RESTPLUS_MASK_SWAGGER
+    flask_app.config['ERROR_404_HELP'] = settings.RESTPLUS_ERROR_404_HELP
 
 
 # check hostname to determine if it is a production deployment
@@ -20,17 +29,22 @@ else:
     DATABASE = env_db
 
 # deployed behind ngix
-URL_ROOT = ("/finance" if DATABASE is not None else "/finance_demo") #if deployed_in_production else None
+URL_ROOT = ("/finance" if DATABASE is not None else "/finance_demo")
 
-finance_page = Blueprint('finance_page', __name__, url_prefix = URL_ROOT)
 
 app = Flask(__name__)
 # load all uppercase variables ad configuration
 app.config.from_object(__name__)
 app.debug = DEBUG
 
-from finance import views
+configure_app(app)
 
-#need to register after all URLS are defined in views
+finance_page = Blueprint('finance_page', __name__, url_prefix=URL_ROOT)
+from finance import views
+# need to register after all URLS are defined in views
 app.register_blueprint(finance_page)
 
+api_page = Blueprint('api', __name__, url_prefix='/api')
+api.init_app(api_page)
+api.add_namespace(api_reports)
+app.register_blueprint(api_page)
