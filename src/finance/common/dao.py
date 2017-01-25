@@ -245,6 +245,46 @@ class Dao:
                        'url': r['url'],
                        'expense': r['expense_ratio']}
 
+        def update_instrument(self, instrument_name, instrument):
+            kwargs = {'instrument_name': instrument_name}
+            instrument_id = self._get_instrument_id(**kwargs)
+
+            types = {x['type']: x['ROWID'] for x in self.exec('SELECT ROWID,type FROM instrument_type')}
+            brokers = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM broker')}
+            ccy = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM currency')}
+
+            params = []
+            cols = []
+
+            if 'type' in instrument:
+                cols.append('type')
+                params.append(types[instrument['type']])
+            if 'broker' in instrument:
+                cols.append('broker')
+                params.append(brokers[instrument['broker']])
+            if 'currency' in instrument:
+                cols.append('currency')
+                params.append(ccy[instrument['currency']])
+            if 'url' in instrument:
+                cols.append('url')
+                params.append(instrument['url'])
+            if 'expense' in instrument:
+                cols.append('expense_ratio')
+                params.append(instrument['expense'])
+
+            if instrument_id:
+                sql = 'UPDATE instrument set '
+                sql += ','.join([x+'=?' for x in cols]) + ' WHERE ROWID = ?'
+                params.append(instrument_id)
+            else:
+                sql = 'INSERT INTO instrument ('
+                sql += ','.join(cols) + ',name) VALUES (' + ','.join(['?' for x in params]) + ',?)'
+                params.append(instrument_name)
+
+            self.exec(sql, tuple(params))
+
+            return True
+
     class FakeDao(RealDao):
         """
         Using in memory DB with randomly generated market and position data

@@ -78,6 +78,16 @@ class ReferenceInstruments(Resource):
         """
         return run_func_against_dao(lambda dao: _get_instruments(dao, instrument))
 
+    @api.response(201, 'Instrument successfully updated.')
+    @api.response(500, 'Cannot update instrument.')
+    @api.expect(Instrument)
+    def post(self, instrument):
+        """
+        Create/Update detail information of the given instrument.
+        :param instrument: instrument name
+        """
+        return run_func_against_dao(lambda dao: dao.update_instrument(instrument, api.payload))
+
 
 @ns.route('/instrument/allocation/asset/<string:instrument>')
 @api.doc(params={'instrument': 'Instrument name'})

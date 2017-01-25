@@ -68,8 +68,8 @@ instrument_region_allocation = api.model('Instrument region allocation', {
 })
 
 Instrument = api.model('Instrument', {
-    'id':   fields.Integer(description='Instrument ID'),
-    'name': fields.String(description='Instrument name'),
+    'id':   fields.Integer(description='Instrument ID', required=False),
+    'name': fields.String(description='Instrument name', required=False),
     'type': fields.String(description='Instrument type'),
     'broker': fields.String(description='Broker'),
     'currency': fields.String(description='Currency'),
