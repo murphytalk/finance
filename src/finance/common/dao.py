@@ -72,7 +72,7 @@ class Dao:
             """
             c = create_new_obj_func if create_new_obj_func is not None else \
                 lambda instrument_id, name, type_id, type_name, url, expense_ratio: Instrument.create(
-                        instrument_id, name, type_id, type_name, url, expense_ratio)
+                    instrument_id, name, type_id, type_name, url, expense_ratio)
             sql = ('SELECT i.rowid,i.name,it.rowid AS type_id, it.type AS type, i.url, i.expense_ratio FROM '
                    'instrument i,instrument_type it WHERE i.type = it.rowid')
             if instrument_filter is not None:
@@ -115,15 +115,15 @@ class Dao:
 
             return {
                 x['instrument']: Instrument.create(
-                        x['instrument'],
-                        x['name'],
-                        x['instrument_type_id'],
-                        x['instrument_type'],
-                        x['url'],
-                        x['expense_ratio'],
-                        x['currency'],
-                        x['rate'],
-                        x['rate_date']) for x in self.exec(sql, (epoch, epoch))}
+                    x['instrument'],
+                    x['name'],
+                    x['instrument_type_id'],
+                    x['instrument_type'],
+                    x['url'],
+                    x['expense_ratio'],
+                    x['currency'],
+                    x['rate'],
+                    x['rate_date']) for x in self.exec(sql, (epoch, epoch))}
 
         def get_funds_positions(self, the_date):
             """
@@ -140,7 +140,7 @@ class Dao:
         def _get_instrument_id(self, **kwargs):
             instrument_id = kwargs['instrument_id'] if 'instrument_id' in kwargs else None
             if instrument_id is None:
-                for r in self.exec('SELECT ROWID from instrument WHERE name=?', (kwargs['instrument_name'],)):
+                for r in self.exec('SELECT ROWID FROM instrument WHERE name=?', (kwargs['instrument_name'],)):
                     instrument_id = r['ROWID']
                     break
             return instrument_id
@@ -178,6 +178,14 @@ class Dao:
         def get_regions(self):
             for r in self.exec('SELECT ROWID, [name] FROM region'):
                 yield (r['ROWID'], r['name'])
+
+        def get_brokers(self):
+            for r in self.exec('SELECT ROWID, [name],fullName FROM broker'):
+                yield (r['ROWID'], r['name'], r['fullName'])
+
+        def get_instrument_types(self):
+            for r in self.exec('SELECT ROWID, type FROM instrument_type'):
+                yield (r['ROWID'], r['type'])
 
         def _update_instrument_allocations(self, instrument_name, payload, allocation_name, allocation_col_name):
             kwargs = {'instrument_name': instrument_name}
@@ -219,6 +227,23 @@ class Dao:
             :return: True/False
             """
             return self._update_instrument_allocations(instrument_name, regions['regions'], 'region', 'name')
+
+        def get_instruments(self, instrument_name = None):
+            sql = ('SELECT i.ROWID, i.name, t.type, c.name as currency, b.name as broker, i.url, i.expense_ratio '
+                   'from instrument i '
+                   'JOIN instrument_type t on i.type = t.ROWID '
+                   'JOIN currency c on i.currency = c.ROWID '
+                   'JOIN broker b on i.broker = b.ROWID')
+            if instrument_name:
+                sql += ' WHERE i.name = ?'
+            for r in self.exec(sql, (instrument_name,) if instrument_name else None):
+                yield {'id': r['ROWID'],
+                       'name': r['name'],
+                       'type': r['type'],
+                       'currency': r['currency'],
+                       'broker': r['broker'],
+                       'url': r['url'],
+                       'expense': r['expense_ratio']}
 
     class FakeDao(RealDao):
         """

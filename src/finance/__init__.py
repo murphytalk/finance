@@ -50,3 +50,4 @@ api.init_app(api_page)
 api.add_namespace(api_reports)
 api.add_namespace(api_reference)
 app.register_blueprint(api_page)
+

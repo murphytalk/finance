@@ -5,7 +5,7 @@ from flask_restplus import Api
 log = logging.getLogger(__name__)
 
 api = Api(version='1.0', title='My Finance API',
-          description='Manipulate my finance portal data')
+          description='Query and manipulate my finance portal data')
 
 
 @api.errorhandler
@@ -47,6 +47,17 @@ region = api.model('Region', {
     'region': fields.String(description='Region')
 })
 
+instrument_type = api.model('Instrument types', {
+    'id':   fields.Integer(description='Instrument type ID'),
+    'type': fields.String(description='Instrument type')
+})
+
+broker = api.model('Broker', {
+    'id':   fields.Integer(description='Broker ID'),
+    'name': fields.String(description='Region'),
+    'full_name': fields.String(description='Region')
+})
+
 region_allocation = api.model('Region allocation', {
     'region': fields.String(description='Region', required=True),
     'ratio': fields.Float(description='Allocation percentage', required=True)
@@ -54,5 +65,15 @@ region_allocation = api.model('Region allocation', {
 
 instrument_region_allocation = api.model('Instrument region allocation', {
     'regions': fields.List(fields.Nested(region_allocation), description='Region allocations', required=True)
+})
+
+Instrument = api.model('Instrument', {
+    'id':   fields.Integer(description='Instrument ID'),
+    'name': fields.String(description='Instrument name'),
+    'type': fields.String(description='Instrument type'),
+    'broker': fields.String(description='Broker'),
+    'currency': fields.String(description='Currency'),
+    'url': fields.String(description='Instrument URL'),
+    'expense': fields.Float(description='Expense ratio'),
 })
 
