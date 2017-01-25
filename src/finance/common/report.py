@@ -121,7 +121,7 @@ class SummaryReport(Report):
         def asset_class_generator(dao):
             asset_class = {}
             for instrument, value in self.positions:
-                for asset, ratio in dao.get_asset_allocation(instrument):
+                for asset, ratio in dao.get_asset_allocation(instrument_id=instrument):
                     self.put(asset_class, asset, value * ratio / 100)
             for k, v in asset_class.items():
                 yield (k, v)
@@ -129,7 +129,7 @@ class SummaryReport(Report):
         def region_generator(dao):
             region = {}
             for instrument, value in self.positions:
-                for rg, ratio in dao.get_region_allocation(instrument):
+                for rg, ratio in dao.get_region_allocation(instrument_id=instrument):
                     self.put(region, rg, value * ratio / 100)
             for k, v in region.items():
                 yield (k, v)
@@ -156,11 +156,11 @@ def get_pie_chart_data_json(generator):
 
 
 def asset_allocation(dao, instrument_id):
-    return get_pie_chart_data_json(dao.get_asset_allocation(instrument_id))
+    return get_pie_chart_data_json(dao.get_asset_allocation(instrument_id=instrument_id))
 
 
 def region_allocation(dao, instrument_id):
-    return get_pie_chart_data_json(dao.get_region_allocation(instrument_id))
+    return get_pie_chart_data_json(dao.get_region_allocation(instrument_id=instrument_id))
 
 
 def raw_quote(dao):

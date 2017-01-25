@@ -8,6 +8,7 @@ from flask import Flask, Blueprint
 from finance import settings
 from finance.api import api
 from finance.api.endpoints.report import ns as api_reports
+from finance.api.endpoints.reference import ns as api_reference
 
 
 def configure_app(flask_app):
@@ -44,7 +45,8 @@ from finance import views
 # need to register after all URLS are defined in views
 app.register_blueprint(finance_page)
 
-api_page = Blueprint('api', __name__, url_prefix='/api')
+api_page = Blueprint('api', __name__, url_prefix='%s/api' % URL_ROOT)
 api.init_app(api_page)
 api.add_namespace(api_reports)
+api.add_namespace(api_reference)
 app.register_blueprint(api_page)

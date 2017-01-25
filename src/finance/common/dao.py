@@ -3,8 +3,8 @@ import random
 import sqlite3
 from calendar import timegm
 
-from finance.common.model import *
 from finance.common.db import get_sql_scripts
+from finance.common.model import *
 
 
 # import traceback
@@ -72,7 +72,7 @@ class Dao:
             """
             c = create_new_obj_func if create_new_obj_func is not None else \
                 lambda instrument_id, name, type_id, type_name, url, expense_ratio: Instrument.create(
-                    instrument_id, name, type_id, type_name, url, expense_ratio)
+                        instrument_id, name, type_id, type_name, url, expense_ratio)
             sql = ('SELECT i.rowid,i.name,it.rowid AS type_id, it.type AS type, i.url, i.expense_ratio FROM '
                    'instrument i,instrument_type it WHERE i.type = it.rowid')
             if instrument_filter is not None:
@@ -110,20 +110,20 @@ class Dao:
                    'FROM instrument i '
                    'JOIN instrument_type a ON i.type = a.rowid '
                    'JOIN currency c ON i.currency = c.rowid '
-                   'LEFT JOIN ( SELECT * FROM xccy_hist WHERE date = (SELECT max(date) FROM xccy_hist WHERE date<=?)) x '
+                   'LEFT JOIN ( SELECT * FROM xccy_hist WHERE date =(SELECT max(date) FROM xccy_hist WHERE date<=?)) x '
                    'ON i.currency = x.from_id')
 
             return {
                 x['instrument']: Instrument.create(
-                    x['instrument'],
-                    x['name'],
-                    x['instrument_type_id'],
-                    x['instrument_type'],
-                    x['url'],
-                    x['expense_ratio'],
-                    x['currency'],
-                    x['rate'],
-                    x['rate_date']) for x in self.exec(sql, (epoch, epoch))}
+                        x['instrument'],
+                        x['name'],
+                        x['instrument_type_id'],
+                        x['instrument_type'],
+                        x['url'],
+                        x['expense_ratio'],
+                        x['currency'],
+                        x['rate'],
+                        x['rate_date']) for x in self.exec(sql, (epoch, epoch))}
 
         def get_funds_positions(self, the_date):
             """
@@ -137,18 +137,88 @@ class Dao:
             for r in self.exec(sql, {'date': epoch}):
                 yield r
 
-        def get_asset_allocation(self, instrument_id):
-            sql = ('SELECT t.type,a.ratio FROM asset_allocation a, asset t WHERE a.instrument = ? AND a.asset=t.rowid '
-                   'ORDER BY a.asset')
-            for r in self.exec(sql, (int(instrument_id),)):
-                yield (r['type'], r['ratio'])
+        def _get_instrument_id(self, **kwargs):
+            instrument_id = kwargs['instrument_id'] if 'instrument_id' in kwargs else None
+            if instrument_id is None:
+                for r in self.exec('SELECT ROWID from instrument WHERE name=?', (kwargs['instrument_name'],)):
+                    instrument_id = r['ROWID']
+                    break
+            return instrument_id
 
-        def get_region_allocation(self, instrument_id):
-            sql = (
-                'SELECT t.name,a.ratio FROM region_allocation a, region t WHERE a.instrument = ? AND a.region=t.rowid '
-                'ORDER BY a.region')
-            for r in self.exec(sql, (int(instrument_id),)):
-                yield (r['name'], r['ratio'])
+        def get_asset_allocation(self, **kwargs):
+            """
+            get asset allocation of the given instrument
+            :param kwargs:  instrument_id or instrument_name
+            :return: a generator of (asset,ratio)
+            """
+            instrument_id = self._get_instrument_id(**kwargs)
+            if instrument_id:
+                sql = ('SELECT t.type,a.ratio FROM asset_allocation a, asset t WHERE a.instrument = ? '
+                       'AND a.asset=t.rowid ORDER BY a.asset')
+                for r in self.exec(sql, (int(instrument_id),)):
+                    yield (r['type'], r['ratio'])
+
+        def get_region_allocation(self, **kwargs):
+            """
+            get region allocation of the given instrument
+            :param kwargs:  instrument_id or instrument_name
+            :return: a generator of (region,ratio)
+            """
+            instrument_id = self._get_instrument_id(**kwargs)
+            if instrument_id:
+                sql = ('SELECT t.name,a.ratio FROM region_allocation a, region t WHERE a.instrument = ? '
+                       'AND a.region=t.rowid ORDER BY a.region')
+                for r in self.exec(sql, (int(instrument_id),)):
+                    yield (r['name'], r['ratio'])
+
+        def get_asset_types(self):
+            for r in self.exec('SELECT ROWID, type FROM asset'):
+                yield (r['ROWID'], r['type'])
+
+        def get_regions(self):
+            for r in self.exec('SELECT ROWID, [name] FROM region'):
+                yield (r['ROWID'], r['name'])
+
+        def _update_instrument_allocations(self, instrument_name, payload, allocation_name, allocation_col_name):
+            kwargs = {'instrument_name': instrument_name}
+            instrument_id = self._get_instrument_id(**kwargs)
+            if instrument_id:
+                types = {x[allocation_col_name]: x['ROWID'] for x in
+                         self.exec('SELECT ROWID,%s FROM %s' % (allocation_col_name, allocation_name))}
+                sum_alloc = 0
+                allocations = []
+                self.exec('DELETE from %s_allocation WHERE instrument = ?' % allocation_name, (instrument_id,))
+                for x in payload:
+                    allocations.append((instrument_id, types[x[allocation_name]], x['ratio']))
+                    sum_alloc += x['ratio']
+                if sum_alloc < 100:
+                    allocations.append((instrument_id, types['Other'], 100 - sum_alloc))
+
+                self.exec_many('INSERT INTO %s_allocation VALUES (?,?,?)' % allocation_name, allocations)
+
+                return True
+            else:
+                return False
+
+        def update_instrument_asset_allocations(self, instrument_name, assets):
+            """
+            Update instrument asset allocations
+            :param instrument_name:  name (not ID) of an instrument
+            :param assets: a dict of the asset allocation.
+                   See API: /reference/instrument/asset_allocation/{instrument}
+            :return: True/False
+            """
+            return self._update_instrument_allocations(instrument_name, assets['assets'], 'asset', 'type')
+
+        def update_instrument_region_allocations(self, instrument_name, regions):
+            """
+            Update instrument region allocations
+            :param instrument_name:  name (not ID) of an instrument
+            :param regions: a dict of the region allocation.
+                   See API: /reference/instrument/region_allocation/{instrument}
+            :return: True/False
+            """
+            return self._update_instrument_allocations(instrument_name, regions['regions'], 'region', 'name')
 
     class FakeDao(RealDao):
         """

@@ -1,7 +1,6 @@
 import logging
 from flask_restplus import fields
 from flask_restplus import Api
-#from finance import DEBUG
 
 log = logging.getLogger(__name__)
 
@@ -13,9 +12,7 @@ api = Api(version='1.0', title='My Finance API',
 def default_error_handler(e):
     message = 'An unhandled exception occurred.'
     log.exception(message)
-
-    if True:#DEBUG:
-        return {'message': message}, 500
+    return {'message': message}, 500
 
 fund_performance = api.model('Fund performance', {
     'broker': fields.String(description='Broker name'),
@@ -30,3 +27,32 @@ fund_performance = api.model('Fund performance', {
     'instrument_id': fields.Integer(description='Instrument ID'),
     'url': fields.String(description='Instrument details')
 })
+
+asset_allocation = api.model('Asset allocation', {
+    'asset': fields.String(description='Asset type', required=True),
+    'ratio': fields.Float(description='Allocation percentage', required=True)
+})
+
+instrument_asset_allocation = api.model('Instrument asset allocation', {
+    'assets': fields.List(fields.Nested(asset_allocation), description='Asset allocations', required=True)
+})
+
+asset_type = api.model('Asset types', {
+    'id':   fields.Integer(description='Asset ID'),
+    'type': fields.String(description='Asset type')
+})
+
+region = api.model('Region', {
+    'id':   fields.Integer(description='Region ID'),
+    'region': fields.String(description='Region')
+})
+
+region_allocation = api.model('Region allocation', {
+    'region': fields.String(description='Region', required=True),
+    'ratio': fields.Float(description='Allocation percentage', required=True)
+})
+
+instrument_region_allocation = api.model('Instrument region allocation', {
+    'regions': fields.List(fields.Nested(region_allocation), description='Region allocations', required=True)
+})
+

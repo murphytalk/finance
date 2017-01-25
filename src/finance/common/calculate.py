@@ -26,12 +26,10 @@ class CalcPosition:
             pos = self.positions[instrument]
             pos.transaction(transaction_type, price, shares, fee)
 
-
         self.positions = d.populate_from_instruments('(i.type = 2 or i.type = 1)',
                                                      lambda instrument_id, name, tid, t, u, e: Position(instrument_id,
                                                                                                         name))
         d.iterate_transaction(self.date1, self.date2, on_each_transaction)
-
 
     def dump(self, callback=None):
         for k, v in self.positions.items():
