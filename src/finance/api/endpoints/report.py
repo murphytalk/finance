@@ -1,8 +1,8 @@
-from datetime import  date
+from datetime import date
 from finance.api import api, fund_performance
 from flask_restplus import Resource
-from flask import current_app
-from finance.common.report import Dao, FundReport2
+from finance.common.report import FundReport2
+from finance.api.endpoints import run_func_against_dao
 
 ns = api.namespace('report', description='Various finance reports')
 
@@ -14,8 +14,4 @@ class ReportFundPerformance(Resource):
         """
         Returns list of fund performance.
         """
-        dao = Dao(current_app.config['DATABASE'])
-        dao.connect()
-        r = FundReport2(dao, date.today())
-        dao.close()
-        return r.positions
+        return run_func_against_dao(lambda dao: FundReport2(dao, date.today()).positions)
