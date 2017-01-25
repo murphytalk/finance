@@ -25,6 +25,7 @@ class Dao:
             self.c = self.conn.cursor()
 
         def close(self):
+            self.conn.commit()
             self.conn.close()
 
         def exec(self, sql, parameters=None):
