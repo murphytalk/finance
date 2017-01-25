@@ -7,6 +7,8 @@ from flask import render_template, g, current_app, Response
 from finance import finance_page
 from finance.common.report import *
 
+import logging.config
+logger = logging.getLogger(__name__)
 
 def get_head_title():
     return 'Finance' if current_app.config['DATABASE'] else 'Finance Demo'
@@ -16,13 +18,13 @@ def get_head_title():
 def before_request():
     g.dao = Dao(current_app.config['DATABASE'])
     g.dao.connect()
-    current_app.logger.debug('dao opened %s', g.dao)
+    logger.debug('dao opened %s', g.dao)
 
 
 @finance_page.teardown_request
 def teardown_request(exception):
     dao = getattr(g, 'dao', None)
-    current_app.logger.debug('closing dao %s', dao)
+    logger.debug('closing dao %s', dao)
     if dao is not None:
         dao.close()
 

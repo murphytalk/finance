@@ -6,6 +6,8 @@ from calendar import timegm
 from finance.common.db import get_sql_scripts
 from finance.common.model import *
 
+import logging.config
+log = logging.getLogger(__name__)
 
 # import traceback
 # def g():
@@ -282,6 +284,7 @@ class Dao:
                 sql += ','.join(cols) + ',name) VALUES (' + ','.join(['?' for x in params]) + ',?)'
                 params.append(instrument_name)
 
+            # log.info('update instrument %s,SQL = %s, params=%s ', instrument_name, sql, params)
             self.exec(sql, tuple(params))
 
             return True

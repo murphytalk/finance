@@ -4,6 +4,9 @@ from finance.api import instrument_asset_allocation, asset_type, \
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
 
+import logging.config
+logger = logging.getLogger(__name__)
+
 ns = api.namespace('reference', description='Finance reference data')
 
 
@@ -86,7 +89,7 @@ class ReferenceInstruments(Resource):
         Create/Update detail information of the given instrument.
         :param instrument: instrument name
         """
-        return run_func_against_dao(lambda dao: dao.update_instrument(instrument, api.payload))
+        return run_func_against_dao(lambda dao: 201 if dao.update_instrument(instrument, api.payload) else 500 )
 
 
 @ns.route('/instrument/allocation/asset/<string:instrument>')

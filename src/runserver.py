@@ -4,7 +4,17 @@ This script runs the finance application using a development server.
 """
 from sys import argv
 from os import environ
+import os
 from werkzeug.serving import run_simple
+
+import logging.config
+
+log_conf_file = os.path.dirname(os.path.realpath(__file__)) + "/../logging.conf"
+logging.config.fileConfig(log_conf_file )
+
+logger = logging.getLogger(__name__)
+logger.info("logger configuration : %s",log_conf_file)
+
 
 from finance import app, DEBUG
 
