@@ -2,17 +2,23 @@ Personal finance and investment portal.
 
 # The Web Application
 
+[Live demo](http://murphytalk.vicp.net/finance_demo/) with randomly generated instruments and positions.
+
+## DB schema
+
+The DB backend is SQLite. This [SQL script](src/finance/common/db.sql) defines all DB objects and is also being used by the [Live demo](http://murphytalk.vicp.net/finance_demo/) to populate random data in a in-momory DB.
+
 ## Configuration
 
-Configurations are defined as uppercase variables in [module fiance](src/web/finance/__init__.py).
+Configurations are defined as uppercase variables in [module finance](src/finance/__init__.py).
 
  1. `DATABASE` the full path to the sqlite3 db file. It would try environment variable `FINANCE_DB` first, if that does not exist then use the value defined there. The final value will be tested as a valid file path, if succesful a `Dao` object is created to load data from it, otherwise a `FakeDao` object will be created to generate random static and market data.
+ 2. `DEBUG` False if is being deployed on production server.
 
-## DataTables
+## RESTful API
 
-Use DataTables jQuery control to display data.
+RESTful APIs are available for query and manipulate the data. Thanks for [Swagger UI](http://swagger.io/swagger-ui/) there is visual and interactive documentation. See the [API live demo](http://murphytalk.vicp.net/finance_demo/api/) .
 
-[DataTables Download](https://datatables.net/download/)
 
 # The Common Python Scripts
 
@@ -22,7 +28,7 @@ In `common` folder, most of them can be launched individually, they accept the f
  1. `-sYYYYMMDD` start date, default is 2014-01-01
  1. `-eYYYYMMDD` end date, default is 
 
-Project [finance_scraper](https://bitbucket.org/murphytalk/finance_scraper) (private repository hosted on butbucket.com) depdends on some of the common scripts here.
+I have a private project [finance_scraper](https://gitlab.com/murphytalk/finance_scraper) (private repository) that scrapes market data from public sites (yahoo financial etc.), transactions and performance from my brokers' web pages. That project depdends on some of the common scripts here. The scraper uses the RESTful API to submit data. 
 
 # Deployment
 
