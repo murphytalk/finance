@@ -219,7 +219,7 @@ class Dao:
             Update instrument asset allocations
             :param instrument_name:  name (not ID) of an instrument
             :param assets: a dict of the asset allocation.
-                   See API: /reference/instrument/asset_allocation/{instrument}
+                   See POST API:  /instrument/allocation/asset/{instrument}
             :return: True/False
             """
             return self._update_instrument_allocations(instrument_name, assets['assets'], 'asset', 'type')
@@ -229,7 +229,7 @@ class Dao:
             Update instrument region allocations
             :param instrument_name:  name (not ID) of an instrument
             :param regions: a dict of the region allocation.
-                   See API: /reference/instrument/region_allocation/{instrument}
+                   See POST API: /instrument/allocation/region/{instrument}
             :return: True/False
             """
             return self._update_instrument_allocations(instrument_name, regions['regions'], 'region', 'name')
@@ -261,6 +261,13 @@ class Dao:
             return {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM broker')}
 
         def update_instrument(self, instrument_name, instrument):
+            """
+            Update/Insert an instrument
+            :param instrument_name: Instrument name
+            :param instrument: a dict which holds detailed instrument information
+                   see POST API /instrument/{instrument}
+            :return: True/False
+            """
             kwargs = {'instrument_name': instrument_name}
             instrument_id = self._get_instrument_id(**kwargs)
 
@@ -301,8 +308,11 @@ class Dao:
 
             return True
 
-        def get_stock_transaction(self):
-            for x in self.exec('SELECT date,name,type,price,shares,fee FROM stock_trans'):
+        def get_stock_transaction(self, stock_name = None):
+            sql = 'SELECT date,name,type,price,shares,fee FROM stock_trans '
+            if stock_name is not None:
+                sql += 'WHERE name = ?'
+            for x in self.exec(sql, (stock_name,) if stock_name else None):
                 yield {
                     'date': str(epoch2date(x['date'])),
                     'symbol': x['name'],
@@ -310,6 +320,39 @@ class Dao:
                     'price': x['price'],
                     'shares': x['shares'],
                     'fee': x['fee']}
+
+        def update_stock_transaction(self, stock_name, transaction):
+            """
+            Update/Insert a stock transaction.
+            :param stock_name: Stock name
+            :param transaction: A dict that holds transaction details
+                   see POST API /transaction/stock/{stock}
+            :return: True/False
+            """
+            def get_instrument_id(name):
+                iid = -1
+                for x in self.exec('SELECT ROWID from instrument WHERE name = ?', (name,)):
+                    iid = x['ROWID']
+                    break
+                return iid
+
+            instrument_id = get_instrument_id(stock_name)
+            if instrument_id < 0:
+                # need to add a new one
+                instrument_types = self.get_instrument_types()
+                self.update_instrument(stock_name, {'name': stock_name, 'type': instrument_types['ETF']})
+                instrument_id = get_instrument_id(stock_name)
+
+            self.exec('INSERT INTO [transaction] (instrument, type, price, shares, fee, date) '
+                      'VALUES (?,?,?,?,?,?)',
+                      (instrument_id,
+                       transaction['Type'],
+                       transaction['Price'],
+                       transaction['Shares'],
+                       transaction['Fee'],
+                       transaction['Date']))
+
+            return True
 
     class FakeDao(RealDao):
         """

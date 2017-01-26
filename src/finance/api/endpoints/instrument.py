@@ -19,7 +19,7 @@ def _get_instruments(dao, instrument_name=None):
              'expense': x['expense']} for x in dao.get_instruments(instrument_name)];
 
 
-@ns.route('/instrument')
+@ns.route('/')
 class Instruments(Resource):
     @api.marshal_list_with(Instrument)
     def get(self):
@@ -29,7 +29,7 @@ class Instruments(Resource):
         return run_func_against_dao(lambda dao: _get_instruments(dao))
 
 
-@ns.route('/instrument/<string:instrument>')
+@ns.route('/<string:instrument>')
 @api.doc(params={'instrument': 'Instrument name'})
 class Instrument(Resource):
     @api.marshal_list_with(Instrument)
@@ -50,7 +50,7 @@ class Instrument(Resource):
         return run_func_against_dao(lambda dao: 201 if dao.update_instrument(instrument, api.payload) else 500 )
 
 
-@ns.route('/instrument/allocation/asset/<string:instrument>')
+@ns.route('/allocation/asset/<string:instrument>')
 @api.doc(params={'instrument': 'Instrument name'})
 class InstrumentAssetAllocation(Resource):
     @api.marshal_list_with(instrument_asset_allocation)
@@ -76,7 +76,7 @@ class InstrumentAssetAllocation(Resource):
             lambda dao: 201 if dao.update_instrument_asset_allocations(instrument, api.payload) else 500)
 
 
-@ns.route('/instrument/allocation/region/<string:instrument>')
+@ns.route('/allocation/region/<string:instrument>')
 @api.doc(params={'instrument': 'Instrument name'})
 class InstrumentRegionAllocation(Resource):
     @api.marshal_list_with(instrument_region_allocation)

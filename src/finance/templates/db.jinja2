@@ -43,7 +43,7 @@
         $("#t").click(function () {
             const cols = ['Date', 'Symbol', 'Type', 'Price', 'Shares', 'Fee'];
             build_header('#dbtable', cols);
-            $.getJSON("{{ url_for('api.transaction_stock_transactions')}}",
+            $.getJSON("{{ url_for('api.transaction_stock_all')}}",
                 function (data) {
                     populate_data(
                         '#dbtable',
