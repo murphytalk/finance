@@ -71,22 +71,6 @@ class StockReport(Report):
 
 class FundReport(Report):
     def __init__(self, dao, the_date):
-        self.positions = [[
-            x['broker'],
-            x['name'],
-            x['expense_ratio'],
-            x['price'],
-            x['amount'],
-            x['capital'],
-            x['value'],
-            x['profit'],
-            str(epoch2date(x['date'])),
-            x['instrument_id'],
-            x['url']] for x in dao.get_funds_positions(the_date)]
-
-
-class FundReport2(Report):
-    def __init__(self, dao, the_date):
         self.positions = [{
             'broker': x['broker'],
             'name': x['name'],
@@ -96,7 +80,7 @@ class FundReport2(Report):
             'capital': x['capital'],
             'value': x['value'],
             'profit': x['profit'],
-            'date': str(epoch2date( x['date'])),
+            'date': str(epoch2date(x['date'])),
             'instrument_id': x['instrument_id'],
             'url': x['url']} for x in dao.get_funds_positions(the_date)]
 
@@ -110,7 +94,7 @@ class SummaryReport(Report):
 
         def get_fund_positions(positions):
             for x in positions:
-                yield (x[9], x[6])
+                yield (x['instrument_id'], x['value'])
 
         stock = StockReport(dao, the_date)
         funds = FundReport(dao, the_date)

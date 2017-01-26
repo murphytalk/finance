@@ -11,7 +11,7 @@ ns = api.namespace('reference', description='Finance reference data')
 
 
 @ns.route('/asset')
-class ReferenceAsset(Resource):
+class Asset(Resource):
     @api.marshal_list_with(asset_type)
     def get(self):
         """
@@ -21,7 +21,7 @@ class ReferenceAsset(Resource):
 
 
 @ns.route('/region')
-class ReferenceRegion(Resource):
+class Region(Resource):
     @api.marshal_list_with(region)
     def get(self):
         """
@@ -31,7 +31,7 @@ class ReferenceRegion(Resource):
 
 
 @ns.route('/broker')
-class ReferenceBroker(Resource):
+class Broker(Resource):
     @api.marshal_list_with(broker)
     def get(self):
         """
@@ -42,7 +42,7 @@ class ReferenceBroker(Resource):
 
 
 @ns.route('/instrument/type')
-class ReferenceAsset(Resource):
+class InstrumentType(Resource):
     @api.marshal_list_with(instrument_type)
     def get(self):
         """
@@ -62,7 +62,7 @@ def _get_instruments(dao, instrument_name=None):
 
 
 @ns.route('/instrument')
-class ReferenceInstruments(Resource):
+class Instruments(Resource):
     @api.marshal_list_with(Instrument)
     def get(self):
         """
@@ -73,7 +73,7 @@ class ReferenceInstruments(Resource):
 
 @ns.route('/instrument/<string:instrument>')
 @api.doc(params={'instrument': 'Instrument name'})
-class ReferenceInstruments(Resource):
+class Instrument(Resource):
     @api.marshal_list_with(Instrument)
     def get(self, instrument):
         """
@@ -94,7 +94,7 @@ class ReferenceInstruments(Resource):
 
 @ns.route('/instrument/allocation/asset/<string:instrument>')
 @api.doc(params={'instrument': 'Instrument name'})
-class ReferenceInstrumentAssetAllocation(Resource):
+class InstrumentAssetAllocation(Resource):
     @api.marshal_list_with(instrument_asset_allocation)
     # the following method expects the parameter in the query instead of URL
     # @ns.param('instrument', 'The instrument name')
@@ -120,7 +120,7 @@ class ReferenceInstrumentAssetAllocation(Resource):
 
 @ns.route('/instrument/allocation/region/<string:instrument>')
 @api.doc(params={'instrument': 'Instrument name'})
-class ReferenceInstrumentRegionAllocation(Resource):
+class InstrumentRegionAllocation(Resource):
     @api.marshal_list_with(instrument_region_allocation)
     def get(self, instrument):
         """

@@ -86,6 +86,19 @@ function build_header(table_selector,headers) {
 */
 };
 
+//convert obj to array which is expected by DataTable, cols defines the order of columns in the array
+function obj_to_datatable_ajax_array(data,cols){
+    var rows = [];
+    $.each(data,function(idx,d){
+        var a = [];
+        $.each(cols, function(idxCol,c){
+            a.push(d[c]);
+        });
+        rows.push(a);
+    });
+    return rows;
+};
+
 function fuzzy_eq(a,b){
     const EPSILON=0.01;
     if(Math.abs(a-b)<=EPSILON)

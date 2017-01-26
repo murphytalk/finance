@@ -52,19 +52,23 @@
     var sum = {value: 0, capital: 0, profit: 0, expense: 0};
 
     $(document).ready(function () {
-        $.getJSON("{{ url_for('finance_page.fund_json')}}",
+        $.getJSON("{{ url_for('api.report_fund_performance')}}",
                 function (data) {
                     $.each(data, function (idx, d) {
-                        sum["expense"] += d[2];
-                        sum["capital"] += d[5];
-                        sum["value"] += d[6];
-                        sum["profit"] += d[7];
+                        sum["expense"] += d['expense_ratio'];
+                        sum["capital"] += d['capital'];
+                        sum["value"] += d['value'];
+                        sum["profit"] += d['profit'];
                     });
                     const num_cols = [2, 3, 4, 5, 6, 7];
-                    table = populate_data(
-                            '#funds',
-                            function (d, callback, s) {
-                                callback({'data': data});
+                   table = populate_data(
+                           '#funds',
+                           function(d,callback,s){
+                                callback({'data':
+                                obj_to_datatable_ajax_array(
+                                        data,
+                                        ["broker", "name", 'expense_ratio', 'price', 'amount',
+                                         'capital', 'value','profit','date','instrument_id','url'])});
                             },
                             [[0, 'asc'], [1, 'asc']],
                             20,
@@ -82,7 +86,7 @@
                                         return data.toLocaleString();
                                     }, "targets": num_cols
                                 },
-                                {"className": "text-right", "targets": num_cols}
+                                {"className": "text-right", "targets": num_cols},
                             ],
                             null
                     );

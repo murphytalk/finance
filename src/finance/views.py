@@ -72,12 +72,6 @@ def fund():
     )
 
 
-@finance_page.route('/fund.json')
-def fund_json():
-    r = FundReport(g.dao, date.today())
-    return Response(r.to_json_packed(r.positions), mimetype='application/json')
-
-
 @finance_page.route('/asset.allocation/<instrument>')
 def asset_allocation_json(instrument):
     return Response(asset_allocation(g.dao, instrument), mimetype='application/json')
