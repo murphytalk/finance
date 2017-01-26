@@ -10,6 +10,7 @@ from finance.common.report import *
 import logging.config
 logger = logging.getLogger(__name__)
 
+
 def get_head_title():
     return 'Finance' if current_app.config['DATABASE'] else 'Finance Demo'
 
@@ -72,6 +73,16 @@ def fund():
     )
 
 
+@finance_page.route('/db')
+def db():
+    return render_template(
+        'db.jinja2',
+        head_title=get_head_title(),
+        title='Data Viewer',
+        year=datetime.now().year
+    )
+
+
 @finance_page.route('/asset.allocation/<instrument>')
 def asset_allocation_json(instrument):
     return Response(asset_allocation(g.dao, instrument), mimetype='application/json')
@@ -88,16 +99,6 @@ def sum_json():
     return Response(r.to_json_packed(r.report(g.dao)), mimetype='application/json')
 
 
-@finance_page.route('/db')
-def db():
-    return render_template(
-        'db.jinja2',
-        head_title=get_head_title(),
-        title='Data Viewer',
-        year=datetime.now().year
-    )
-
-
 @finance_page.route('/db/quote.json')
 def db_quote_json():
     return Response(raw_quote(g.dao), mimetype='application/json')
@@ -107,7 +108,3 @@ def db_quote_json():
 def db_xccy_json():
     return Response(raw_xccy(g.dao), mimetype='application/json')
 
-
-@finance_page.route('/db/trans.json')
-def db_trans_json():
-    return Response(raw_trans(g.dao), mimetype='application/json')

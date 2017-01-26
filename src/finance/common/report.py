@@ -159,12 +159,6 @@ def raw_xccy(dao):
     return Report.to_json_packed({'data': q})
 
 
-def raw_trans(dao):
-    q = [[str(epoch2date(x['date'])), x['name'], x['type'], x['price'], x['shares'], x['fee']] for x in
-         dao.exec('SELECT date,name,type,price,shares,fee FROM stock_trans')]
-    return Report.to_json_packed({'data': q})
-
-
 if __name__ == "__main__":
     # import codecs,locale
     # sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)

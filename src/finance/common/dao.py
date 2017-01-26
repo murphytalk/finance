@@ -7,12 +7,15 @@ from finance.common.db import get_sql_scripts
 from finance.common.model import *
 
 import logging.config
+
 log = logging.getLogger(__name__)
+
 
 # import traceback
 # def g():
 #    for line in traceback.format_stack():
 #        print(line.strip())
+
 
 class Dao:
     class Raw:
@@ -231,12 +234,12 @@ class Dao:
             """
             return self._update_instrument_allocations(instrument_name, regions['regions'], 'region', 'name')
 
-        def get_instruments(self, instrument_name = None):
-            sql = ('SELECT i.ROWID, i.name, t.type, c.name as currency, b.name as broker, i.url, i.expense_ratio '
-                   'from instrument i '
-                   'JOIN instrument_type t on i.type = t.ROWID '
-                   'JOIN currency c on i.currency = c.ROWID '
-                   'JOIN broker b on i.broker = b.ROWID')
+        def get_instruments(self, instrument_name=None):
+            sql = ('SELECT i.ROWID, i.name, t.type, c.name AS currency, b.name AS broker, i.url, i.expense_ratio '
+                   'FROM instrument i '
+                   'JOIN instrument_type t ON i.type = t.ROWID '
+                   'JOIN currency c ON i.currency = c.ROWID '
+                   'JOIN broker b ON i.broker = b.ROWID')
             if instrument_name:
                 sql += ' WHERE i.name = ?'
             for r in self.exec(sql, (instrument_name,) if instrument_name else None):
@@ -248,13 +251,22 @@ class Dao:
                        'url': r['url'],
                        'expense': r['expense_ratio']}
 
+        def get_instrument_types_mapper(self):
+            return {x['type']: x['ROWID'] for x in self.exec('SELECT ROWID,type FROM instrument_type')}
+
+        def get_currency_mapper(self):
+            return {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM currency')}
+
+        def get_broker_mapper(self):
+            return {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM broker')}
+
         def update_instrument(self, instrument_name, instrument):
             kwargs = {'instrument_name': instrument_name}
             instrument_id = self._get_instrument_id(**kwargs)
 
-            types = {x['type']: x['ROWID'] for x in self.exec('SELECT ROWID,type FROM instrument_type')}
-            brokers = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM broker')}
-            ccy = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM currency')}
+            types = self.get_instrument_types_mapper()
+            brokers = self.get_broker_mapper()
+            ccy = self.get_currency_mapper()
 
             params = []
             cols = []
@@ -277,7 +289,7 @@ class Dao:
 
             if instrument_id:
                 sql = 'UPDATE instrument set '
-                sql += ','.join([x+'=?' for x in cols]) + ' WHERE ROWID = ?'
+                sql += ','.join([x + '=?' for x in cols]) + ' WHERE ROWID = ?'
                 params.append(instrument_id)
             else:
                 sql = 'INSERT INTO instrument ('
@@ -288,6 +300,16 @@ class Dao:
             self.exec(sql, tuple(params))
 
             return True
+
+        def get_stock_transaction(self):
+            for x in self.exec('SELECT date,name,type,price,shares,fee FROM stock_trans'):
+                yield {
+                    'date': str(epoch2date(x['date'])),
+                    'symbol': x['name'],
+                    'type': x['type'],
+                    'price': x['price'],
+                    'shares': x['shares'],
+                    'fee': x['fee']}
 
     class FakeDao(RealDao):
         """
@@ -363,8 +385,8 @@ class Dao:
             self.conn.executescript(get_sql_scripts())
 
             # read back meta data
-            instrument_type = {x['type']: x['ROWID'] for x in self.exec('SELECT ROWID,type FROM instrument_type')}
-            currencies = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,name FROM currency')}
+            instrument_type = self.get_instrument_types_mapper()
+            currencies = self.get_currency_mapper()
 
             # randomly generate instruments
             self.gen_instruments("XYZ", currencies["USD"], (instrument_type["Stock"], instrument_type["ETF"]), 3,

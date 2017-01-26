@@ -77,3 +77,11 @@ Instrument = api.model('Instrument', {
     'expense': fields.Float(description='Expense ratio'),
 })
 
+stock_transaction = api.model('Bond transactions', {
+    'Date':  fields.String(description='Transaction date'),
+    'Symbol': fields.String(description='Stock/ETF symbol'),
+    'Type':  fields.String(description='Transaction type'),
+    'Price':  fields.Float(description='Price'),
+    'Shares': fields.Float(description='Shares'),
+    'Fee':  fields.Float(description='Fee'),
+})

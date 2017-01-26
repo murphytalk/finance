@@ -4,7 +4,7 @@ from flask_restplus import Resource
 from finance.common.report import FundReport
 from finance.api.endpoints import run_func_against_dao
 
-ns = api.namespace('report', description='Various finance reports')
+ns = api.namespace('report', description='Financial reports')
 
 
 @ns.route('/fund')
