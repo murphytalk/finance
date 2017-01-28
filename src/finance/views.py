@@ -99,7 +99,3 @@ def sum_json():
     return Response(r.to_json_packed(r.report(g.dao)), mimetype='application/json')
 
 
-@finance_page.route('/db/xccy.json')
-def db_xccy_json():
-    return Response(raw_xccy(g.dao), mimetype='application/json')
-

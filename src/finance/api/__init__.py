@@ -92,5 +92,12 @@ stock_quote = api.model('Stock quotes', {
     'Price':  fields.Float(description='Price'),
 })
 
+xccy_quote = api.model('Stock quotes', {
+    'Date':  fields.String(description='Closing date'),
+    'From': fields.String(description='Exchange from currency'),
+    'To': fields.String(description='Exchange to currency'),
+    'Rate':  fields.Float(description='Exchange rate'),
+})
+
 
 

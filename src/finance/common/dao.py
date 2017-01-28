@@ -322,6 +322,61 @@ class Dao:
                     'shares': x['shares'],
                     'fee': x['fee']}
 
+        def update_stock_transaction(self, stock_name, transaction):
+            """
+            Update/Insert a stock transaction.
+            :param stock_name: Stock name
+            :param transaction: A dict that holds transaction details
+                   see POST API /transaction/stock/{stock}
+            :return: True/False
+            """
+
+            def get_instrument_id(name):
+                iid = -1
+                for x in self.exec('SELECT ROWID FROM instrument WHERE name = ?', (name,)):
+                    iid = x['ROWID']
+                    break
+                return iid
+
+            instrument_id = get_instrument_id(stock_name)
+            if instrument_id > 0:
+                self.exec('INSERT INTO [transaction] (instrument, type, price, shares, fee, date) '
+                          'VALUES (?,?,?,?,?,?)',
+                          (instrument_id,
+                           transaction['Type'],
+                           transaction['Price'],
+                           transaction['Shares'],
+                           transaction['Fee'],
+                           date_str2epoch(transaction['Date'])))
+                return True
+            else:
+                return False
+
+        def get_xccy_quote(self, ccy_pair=None, max_days=None):
+            """
+            Get xccy quotes
+            :param ccy_pair: if specified then return only quotes of the specified currency pair
+            :param max_days: if specified then only return quotes of the last days from today
+            :return: a generator of Date/From/To/Rate dict
+            """
+            params = []
+            sql = 'SELECT [From],[To],rate,date FROM xccy_hist '
+            if ccy_pair is not None:
+                sql += 'WHERE [From]=? and [To]=? '
+                params.append(ccy_pair[0])
+                params.append(ccy_pair[1])
+            if max_days is not None:
+                no_earlier_than = get_current_date_epoch() - max_days * SECONDS_PER_DAY
+                sql += ' %s date >= ? ' % ('AND' if ccy_pair is not None else 'WHERE')
+                params.append(no_earlier_than)
+
+            sql += 'ORDER BY date DESC'
+            for x in self.exec(sql, tuple(params) if len(params) > 0 else None):
+                yield {'Date': str(epoch2date(x['date'])),
+                       'From': x['From'],
+                       'To': x['To'],
+                       'Rate': x['rate']}
+
         def get_stock_quote(self, stock_name=None, max_days=None):
             """
             Get stock quotes
@@ -342,35 +397,6 @@ class Dao:
             sql += 'ORDER BY date DESC'
             for x in self.exec(sql, tuple(params) if len(params) > 0 else None):
                 yield {'date': str(epoch2date(x['date'])), 'symbol': x['name'], 'price': x['price']}
-
-        def update_stock_transaction(self, stock_name, transaction):
-            """
-            Update/Insert a stock transaction.
-            :param stock_name: Stock name
-            :param transaction: A dict that holds transaction details
-                   see POST API /transaction/stock/{stock}
-            :return: True/False
-            """
-            def get_instrument_id(name):
-                iid = -1
-                for x in self.exec('SELECT ROWID from instrument WHERE name = ?', (name,)):
-                    iid = x['ROWID']
-                    break
-                return iid
-
-            instrument_id = get_instrument_id(stock_name)
-            if instrument_id > 0:
-                self.exec('INSERT INTO [transaction] (instrument, type, price, shares, fee, date) '
-                          'VALUES (?,?,?,?,?,?)',
-                          (instrument_id,
-                           transaction['Type'],
-                           transaction['Price'],
-                           transaction['Shares'],
-                           transaction['Fee'],
-                           date_str2epoch(transaction['Date'])))
-                return True
-            else:
-                return False
 
     class FakeDao(RealDao):
         """
@@ -468,11 +494,12 @@ class Dao:
                     quotes.append((i, Dao.FakeDao.gen_price(min_price, max_price), day))
             self.exec_many('INSERT INTO quote VALUES (?,?,?)', quotes)
 
-            # randomly generate USD => JPY exchange rates - from DAY1 to today
+            # randomly generate USD => JPY and CNY=>JPY exchange rates - from DAY1 to today
             xccy = []
             for day in Dao.FakeDao.gen_dates():
                 # from , to, rate, date
                 xccy.append((currencies["USD"], currencies["JPY"], Dao.FakeDao.gen_price(100, 120), day))
+                xccy.append((currencies["CNY"], currencies["JPY"], Dao.FakeDao.gen_price(13, 20), day))
             self.exec_many('INSERT INTO xccy VALUES (?,?,?,?)', xccy)
 
             # buy >1000 shares for each stock/ETF at random price on DAY1

@@ -1,4 +1,4 @@
-from finance.api import api, stock_transaction, stock_quote
+from finance.api import api, stock_transaction, stock_quote, xccy_quote
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
 from flask import request
@@ -83,3 +83,35 @@ class StockQuote(Resource):
         Return all quotes of the given stock/ETF
         """
         return run_func_against_dao(lambda dao: _get_stock_quote(dao, stock, _get_int_from_query_param('max_days')))
+
+
+def _get_xccy_quote(dao, ccy_pair=None, max_days=None):
+    return [{'Date': x['Date'],
+             'From': x['From'],
+             'To': x['To'],
+             'Rate': x['Rate']} for x in dao.get_xccy_quote(ccy_pair, max_days)]
+
+
+@ns.route('/xccy')
+class XccyQuoteAll(Resource):
+    @api.marshal_list_with(xccy_quote)
+    @ns.param('max_days', 'Only return quotes from today to max_days days earlier if specified')
+    def get(self):
+        """
+        Return list of the quotes of the all (known) currency pairs
+        """
+        return run_func_against_dao(lambda dao: _get_xccy_quote(dao, None, _get_int_from_query_param('max_days')))
+
+
+@ns.route('/xccy/<string:from_ccy>/<string:to_ccy>')
+@api.doc(params={'from_ccy': 'The currency to exchange from', 'to_ccy': 'The currency to exchange to'})
+class XccyQuote(Resource):
+    @api.marshal_list_with(xccy_quote)
+    @ns.param('max_days', 'Only return quotes from today to max_days days earlier if specified')
+    def get(self, from_ccy, to_ccy):
+        """
+        Return all quotes of the given currency pair
+        """
+        return run_func_against_dao(lambda dao: _get_xccy_quote(dao, (from_ccy, to_ccy),
+                                                                _get_int_from_query_param('max_days')))
+
