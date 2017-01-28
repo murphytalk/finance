@@ -147,11 +147,6 @@ def region_allocation(dao, instrument_id):
     return get_pie_chart_data_json(dao.get_region_allocation(instrument_id=instrument_id))
 
 
-def raw_quote(dao):
-    q = [[str(epoch2date(x['date'])), x['name'], x['price']] for x in
-         dao.exec('SELECT * FROM stock_quote ORDER BY date DESC')]
-    return Report.to_json_packed({'data': q})
-
 
 def raw_xccy(dao):
     q = [[str(epoch2date(x['date'])), x['From'], x['To'], x['rate']] for x in
@@ -174,8 +169,6 @@ if __name__ == "__main__":
             print(r.to_json(r.stock_positions()))
         elif 'fund' in others:
             r = FundReport(dao, args['end_date'])
-        elif 'quote' in others:
-            print(Report.to_json(raw_quote(dao)))
         elif 'xccy' in others:
             print(Report.to_json(raw_xccy(dao)))
         elif 'sum' in others:

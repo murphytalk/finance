@@ -22,22 +22,28 @@
     {{ super() }}
     <script>
         $("#q").click(function () {
-            build_header('#dbtable', ['Date', 'Symbol', 'Price']);
-            populate_data(
-                '#dbtable',
-                "{{url_for('finance_page.db_quote_json')}}",
-                [[0, 'desc'],
-                    [1, 'desc']],
-                100,
-                [50, 100, 200],
-                [
-                    {
-                        "render": function (data, type, row) {
-                            return data.toLocaleString();
-                        }, "targets": 2
-                    }
-                ],
-                null);
+            const cols = ['Date', 'Symbol', 'Price'];
+            build_header('#dbtable', cols);
+            $.getJSON("{{ url_for('api.transaction_stock_quote_all')}}?max_days=30",
+                function (data) {
+                    populate_data(
+                        '#dbtable',
+                        function(d,callback,s){
+                            callback({'data': obj_to_datatable_ajax_array(data, cols)});
+                        },
+                        [[0, 'desc'],
+                        [1, 'desc']],
+                        100,
+                        [50, 100, 200],
+                        [
+                            {
+                                "render": function (data, type, row) {
+                                    return data.toLocaleString();
+                                }, "targets": 2
+                            }
+                        ],
+                        null);
+                });
         });
 
         $("#t").click(function () {
@@ -51,7 +57,7 @@
                             callback({'data': obj_to_datatable_ajax_array(data, cols)});
                         },
                         [[0, 'desc'],
-                            [1, 'desc']],
+                        [1, 'desc']],
                         100,
                         [50, 100, 200],
                         [
