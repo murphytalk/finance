@@ -335,8 +335,8 @@ class Dao:
                 sql += 'WHERE name = ? '
                 params.append(stock_name)
             if max_days is not None:
-                no_earlier_than = get_current_date_epoch - SECONDS_PER_DAY
-                sql += 'AND date >= ? '
+                no_earlier_than = get_current_date_epoch() - max_days * SECONDS_PER_DAY
+                sql += ' %s date >= ? ' % ('AND' if stock_name is not None else 'WHERE')
                 params.append(no_earlier_than)
 
             sql += 'ORDER BY date DESC'

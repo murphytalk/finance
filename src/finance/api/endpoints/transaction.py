@@ -1,6 +1,7 @@
 from finance.api import api, stock_transaction, stock_quote
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
+from flask import request
 
 ns = api.namespace('transaction', description='Financial transactions')
 
@@ -51,25 +52,34 @@ def _get_stock_quote(dao, stock_name=None, max_days=None):
              'Price': x['price']} for x in dao.get_stock_quote(stock_name, max_days)]
 
 
+def _get_int_from_query_param(name):
+    value = request.args.get(name)  # is there better way to capture parameter from query?
+    if value:
+        try:
+            value = int(value)
+        except ValueError:
+            value = None
+    return value
+
+
 @ns.route('/stock/quote')
 class StockQuoteAll(Resource):
     @api.marshal_list_with(stock_quote)
-    @ns.param('max_days', 'Only return quotes from today to max_days days earlier')
-    def get(self, max_days):
+    @ns.param('max_days', 'Only return quotes from today to max_days days earlier if specified')
+    def get(self):
         """
         Return list of stock/ETF quotes
         """
-        return run_func_against_dao(lambda dao: _get_stock_quote(dao, None, int(max_days)))
+        return run_func_against_dao(lambda dao: _get_stock_quote(dao, None, _get_int_from_query_param('max_days')))
 
 
 @ns.route('/stock/quote/<string:stock>')
 @api.doc(params={'stock': 'Stock name'})
-class Stock(Resource):
+class StockQuote(Resource):
     @api.marshal_list_with(stock_quote)
+    @ns.param('max_days', 'Only return quotes from today to max_days days earlier if specified')
     def get(self, stock):
         """
         Return all quotes of the given stock/ETF
         """
-        return run_func_against_dao(lambda dao: _get_stock_quote(dao, stock))
-
-
+        return run_func_against_dao(lambda dao: _get_stock_quote(dao, stock, _get_int_from_query_param('max_days')))
