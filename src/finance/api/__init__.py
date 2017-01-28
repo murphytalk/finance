@@ -77,7 +77,7 @@ Instrument = api.model('Instrument', {
     'expense': fields.Float(description='Expense ratio'),
 })
 
-stock_transaction = api.model('Bond transactions', {
+stock_transaction = api.model('Stock transactions', {
     'Date':  fields.String(description='Transaction date'),
     'Symbol': fields.String(description='Stock/ETF symbol'),
     'Type':  fields.String(description='Transaction type'),
@@ -85,3 +85,12 @@ stock_transaction = api.model('Bond transactions', {
     'Shares': fields.Float(description='Shares'),
     'Fee':  fields.Float(description='Fee'),
 })
+
+stock_quote = api.model('Stock quotes', {
+    'Date':  fields.String(description='Closing date'),
+    'Symbol': fields.String(description='Stock/ETF symbol'),
+    'Price':  fields.Float(description='Price'),
+})
+
+
+

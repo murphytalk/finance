@@ -87,9 +87,11 @@ class Dao:
             return {x['rowid']: c(x['rowid'], x['name'], x['type_id'], x['type'], x['url'], x['expense_ratio'])
                     for x in self.exec(sql)}
 
-        def get_stock_quote(self, quote_date):
+        def get_stock_latest_quotes(self, quote_date):
             """
-            return a dict {instrument id : Quote}
+            get the latest quotes of all stocks before the given date
+            :param quote_date: quote date
+            :return: dict {instrument id : Quote}
             """
             epoch = int(timegm(quote_date.timetuple()))
             sql = ('SELECT q.instrument,i.name,q.price, q.date FROM quote q, instrument i '
@@ -309,7 +311,7 @@ class Dao:
 
             return True
 
-        def get_stock_transaction(self, stock_name = None):
+        def get_stock_transaction(self, stock_name=None):
             sql = 'SELECT date,name,type,price,shares,fee FROM stock_trans '
             if stock_name is not None:
                 sql += 'WHERE name = ?'
@@ -321,6 +323,14 @@ class Dao:
                     'price': x['price'],
                     'shares': x['shares'],
                     'fee': x['fee']}
+
+        def get_stock_quote(self, stock_name=None):
+            sql = 'SELECT * FROM stock_quote '
+            if stock_name is not None:
+                sql += 'WHERE name = ? '
+            sql += 'ORDER BY date DESC'
+            for x in self.exec(sql, (stock_name,) if stock_name else None):
+                yield {'date': str(epoch2date(x['date'])), 'symbol': x['name'], 'price': x['price']}
 
         def update_stock_transaction(self, stock_name, transaction):
             """

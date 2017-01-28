@@ -39,7 +39,7 @@ class Report(object):
 class StockReport(Report):
     def __init__(self, dao, date):
         super(self.__class__, self).__init__(dao, date)
-        self.q = dao.get_stock_quote(date)
+        self.q = dao.get_stock_latest_quotes(date)
         self.stock_position = CalcPosition(date)
         self.stock_position.calc(dao)
 
@@ -178,8 +178,6 @@ if __name__ == "__main__":
             print(Report.to_json(raw_quote(dao)))
         elif 'xccy' in others:
             print(Report.to_json(raw_xccy(dao)))
-        elif 'trans' in others:
-            print(Report.to_json(raw_trans(dao)))
         elif 'sum' in others:
             r = SummaryReport(dao, args['end_date'])
             print(Report.to_json(r.report(dao)))

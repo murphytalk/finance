@@ -1,4 +1,4 @@
-from finance.api import api, stock_transaction
+from finance.api import api, stock_transaction, stock_quote
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
 
@@ -43,4 +43,32 @@ class Stock(Resource):
         :param stock: instrument name
         """
         return run_func_against_dao(lambda dao: 201 if dao.update_stock_transaction(stock, api.payload) else 500)
+
+
+def _get_stock_quote(dao, stock_name=None):
+    return [{'Date': x['date'],
+             'Symbol': x['symbol'],
+             'Price': x['price']} for x in dao.get_stock_quote(stock_name)]
+
+
+@ns.route('/stock/quote')
+class StockQuoteAll(Resource):
+    @api.marshal_list_with(stock_quote)
+    def get(self):
+        """
+        Return list of stock/ETF quotes
+        """
+        return run_func_against_dao(lambda dao: _get_stock_quote(dao))
+
+
+@ns.route('/stock/quote/<string:stock>')
+@api.doc(params={'stock': 'Stock name'})
+class Stock(Resource):
+    @api.marshal_list_with(stock_quote)
+    def get(self, stock):
+        """
+        Return all quotes of the given stock/ETF
+        """
+        return run_func_against_dao(lambda dao: _get_stock_quote(dao, stock))
+
 
