@@ -31,6 +31,7 @@ RESTPLUS_SWAGGER_UI_DOC_EXPANSION = 'list'
 RESTPLUS_VALIDATE = True
 RESTPLUS_MASK_SWAGGER = False
 RESTPLUS_ERROR_404_HELP = False
+SWAGGER_UI_JSONEDITOR = True
 
 app = Flask(__name__)
 # load all uppercase variables as configuration
