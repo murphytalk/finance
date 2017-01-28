@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import random
 import sqlite3
-import time
 from calendar import timegm
 
+from finance.common.utils import date_str2epoch
 from finance.common.db import get_sql_scripts
 from finance.common.model import *
 
@@ -322,19 +322,6 @@ class Dao:
                     'shares': x['shares'],
                     'fee': x['fee']}
 
-        @staticmethod
-        def _str2time(date_str):
-            try:
-                return time.strptime(date_str, '%Y%m%d')
-            except ValueError:
-                try:
-                    return time.strptime(date_str, '%Y-%m-%d')
-                except ValueError:
-                    try:
-                        return time.strptime(date_str, '%Y/%m/%d')
-                    except ValueError:
-                        return None
-
         def update_stock_transaction(self, stock_name, transaction):
             """
             Update/Insert a stock transaction.
@@ -350,9 +337,6 @@ class Dao:
                     break
                 return iid
 
-            def get_epoch(str_date):
-                return time.mktime(Dao.RealDao._str2time(str_date)) - time.timezone
-
             instrument_id = get_instrument_id(stock_name)
             if instrument_id < 0:
                 # need to add a new one
@@ -366,7 +350,7 @@ class Dao:
                        transaction['Price'],
                        transaction['Shares'],
                        transaction['Fee'],
-                       get_epoch(transaction['Date'])))
+                       date_str2epoch(transaction['Date'])))
 
             return True
 

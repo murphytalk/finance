@@ -1,6 +1,7 @@
 ﻿import sys
 import time
 from datetime import datetime, date
+
 try:
     from finance.common.const import STOCK_START_DATE
 except ImportError:
@@ -23,6 +24,33 @@ def epoch2date(epoch):
     epoch is in UTC, convert it to local date by applying timezone offset
     """
     return date.fromtimestamp(epoch + time.timezone)
+
+
+def str2time(date_str):
+    """
+    convert a date string to local time
+    :param date_str: YYYYMMDD, YYYY/MM/DD, YYYY-MM-DD
+    :return: time
+    """
+    try:
+        return time.strptime(date_str, '%Y%m%d')
+    except ValueError:
+        try:
+            return time.strptime(date_str, '%Y-%m-%d')
+        except ValueError:
+            try:
+                return time.strptime(date_str, '%Y/%m/%d')
+            except ValueError:
+                return None
+
+
+def date_str2epoch(str_date):
+    """
+    Convert a string date (local time) to UTC epoch
+    :param str_date: YYYYMMDD, YYYY/MM/DD, YYYY-MM-DD in local time
+    :return: Unix epoch int UTc
+    """
+    return time.mktime(str2time(str_date)) - time.timezone
 
 
 def cmdline_args(argv, db_adapter_clz=None):
