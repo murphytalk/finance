@@ -16,7 +16,7 @@ def add_lib_to_path(zip):
 
 
 def get_current_date_epoch():
-    return int((time.time()) / SECONDS_PER_DAY) * SECONDS_PER_DAY
+    return int((time.time() + time.timezone) / SECONDS_PER_DAY) * SECONDS_PER_DAY
 
 
 def epoch2date(epoch):

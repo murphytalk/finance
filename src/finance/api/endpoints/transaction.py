@@ -45,20 +45,21 @@ class Stock(Resource):
         return run_func_against_dao(lambda dao: 201 if dao.update_stock_transaction(stock, api.payload) else 500)
 
 
-def _get_stock_quote(dao, stock_name=None):
+def _get_stock_quote(dao, stock_name=None, max_days=None):
     return [{'Date': x['date'],
              'Symbol': x['symbol'],
-             'Price': x['price']} for x in dao.get_stock_quote(stock_name)]
+             'Price': x['price']} for x in dao.get_stock_quote(stock_name, max_days)]
 
 
 @ns.route('/stock/quote')
 class StockQuoteAll(Resource):
     @api.marshal_list_with(stock_quote)
-    def get(self):
+    @ns.param('max_days', 'Only return quotes from today to max_days days earlier')
+    def get(self, max_days):
         """
         Return list of stock/ETF quotes
         """
-        return run_func_against_dao(lambda dao: _get_stock_quote(dao))
+        return run_func_against_dao(lambda dao: _get_stock_quote(dao, None, int(max_days)))
 
 
 @ns.route('/stock/quote/<string:stock>')

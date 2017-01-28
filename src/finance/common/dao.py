@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-import random
-import sqlite3
+import random, sqlite3
 from calendar import timegm
-
-from finance.common.utils import date_str2epoch
+from finance.common.utils import date_str2epoch, get_current_date_epoch, SECONDS_PER_DAY
 from finance.common.db import get_sql_scripts
 from finance.common.model import *
 
@@ -324,12 +322,25 @@ class Dao:
                     'shares': x['shares'],
                     'fee': x['fee']}
 
-        def get_stock_quote(self, stock_name=None):
+        def get_stock_quote(self, stock_name=None, max_days=None):
+            """
+            Get stock quotes
+            :param stock_name: if specified then return only quotes of this stock
+            :param max_days: if specified then only return quotes of the last days from today
+            :return: a generator of date/symbol/price dict
+            """
+            params = []
             sql = 'SELECT * FROM stock_quote '
             if stock_name is not None:
                 sql += 'WHERE name = ? '
+                params.append(stock_name)
+            if max_days is not None:
+                no_earlier_than = get_current_date_epoch - SECONDS_PER_DAY
+                sql += 'AND date >= ? '
+                params.append(no_earlier_than)
+
             sql += 'ORDER BY date DESC'
-            for x in self.exec(sql, (stock_name,) if stock_name else None):
+            for x in self.exec(sql, tuple(params) if len(params) > 0 else None):
                 yield {'date': str(epoch2date(x['date'])), 'symbol': x['name'], 'price': x['price']}
 
         def update_stock_transaction(self, stock_name, transaction):
@@ -348,21 +359,18 @@ class Dao:
                 return iid
 
             instrument_id = get_instrument_id(stock_name)
-            if instrument_id < 0:
-                # need to add a new one
-                self.update_instrument(stock_name, {'name': stock_name, 'type': 'ETF'})
-                instrument_id = get_instrument_id(stock_name)
-
-            self.exec('INSERT INTO [transaction] (instrument, type, price, shares, fee, date) '
-                      'VALUES (?,?,?,?,?,?)',
-                      (instrument_id,
-                       transaction['Type'],
-                       transaction['Price'],
-                       transaction['Shares'],
-                       transaction['Fee'],
-                       date_str2epoch(transaction['Date'])))
-
-            return True
+            if instrument_id > 0:
+                self.exec('INSERT INTO [transaction] (instrument, type, price, shares, fee, date) '
+                          'VALUES (?,?,?,?,?,?)',
+                          (instrument_id,
+                           transaction['Type'],
+                           transaction['Price'],
+                           transaction['Shares'],
+                           transaction['Fee'],
+                           date_str2epoch(transaction['Date'])))
+                return True
+            else:
+                return False
 
     class FakeDao(RealDao):
         """
@@ -504,7 +512,7 @@ class Dao:
             pass
 
         def close(self):
-            pass
+            self.conn.commit()
 
         def gen_instruments(self, broker, currency, instrument_types, symbol_len, count):
             """
