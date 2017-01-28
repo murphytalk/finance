@@ -33,3 +33,14 @@ class Stock(Resource):
         Return all transactions of the given stock/ETF
         """
         return run_func_against_dao(lambda dao: _get_stock_transaction(dao, stock))
+
+    @api.response(201, 'Transaction successfully updated.')
+    @api.response(500, 'Cannot update transaction.')
+    @api.expect(stock_transaction)
+    def post(self, stock):
+        """
+        Create/Update a stock/ETF transaction.
+        :param stock: instrument name
+        """
+        return run_func_against_dao(lambda dao: 201 if dao.update_stock_transaction(stock, api.payload) else 500)
+

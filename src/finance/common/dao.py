@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
 import sqlite3
+import time
 from calendar import timegm
 
 from finance.common.db import get_sql_scripts
@@ -252,7 +253,7 @@ class Dao:
                        'expense': r['expense_ratio']}
 
         def get_instrument_types_mapper(self):
-            return {x['type']: x['ROWID'] for x in self.exec('SELECT ROWID,type FROM instrument_type')}
+            return {x[1]: x[0] for x in self.get_instrument_types()}
 
         def get_currency_mapper(self):
             return {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM currency')}
@@ -321,6 +322,19 @@ class Dao:
                     'shares': x['shares'],
                     'fee': x['fee']}
 
+        @staticmethod
+        def _str2time(date_str):
+            try:
+                return time.strptime(date_str, '%Y%m%d')
+            except ValueError:
+                try:
+                    return time.strptime(date_str, '%Y-%m-%d')
+                except ValueError:
+                    try:
+                        return time.strptime(date_str, '%Y/%m/%d')
+                    except ValueError:
+                        return None
+
         def update_stock_transaction(self, stock_name, transaction):
             """
             Update/Insert a stock transaction.
@@ -336,11 +350,13 @@ class Dao:
                     break
                 return iid
 
+            def get_epoch(str_date):
+                return time.mktime(Dao.RealDao._str2time(str_date)) - time.timezone
+
             instrument_id = get_instrument_id(stock_name)
             if instrument_id < 0:
                 # need to add a new one
-                instrument_types = self.get_instrument_types()
-                self.update_instrument(stock_name, {'name': stock_name, 'type': instrument_types['ETF']})
+                self.update_instrument(stock_name, {'name': stock_name, 'type': 'ETF'})
                 instrument_id = get_instrument_id(stock_name)
 
             self.exec('INSERT INTO [transaction] (instrument, type, price, shares, fee, date) '
@@ -350,7 +366,7 @@ class Dao:
                        transaction['Price'],
                        transaction['Shares'],
                        transaction['Fee'],
-                       transaction['Date']))
+                       get_epoch(transaction['Date'])))
 
             return True
 
