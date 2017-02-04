@@ -15,6 +15,22 @@ log = logging.getLogger(__name__)
 #    for line in traceback.format_stack():
 #        print(line.strip())
 
+def _remove_null_empty_value( func):
+    def wrapper(s, name, data):
+        to_be_del = []
+        for k,v in data.items():
+            if (type(v) is int) or (type(v) is float):
+                if v == 0:
+                    to_be_del.append(k)
+            elif type(v) is str:
+                if len(v) == 0:
+                    to_be_del.append(k)
+        for k in to_be_del:
+            data.pop(k, None)
+
+        return func(s, name, data)
+    return wrapper
+
 
 class Dao:
     class Raw:
@@ -261,6 +277,7 @@ class Dao:
         def get_broker_mapper(self):
             return {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM broker')}
 
+        @_remove_null_empty_value
         def update_instrument(self, instrument_name, instrument):
             """
             Update/Insert an instrument
@@ -322,6 +339,7 @@ class Dao:
                     'shares': x['shares'],
                     'fee': x['fee']}
 
+        @_remove_null_empty_value
         def update_stock_transaction(self, stock_name, transaction):
             """
             Update/Insert a stock transaction.
