@@ -48,7 +48,7 @@ def date_str2epoch(str_date):
     """
     Convert a string date (local time) to UTC epoch
     :param str_date: YYYYMMDD, YYYY/MM/DD, YYYY-MM-DD in local time
-    :return: Unix epoch int UTc
+    :return: Unix epoch int UTC
     """
     return time.mktime(str2time(str_date)) - time.timezone
 

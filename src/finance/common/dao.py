@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import random, sqlite3
+import random
+import sqlite3
 from calendar import timegm
 from finance.common.utils import date_str2epoch, get_current_date_epoch, SECONDS_PER_DAY
 from finance.common.db import get_sql_scripts
@@ -15,10 +16,10 @@ log = logging.getLogger(__name__)
 #    for line in traceback.format_stack():
 #        print(line.strip())
 
-def _remove_null_empty_value( func):
+def _remove_empty_value(func):
     def wrapper(s, name, data):
         to_be_del = []
-        for k,v in data.items():
+        for k, v in data.items():
             if (type(v) is int) or (type(v) is float):
                 if v == 0:
                     to_be_del.append(k)
@@ -29,6 +30,7 @@ def _remove_null_empty_value( func):
             data.pop(k, None)
 
         return func(s, name, data)
+
     return wrapper
 
 
@@ -277,7 +279,7 @@ class Dao:
         def get_broker_mapper(self):
             return {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM broker')}
 
-        @_remove_null_empty_value
+        @_remove_empty_value
         def update_instrument(self, instrument_name, instrument):
             """
             Update/Insert an instrument
@@ -339,7 +341,14 @@ class Dao:
                     'shares': x['shares'],
                     'fee': x['fee']}
 
-        @_remove_null_empty_value
+        def _get_instrument_id(self, name):
+            iid = -1
+            for x in self.exec('SELECT ROWID FROM instrument WHERE name = ?', (name,)):
+                iid = x['ROWID']
+                break
+            return iid
+
+        @_remove_empty_value
         def update_stock_transaction(self, stock_name, transaction):
             """
             Update/Insert a stock transaction.
@@ -348,15 +357,7 @@ class Dao:
                    see POST API /transaction/stock/{stock}
             :return: True/False
             """
-
-            def get_instrument_id(name):
-                iid = -1
-                for x in self.exec('SELECT ROWID FROM instrument WHERE name = ?', (name,)):
-                    iid = x['ROWID']
-                    break
-                return iid
-
-            instrument_id = get_instrument_id(stock_name)
+            instrument_id = self._get_instrument_id(stock_name)
             if instrument_id > 0:
                 self.exec('INSERT INTO [transaction] (instrument, type, price, shares, fee, date) '
                           'VALUES (?,?,?,?,?,?)',
@@ -366,6 +367,23 @@ class Dao:
                            transaction['Shares'],
                            transaction['Fee'],
                            date_str2epoch(transaction['Date'])))
+                return True
+            else:
+                return False
+
+        @_remove_empty_value
+        def update_stock_quotes(self, stock_name, quotes):
+            """
+            Update/Insert stock quote for one day
+            :param stock_name: stock name
+            :param quotes: [{Date,Price},]
+            :return: True/False
+            """
+            instrument_id = self._get_instrument_id(stock_name)
+            if instrument_id > 0:
+                parameters = [(instrument_id, q['Price'], date_str2epoch(q['Date'])) for q in quotes['quotes']]
+                self.exec_many('INSERT INTO quote (instrument, price, date) '
+                               'VALUES (?,?,?)', parameters)
                 return True
             else:
                 return False

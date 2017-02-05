@@ -202,6 +202,7 @@ CREATE VIEW instrument_xccy AS
 -- broker data is purely fake
 INSERT INTO broker (name, fullName) VALUES ('ABC', 'ABC Asset Management');
 INSERT INTO broker (name, fullName) VALUES ('XYZ', 'XYZ Securities');
+INSERT INTO broker (name, fullName) VALUES ('IB', 'Interactive Brokers');
 
 -- The followings are same as production data
 -- asset

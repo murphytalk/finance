@@ -86,13 +86,17 @@ stock_transaction = api.model('Stock transactions', {
     'Fee':  fields.Float(description='Fee'),
 })
 
-stock_quote = api.model('Stock quotes', {
+stock_quote = api.model('Stock quote', {
     'Date':  fields.String(description='Closing date'),
     'Symbol': fields.String(description='Stock/ETF symbol'),
     'Price':  fields.Float(description='Price'),
 })
 
-xccy_quote = api.model('Stock quotes', {
+stock_quotes = api.model('Stock quotes', {
+    'quotes': fields.List(fields.Nested(stock_quote), description='Multiple days quotes of the given instrument')
+})
+
+xccy_quote = api.model('Xccy quotes', {
     'Date':  fields.String(description='Closing date'),
     'From': fields.String(description='Exchange from currency'),
     'To': fields.String(description='Exchange to currency'),

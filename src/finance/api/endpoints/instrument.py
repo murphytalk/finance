@@ -47,7 +47,7 @@ class Instrument(Resource):
         Create/Update detail information of the given instrument.
         :param instrument: instrument name
         """
-        return run_func_against_dao(lambda dao: 201 if dao.update_instrument(instrument, api.payload) else 500 )
+        return run_func_against_dao(lambda dao: 201 if dao.update_instrument(instrument, api.payload) else 500)
 
 
 @ns.route('/allocation/asset/<string:instrument>')

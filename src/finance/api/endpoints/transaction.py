@@ -1,4 +1,4 @@
-from finance.api import api, stock_transaction, stock_quote, xccy_quote
+from finance.api import api, stock_transaction, stock_quote, stock_quotes, xccy_quote
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
 from flask import request
@@ -83,6 +83,12 @@ class StockQuote(Resource):
         Return all quotes of the given stock/ETF
         """
         return run_func_against_dao(lambda dao: _get_stock_quote(dao, stock, _get_int_from_query_param('max_days')))
+
+    @api.response(201, 'Quote successfully updated.')
+    @api.response(500, 'Cannot update quote.')
+    @api.expect(stock_quotes)
+    def post(self, stock):
+        return run_func_against_dao(lambda dao: 201 if dao.update_stock_quotes(stock, api.payload) else 500)
 
 
 def _get_xccy_quote(dao, ccy_pair=None, max_days=None):
