@@ -237,7 +237,7 @@ class Dao:
             for r in self.exec('SELECT ROWID, type FROM asset'):
                 yield (r['ROWID'], r['type'])
 
-        def get_countrys(self):
+        def get_countries(self):
             for r in self.exec('SELECT ROWID, [name] FROM country'):
                 yield (r['ROWID'], r['name'])
 
@@ -280,15 +280,15 @@ class Dao:
             """
             return self._update_instrument_allocations(instrument_name, assets['assets'], 'asset', 'type')
 
-        def update_instrument_country_allocations(self, instrument_name, countrys):
+        def update_instrument_country_allocations(self, instrument_name, countries):
             """
             Update instrument country allocations
             :param instrument_name:  name (not ID) of an instrument
-            :param countrys: a dict of the country allocation.
+            :param countries: a dict of the country allocation.
                    See POST API: /instrument/allocation/country/{instrument}
             :return: True/False
             """
-            return self._update_instrument_allocations(instrument_name, countrys['countrys'], 'country', 'name')
+            return self._update_instrument_allocations(instrument_name, countries['countries'], 'country', 'name')
 
         def get_instruments(self, instrument_name=None):
             sql = ('SELECT i.ROWID, i.name, t.type, c.name AS currency, b.name AS broker, i.url, i.expense_ratio '

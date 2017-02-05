@@ -86,7 +86,7 @@ class InstrumentCountryAllocation(Resource):
         :param instrument: instrument name
         """
         return run_func_against_dao(lambda dao: [
-            {'countrys': [{'country': x[0], 'ratio': x[1]} for x in dao.get_country_allocation(instrument_name=instrument)]}])
+            {'countries': [{'country': x[0], 'ratio': x[1]} for x in dao.get_country_allocation(instrument_name=instrument)]}])
 
     @api.response(201, 'Instrument country allocations successfully updated.')
     @api.response(500, 'Cannot update instrument country allocations.')

@@ -64,7 +64,7 @@ country_allocation = api.model('Country allocation', {
 })
 
 instrument_country_allocation = api.model('Instrument country allocation', {
-    'countrys': fields.List(fields.Nested(country_allocation), description='Country allocations', required=True)
+    'countries': fields.List(fields.Nested(country_allocation), description='Country allocations', required=True)
 })
 
 Instrument = api.model('Instrument', {

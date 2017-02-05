@@ -26,7 +26,7 @@ class Country(Resource):
         """
         Return list of countries
         """
-        return run_func_against_dao(lambda dao: [{'id': x[0], 'country': x[1]} for x in dao.get_countrys()])
+        return run_func_against_dao(lambda dao: [{'id': x[0], 'country': x[1]} for x in dao.get_countries()])
 
 
 @ns.route('/broker')
