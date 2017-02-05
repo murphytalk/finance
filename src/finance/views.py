@@ -93,6 +93,11 @@ def country_allocation_json(instrument):
     return Response(country_allocation(g.dao, instrument), mimetype='application/json')
 
 
+@finance_page.route('/region.allocation/<instrument>')
+def region_allocation_json(instrument):
+    return Response(region_allocation(g.dao, instrument), mimetype='application/json')
+
+
 @finance_page.route('/sum.json')
 def sum_json():
     r = SummaryReport(g.dao, date.today())

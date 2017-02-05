@@ -16,11 +16,15 @@
             <div class="modal-body">
                 <ul class="nav nav-tabs">
                     <li class="active"><a data-toggle="tab" href="#asset">Asset</a></li>
+                    <li><a data-toggle="tab" href="#region">Region</a></li>
                     <li><a data-toggle="tab" href="#country">Country</a></li>
                 </ul>
                 <div class="tab-content">
                     <div id="asset" class="tab-pane fade in active">
                         <div id="pieAsset"></div>
+                    </div>
+                    <div id="region" class="tab-pane fade">
+                        <div id="pieRegion"></div>
                     </div>
                     <div id="country" class="tab-pane fade">
                         <div id="pieCountry"></div>
@@ -47,6 +51,7 @@
     //We prefer to use url_for as it solves the server side path automatically for us
     const asset_allocation_url  = "{{url_for('finance_page.asset_allocation_json',instrument=0)}}";
     const country_allocation_url = "{{url_for('finance_page.country_allocation_json',instrument=0)}}";
+    const region_allocation_url = "{{url_for('finance_page.region_allocation_json',instrument=0)}}";
 
     function showInstrumentDetail(instrument_id) {
         var data = table.rows({page: 'current'}).data();
@@ -79,7 +84,7 @@
     function detailShown() {
         var url = asset_allocation_url.replace(/0/,detail_instrument_id);
         $.getJSON(url, function (data) {
-            $('#pieAsset').highcharts(pieChartOptions(instrument_name, 'Asset', data, true));
+            $('#pieAsset').highcharts(pieChartOptions(null, 'Asset', data, true));
             //do the reflow below to force it to refit again - and the animation will be gone
             /*
              var chart = $("#pieAsset").highcharts();
@@ -87,9 +92,14 @@
              */
         });
 
+        url = region_allocation_url.replace(/0/,detail_instrument_id);
+        $.getJSON(url, function (data) {
+            $('#pieRegion').highcharts(pieChartOptions(null, 'Region', data, true));
+        });
+
         url = country_allocation_url.replace(/0/,detail_instrument_id);
         $.getJSON(url, function (data) {
-            $('#pieCountry').highcharts(pieChartOptions(instrument_name, 'Country', data, true));
+            $('#pieCountry').highcharts(pieChartOptions(null, 'Country', data, true));
         });
     }
 
@@ -103,6 +113,9 @@
             var chart_selector;
             if(x=='Asset'){
                 chart_selector = "#pieAsset";
+            }
+            else if(x=='Region'){
+                chart_selector = "#pieRegion";
             }
             else{
                 chart_selector = "#pieCountry";

@@ -5,6 +5,7 @@ from calendar import timegm
 from finance.common.utils import date_str2epoch, get_current_date_epoch, SECONDS_PER_DAY
 from finance.common.db import get_sql_scripts
 from finance.common.model import *
+from finance.common.utils import get_valid_db_from_env
 
 import logging.config
 
@@ -203,6 +204,34 @@ class Dao:
                        'AND a.country=t.rowid ORDER BY a.country')
                 for r in self.exec(sql, (int(instrument_id),)):
                     yield (r['name'], r['ratio'])
+
+        def get_region_allocation(self, **kwargs):
+            """
+            get region allocation of the given instrument
+            :param kwargs:  instrument_id or instrument_name
+            :return: a generator of (country,ratio)
+            """
+            instrument_id = self._get_instrument_id(**kwargs)
+            if instrument_id:
+                # get country id => region def
+                sql = ('SELECT r.name region, rs.country FROM regions rs '
+                       'JOIN region r ON rs.region = r.ROWID JOIN country c ON rs.country = c.ROWID')
+                region_lookup = {r['country']: r['region'] for r in self.exec(sql)}
+
+                sql = ('SELECT t.ROWID as cid, a.ratio FROM country_allocation a, country t '
+                       'WHERE a.instrument = ? AND a.country=t.rowid')
+
+                regions = {}
+                for r in self.exec(sql, (int(instrument_id),)):
+                    country = r['cid']
+                    region = region_lookup[country]
+                    if region in regions:
+                        regions[region] += r['ratio']
+                    else:
+                        regions[region] = r['ratio']
+
+                for region, ratio in regions.items():
+                    yield (region, ratio)
 
         def get_asset_types(self):
             for r in self.exec('SELECT ROWID, type FROM asset'):
@@ -477,7 +506,6 @@ class Dao:
             """
             generate a len letter symbol
             """
-
             def c():
                 return chr(random.randint(ord('A'), ord('Z')))
 
@@ -526,8 +554,18 @@ class Dao:
 
         def __init__(self):
             # create the DB in memory and then populate random generated data
-            super().__init__(":memory:")
+            super().__init__(get_valid_db_from_env('FAKE_DB', ":memory:"))
             super().connect()
+
+            # check if tables already created
+            c = 0
+            row = self.exec("SELECT count(*) as C FROM sqlite_master WHERE type='table' AND name='asset'")
+            for r in row:
+                c = r['C']
+                break
+            if c == 1:
+                return
+
             # run the SQL script to generate tables and views, then populate meta data
             self.conn.executescript(get_sql_scripts())
 
@@ -635,7 +673,7 @@ class Dao:
                               (instrument_id, k, v))
 
                 # country allocation
-                for k, v in Dao.FakeDao.gen_allocation(7).items():
+                for k, v in Dao.FakeDao.gen_allocation(11).items():
                     # instrument id, country id, ratio
                     self.exec('INSERT INTO country_allocation VALUES (?,?,?)',
                               (instrument_id, k, v))

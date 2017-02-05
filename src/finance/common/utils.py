@@ -1,6 +1,8 @@
 ﻿import sys
 import time
 from datetime import datetime, date
+from os import environ
+from os.path import isfile
 
 try:
     from finance.common.const import STOCK_START_DATE
@@ -51,6 +53,17 @@ def date_str2epoch(str_date):
     :return: Unix epoch int UTC
     """
     return time.mktime(str2time(str_date)) - time.timezone
+
+
+def get_valid_db_from_env(varname, default=None):
+    """
+    Check if environment variable varname is set and is an existing file
+    :param varname: environment variable name
+    :param default: default db name
+    :return: if varname is set and is an existing file return that name, otherwise return default
+    """
+    db = environ.get(varname)
+    return default if db is None or (not isfile(db)) else db
 
 
 def cmdline_args(argv, db_adapter_clz=None):

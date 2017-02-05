@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS country (
   name TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS region(
+  name TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS instrument (
   name          TEXT NOT NULL,
   type          INT,
@@ -72,6 +76,13 @@ CREATE TABLE IF NOT EXISTS country_allocation (
   instrument INT  NOT NULL,
   country     INT  NOT NULL,
   ratio      REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS regions (
+  region      INT  NOT NULL,
+  country     INT  NOT NULL,
+  FOREIGN KEY (region) REFERENCES region (rowid),
+  FOREIGN KEY (country) REFERENCES country (rowid)
 );
 
 CREATE TABLE IF NOT EXISTS [transaction] (
@@ -197,14 +208,13 @@ CREATE VIEW instrument_xccy AS
     )
     x ON c.name = x.[From];
 
--- Populate meta data
+-- Populate meta data -  this is for DEMO site only
 
 -- broker data is purely fake
 INSERT INTO broker (name, fullName) VALUES ('ABC', 'ABC Asset Management');
 INSERT INTO broker (name, fullName) VALUES ('XYZ', 'XYZ Securities');
-INSERT INTO broker (name, fullName) VALUES ('IB', 'Interactive Brokers');
+INSERT INTO broker (name, fullName) VALUES ('IB', 'IB');
 
--- The followings are same as production data
 -- asset
 INSERT INTO asset (type) VALUES ('Stock');
 INSERT INTO asset (type) VALUES ('Government Bond');
@@ -230,21 +240,81 @@ INSERT INTO instrument_type (type) VALUES ('Bond');
 
 -- country
 INSERT INTO country (name) VALUES ('US');
-INSERT INTO country (name) VALUES ('Europe');
+INSERT INTO country (name) VALUES ('Canada');
 INSERT INTO country (name) VALUES ('S.Korea');
 INSERT INTO country (name) VALUES ('China');
+INSERT INTO country (name) VALUES ('Singapore');
+INSERT INTO country (name) VALUES ('India');
 INSERT INTO country (name) VALUES ('Japan');
 INSERT INTO country (name) VALUES ('Asia Other');
-INSERT INTO country (name) VALUES ('S. America');
-INSERT INTO country (name) VALUES ('DELME');
-INSERT INTO country (name) VALUES ('E. Europe');
-INSERT INTO country (name) VALUES ('Oceania');
-INSERT INTO country (name) VALUES ('Taiwan');
+INSERT INTO country (name) VALUES ('UK');
+INSERT INTO country (name) VALUES ('France');
+INSERT INTO country (name) VALUES ('Germany');
+INSERT INTO country (name) VALUES ('Russia');
+INSERT INTO country (name) VALUES ('E.Europe Other');
+INSERT INTO country (name) VALUES ('W.Europe Other');
+INSERT INTO country (name) VALUES ('S.Africa');
+INSERT INTO country (name) VALUES ('Africa Other');
+INSERT INTO country (name) VALUES ('Australia');
 INSERT INTO country (name) VALUES ('Other');
-INSERT INTO country (name) VALUES ('Africa');
 INSERT INTO country (name) VALUES ('Middle East');
-INSERT INTO country (name) VALUES ('Singapore');
+INSERT INTO country (name) VALUES ('S.America');
 
+ -- region
+INSERT INTO region (name) VALUES ('N.America');
+INSERT INTO region (name) VALUES ('S.America');
+INSERT INTO region (name) VALUES ('Asia');
+INSERT INTO region (name) VALUES ('E.Europe');
+INSERT INTO region (name) VALUES ('W.Europe');
+INSERT INTO region (name) VALUES ('Oceania');
+INSERT INTO region (name) VALUES ('Africa');
+INSERT INTO region (name) VALUES ('Other');
+
+-- country => region
+INSERT INTO regions (region, country) VALUES (
+  (SELECT ROWID FROM region  WHERE name = 'N.America'),
+  (SELECT ROWID FROM country WHERE name = 'US')
+);
+INSERT INTO regions (region, country) VALUES (
+  (SELECT ROWID FROM region  WHERE name = 'N.America'),
+  (SELECT ROWID FROM country WHERE name = 'Canada')
+);
+INSERT INTO regions (region, country) VALUES (
+  (SELECT ROWID FROM region  WHERE name = 'Asia'),
+  (SELECT ROWID FROM country WHERE name = 'China')
+);
+INSERT INTO regions (region, country) VALUES (
+  (SELECT ROWID FROM region  WHERE name = 'Asia'),
+  (SELECT ROWID FROM country WHERE name = 'Japan')
+);
+INSERT INTO regions (region, country) VALUES (
+  (SELECT ROWID FROM region  WHERE name = 'Asia'),
+  (SELECT ROWID FROM country WHERE name = 'India')
+);
+INSERT INTO regions (region, country) VALUES (
+  (SELECT ROWID FROM region  WHERE name = 'Asia'),
+  (SELECT ROWID FROM country WHERE name = 'S.Korea')
+);
+INSERT INTO regions (region, country) VALUES (
+  (SELECT ROWID FROM region  WHERE name = 'Asia'),
+  (SELECT ROWID FROM country WHERE name = 'Singapore')
+);
+INSERT INTO regions (region, country) VALUES (
+  (SELECT ROWID FROM region  WHERE name = 'Asia'),
+  (SELECT ROWID FROM country WHERE name = 'Asia Other')
+);
+INSERT INTO regions (region, country) VALUES (
+  (SELECT ROWID FROM region  WHERE name = 'W.Europe'),
+  (SELECT ROWID FROM country WHERE name = 'UK')
+);
+INSERT INTO regions (region, country) VALUES (
+  (SELECT ROWID FROM region  WHERE name = 'W.Europe'),
+  (SELECT ROWID FROM country WHERE name = 'France')
+);
+INSERT INTO regions (region, country) VALUES (
+  (SELECT ROWID FROM region  WHERE name = 'W.Europe'),
+  (SELECT ROWID FROM country WHERE name = 'Germany')
+);
 
 COMMIT TRANSACTION;
 
