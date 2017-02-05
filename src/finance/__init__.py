@@ -1,10 +1,9 @@
 """
 The flask application package.
 """
-from os import environ
-from os.path import isfile
 from platform import node
 from flask import Flask, Blueprint
+from finance.common.utils import get_valid_db_from_env
 from finance.api import api
 from finance.api.endpoints.report import ns as api_reports
 from finance.api.endpoints.reference import ns as api_reference
@@ -16,12 +15,7 @@ from finance.api.endpoints.transaction import ns as api_transaction
 deployed_in_production = node() == "anchor"
 
 DEBUG = not deployed_in_production
-
-env_db = environ.get('FINANCE_DB')
-if env_db is None or (not isfile(env_db)):
-    DATABASE = None  # FakeDao will be used
-else:
-    DATABASE = env_db
+DATABASE = get_valid_db_from_env('FINANCE_DB')
 
 # deployed behind ngix
 URL_ROOT = ("/finance" if DATABASE is not None else "/finance_demo")
