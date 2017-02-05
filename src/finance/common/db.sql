@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS currency (
 );
 
 
-CREATE TABLE IF NOT EXISTS region (
+CREATE TABLE IF NOT EXISTS country (
   name TEXT NOT NULL
 );
 
@@ -68,9 +68,9 @@ CREATE TABLE IF NOT EXISTS quote (
   REFERENCES instrument (rowid)
 );
 
-CREATE TABLE IF NOT EXISTS region_allocation (
+CREATE TABLE IF NOT EXISTS country_allocation (
   instrument INT  NOT NULL,
-  region     INT  NOT NULL,
+  country     INT  NOT NULL,
   ratio      REAL NOT NULL
 );
 
@@ -228,22 +228,22 @@ INSERT INTO instrument_type (type) VALUES ('Stock');
 INSERT INTO instrument_type (type) VALUES ('Funds');
 INSERT INTO instrument_type (type) VALUES ('Bond');
 
--- region
-INSERT INTO region (name) VALUES ('US');
-INSERT INTO region (name) VALUES ('Europe');
-INSERT INTO region (name) VALUES ('S.Korea');
-INSERT INTO region (name) VALUES ('China');
-INSERT INTO region (name) VALUES ('Japan');
-INSERT INTO region (name) VALUES ('Asia Other');
-INSERT INTO region (name) VALUES ('S. America');
-INSERT INTO region (name) VALUES ('DELME');
-INSERT INTO region (name) VALUES ('E. Europe');
-INSERT INTO region (name) VALUES ('Oceania');
-INSERT INTO region (name) VALUES ('Taiwan');
-INSERT INTO region (name) VALUES ('Other');
-INSERT INTO region (name) VALUES ('Africa');
-INSERT INTO region (name) VALUES ('Middle East');
-INSERT INTO region (name) VALUES ('Singapore');
+-- country
+INSERT INTO country (name) VALUES ('US');
+INSERT INTO country (name) VALUES ('Europe');
+INSERT INTO country (name) VALUES ('S.Korea');
+INSERT INTO country (name) VALUES ('China');
+INSERT INTO country (name) VALUES ('Japan');
+INSERT INTO country (name) VALUES ('Asia Other');
+INSERT INTO country (name) VALUES ('S. America');
+INSERT INTO country (name) VALUES ('DELME');
+INSERT INTO country (name) VALUES ('E. Europe');
+INSERT INTO country (name) VALUES ('Oceania');
+INSERT INTO country (name) VALUES ('Taiwan');
+INSERT INTO country (name) VALUES ('Other');
+INSERT INTO country (name) VALUES ('Africa');
+INSERT INTO country (name) VALUES ('Middle East');
+INSERT INTO country (name) VALUES ('Singapore');
 
 
 COMMIT TRANSACTION;

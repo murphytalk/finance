@@ -191,16 +191,16 @@ class Dao:
                 for r in self.exec(sql, (int(instrument_id),)):
                     yield (r['type'], r['ratio'])
 
-        def get_region_allocation(self, **kwargs):
+        def get_country_allocation(self, **kwargs):
             """
-            get region allocation of the given instrument
+            get country allocation of the given instrument
             :param kwargs:  instrument_id or instrument_name
-            :return: a generator of (region,ratio)
+            :return: a generator of (country,ratio)
             """
             instrument_id = self._get_instrument_id(**kwargs)
             if instrument_id:
-                sql = ('SELECT t.name,a.ratio FROM region_allocation a, region t WHERE a.instrument = ? '
-                       'AND a.region=t.rowid ORDER BY a.region')
+                sql = ('SELECT t.name,a.ratio FROM country_allocation a, country t WHERE a.instrument = ? '
+                       'AND a.country=t.rowid ORDER BY a.country')
                 for r in self.exec(sql, (int(instrument_id),)):
                     yield (r['name'], r['ratio'])
 
@@ -208,8 +208,8 @@ class Dao:
             for r in self.exec('SELECT ROWID, type FROM asset'):
                 yield (r['ROWID'], r['type'])
 
-        def get_regions(self):
-            for r in self.exec('SELECT ROWID, [name] FROM region'):
+        def get_countrys(self):
+            for r in self.exec('SELECT ROWID, [name] FROM country'):
                 yield (r['ROWID'], r['name'])
 
         def get_brokers(self):
@@ -251,15 +251,15 @@ class Dao:
             """
             return self._update_instrument_allocations(instrument_name, assets['assets'], 'asset', 'type')
 
-        def update_instrument_region_allocations(self, instrument_name, regions):
+        def update_instrument_country_allocations(self, instrument_name, countrys):
             """
-            Update instrument region allocations
+            Update instrument country allocations
             :param instrument_name:  name (not ID) of an instrument
-            :param regions: a dict of the region allocation.
-                   See POST API: /instrument/allocation/region/{instrument}
+            :param countrys: a dict of the country allocation.
+                   See POST API: /instrument/allocation/country/{instrument}
             :return: True/False
             """
-            return self._update_instrument_allocations(instrument_name, regions['regions'], 'region', 'name')
+            return self._update_instrument_allocations(instrument_name, countrys['countrys'], 'country', 'name')
 
         def get_instruments(self, instrument_name=None):
             sql = ('SELECT i.ROWID, i.name, t.type, c.name AS currency, b.name AS broker, i.url, i.expense_ratio '
@@ -634,10 +634,10 @@ class Dao:
                     self.exec('INSERT INTO asset_allocation VALUES (?,?,?)',
                               (instrument_id, k, v))
 
-                # region allocation
+                # country allocation
                 for k, v in Dao.FakeDao.gen_allocation(7).items():
-                    # instrument id, region id, ratio
-                    self.exec('INSERT INTO region_allocation VALUES (?,?,?)',
+                    # instrument id, country id, ratio
+                    self.exec('INSERT INTO country_allocation VALUES (?,?,?)',
                               (instrument_id, k, v))
 
     singleton = None
@@ -661,8 +661,8 @@ class Dao:
 if __name__ == "__main__":
     d = Dao(None)
     d.connect()
-    d.exec_many("INSERT INTO region VALUES (?)", [("US",), ("Europe",), ("Japan",), ("Emerge",)])
+    d.exec_many("INSERT INTO country VALUES (?)", [("US",), ("Europe",), ("Japan",), ("Emerge",)])
     d.close()
 
-    for f in d.exec("SELECT ROWID,name FROM region"):
+    for f in d.exec("SELECT ROWID,name FROM country"):
         print("%d\t%s" % (f["ROWID"], f["name"]))

@@ -1,5 +1,5 @@
 from finance.api import api
-from finance.api import instrument_asset_allocation, instrument_region_allocation, Instrument
+from finance.api import instrument_asset_allocation, instrument_country_allocation, Instrument
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
 
@@ -76,26 +76,26 @@ class InstrumentAssetAllocation(Resource):
             lambda dao: 201 if dao.update_instrument_asset_allocations(instrument, api.payload) else 500)
 
 
-@ns.route('/allocation/region/<string:instrument>')
+@ns.route('/allocation/country/<string:instrument>')
 @api.doc(params={'instrument': 'Instrument name'})
-class InstrumentRegionAllocation(Resource):
-    @api.marshal_list_with(instrument_region_allocation)
+class InstrumentCountryAllocation(Resource):
+    @api.marshal_list_with(instrument_country_allocation)
     def get(self, instrument):
         """
-        Returns list of region allocations of instruments.
+        Returns list of country allocations of instruments.
         :param instrument: instrument name
         """
         return run_func_against_dao(lambda dao: [
-            {'regions': [{'region': x[0], 'ratio': x[1]} for x in dao.get_region_allocation(instrument_name=instrument)]}])
+            {'countrys': [{'country': x[0], 'ratio': x[1]} for x in dao.get_country_allocation(instrument_name=instrument)]}])
 
-    @api.response(201, 'Instrument region allocations successfully updated.')
-    @api.response(500, 'Cannot update instrument region allocations.')
-    @api.expect(instrument_region_allocation)
+    @api.response(201, 'Instrument country allocations successfully updated.')
+    @api.response(500, 'Cannot update instrument country allocations.')
+    @api.expect(instrument_country_allocation)
     def post(self, instrument):
         """
-        Create/Update region allocations for the given instrument.
+        Create/Update country allocations for the given instrument.
         :param instrument: instrument name
         """
         return None, run_func_against_dao(
-            lambda dao: 201 if dao.update_instrument_region_allocations(instrument, api.payload) else 500)
+            lambda dao: 201 if dao.update_instrument_country_allocations(instrument, api.payload) else 500)
 

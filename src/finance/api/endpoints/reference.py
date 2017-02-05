@@ -1,5 +1,5 @@
 from finance.api import api
-from finance.api import asset_type, region, broker, instrument_type
+from finance.api import asset_type, country, broker, instrument_type
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
 
@@ -19,14 +19,14 @@ class Asset(Resource):
         return run_func_against_dao(lambda dao: [{'id': x[0], 'type': x[1]} for x in dao.get_asset_types()])
 
 
-@ns.route('/region')
-class Region(Resource):
-    @api.marshal_list_with(region)
+@ns.route('/country')
+class Country(Resource):
+    @api.marshal_list_with(country)
     def get(self):
         """
-        Return list of regions
+        Return list of countries
         """
-        return run_func_against_dao(lambda dao: [{'id': x[0], 'region': x[1]} for x in dao.get_regions()])
+        return run_func_against_dao(lambda dao: [{'id': x[0], 'country': x[1]} for x in dao.get_countrys()])
 
 
 @ns.route('/broker')

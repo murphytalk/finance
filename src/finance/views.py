@@ -88,9 +88,9 @@ def asset_allocation_json(instrument):
     return Response(asset_allocation(g.dao, instrument), mimetype='application/json')
 
 
-@finance_page.route('/region.allocation/<instrument>')
-def region_allocation_json(instrument):
-    return Response(region_allocation(g.dao, instrument), mimetype='application/json')
+@finance_page.route('/country.allocation/<instrument>')
+def country_allocation_json(instrument):
+    return Response(country_allocation(g.dao, instrument), mimetype='application/json')
 
 
 @finance_page.route('/sum.json')

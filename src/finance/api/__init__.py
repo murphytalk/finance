@@ -42,9 +42,9 @@ asset_type = api.model('Asset types', {
     'type': fields.String(description='Asset type')
 })
 
-region = api.model('Region', {
-    'id':   fields.Integer(description='Region ID'),
-    'region': fields.String(description='Region')
+country = api.model('Country', {
+    'id':   fields.Integer(description='Country ID'),
+    'country': fields.String(description='Country')
 })
 
 instrument_type = api.model('Instrument types', {
@@ -54,17 +54,17 @@ instrument_type = api.model('Instrument types', {
 
 broker = api.model('Broker', {
     'id':   fields.Integer(description='Broker ID'),
-    'name': fields.String(description='Region'),
-    'full_name': fields.String(description='Region')
+    'name': fields.String(description='Country'),
+    'full_name': fields.String(description='Country')
 })
 
-region_allocation = api.model('Region allocation', {
-    'region': fields.String(description='Region', required=True),
+country_allocation = api.model('Country allocation', {
+    'country': fields.String(description='Country', required=True),
     'ratio': fields.Float(description='Allocation percentage', required=True)
 })
 
-instrument_region_allocation = api.model('Instrument region allocation', {
-    'regions': fields.List(fields.Nested(region_allocation), description='Region allocations', required=True)
+instrument_country_allocation = api.model('Instrument country allocation', {
+    'countrys': fields.List(fields.Nested(country_allocation), description='Country allocations', required=True)
 })
 
 Instrument = api.model('Instrument', {
