@@ -118,10 +118,20 @@ class SummaryReport(Report):
             for k, v in country.items():
                 yield (k, v)
 
+        def region_generator(dao):
+            region = {}
+            for instrument, value in self.positions:
+                for rg, ratio in dao.get_region_allocation(instrument_id=instrument):
+                    self.put(region, rg, value * ratio / 100)
+            for k, v in region.items():
+                yield (k, v)
+
         # return {'total': reduce(lambda a, b: a[1]+b[1], self.positions),
         return {'total': reduce(lambda a, b: a + b, [x[1] for x in self.positions]),
                 'asset': get_pie_chart_data(asset_class_generator(dao)),
-                'country': get_pie_chart_data(country_generator(dao))}
+                'country': get_pie_chart_data(country_generator(dao)),
+                'region': get_pie_chart_data(region_generator(dao)),
+                }
 
 
 def get_pie_chart_data(generator):
