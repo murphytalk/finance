@@ -114,7 +114,15 @@ class Dao:
                    'WHERE date = (SELECT max(date) FROM quote WHERE  date<=?) AND q.instrument = i.rowid')
 
             r = self.exec(sql, (epoch,))
-            return {x['instrument']: Quote(x['instrument'], x['name'], x['price'], x['date']) for x in r}
+
+            instruments = [(r['ROWID'], r['name']) for r in self.exec('SELECT ROWID, name from instrument')]
+
+            quotes = {}
+            for i, n in instruments:
+                for r in self.exec('SELECT  price, date FROM quote WHERE instrument = ? ORDER BY date DESC LIMIT 1', (i,)):
+                    quotes[i] = Quote(i, n, r['price'], r['date'])
+
+            return quotes
 
         def get_instrument_with_xccy_rate(self, the_date):
             """
@@ -341,12 +349,12 @@ class Dao:
                     'shares': x['shares'],
                     'fee': x['fee']}
 
-        def _get_instrument_id(self, name):
-            iid = -1
-            for x in self.exec('SELECT ROWID FROM instrument WHERE name = ?', (name,)):
-                iid = x['ROWID']
-                break
-            return iid
+#        def _get_instrument_id(self, name):
+#            iid = -1
+#            for x in self.exec('SELECT ROWID FROM instrument WHERE name = ?', (name,)):
+#                iid = x['ROWID']
+#                break
+#            return iid
 
         @_remove_empty_value
         def update_stock_transaction(self, stock_name, transaction):
@@ -357,7 +365,8 @@ class Dao:
                    see POST API /transaction/stock/{stock}
             :return: True/False
             """
-            instrument_id = self._get_instrument_id(stock_name)
+            kwargs = {'instrument_name': stock_name}
+            instrument_id = self._get_instrument_id(**kwargs)
             if instrument_id > 0:
                 self.exec('INSERT INTO [transaction] (instrument, type, price, shares, fee, date) '
                           'VALUES (?,?,?,?,?,?)',
@@ -379,7 +388,8 @@ class Dao:
             :param quotes: [{Date,Price},]
             :return: True/False
             """
-            instrument_id = self._get_instrument_id(stock_name)
+            kwargs = {'instrument_name': stock_name}
+            instrument_id = self._get_instrument_id(**kwargs)
             if instrument_id > 0:
                 parameters = [(instrument_id, q['Price'], date_str2epoch(q['Date'])) for q in quotes['quotes']]
                 self.exec_many('INSERT INTO quote (instrument, price, date) '
