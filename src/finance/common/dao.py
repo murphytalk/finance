@@ -431,17 +431,31 @@ class Dao:
             :return: a generator of date/symbol/price dict
             """
             params = []
+            latest = 0
+            # find latest quote date first
+            sql = 'SELECT max(date) as lt FROM stock_quote '
+            if stock_name is not None:
+                sql += 'WHERE name = ? '
+                params.append(stock_name)
+            for r in self.exec(sql, params):
+                latest = r['lt']
+
+            if latest is None:
+                latest = 0
+
+            params = []
+
             sql = 'SELECT * FROM stock_quote '
             if stock_name is not None:
                 sql += 'WHERE name = ? '
                 params.append(stock_name)
             if max_days is not None:
-                no_earlier_than = get_current_date_epoch() - max_days * SECONDS_PER_DAY
+                no_earlier_than = latest - max_days * SECONDS_PER_DAY
                 sql += ' %s date >= ? ' % ('AND' if stock_name is not None else 'WHERE')
                 params.append(no_earlier_than)
 
             sql += 'ORDER BY date DESC'
-            for x in self.exec(sql, tuple(params) if len(params) > 0 else None):
+            for x in self.exec(sql, params if len(params) > 0 else None):
                 yield {'date': str(epoch2date(x['date'])), 'symbol': x['name'], 'price': x['price']}
 
     class FakeDao(RealDao):
