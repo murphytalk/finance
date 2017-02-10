@@ -110,17 +110,10 @@ class Dao:
             :param quote_date: quote date
             :return: dict {instrument id : Quote}
             """
-            epoch = int(timegm(quote_date.timetuple()))
-            sql = ('SELECT q.instrument,i.name,q.price, q.date FROM quote q, instrument i '
-                   'WHERE date = (SELECT max(date) FROM quote WHERE  date<=?) AND q.instrument = i.rowid')
-
-            r = self.exec(sql, (epoch,))
-
-            instruments = [(r['ROWID'], r['name']) for r in self.exec('SELECT ROWID, name from instrument')]
-
             quotes = {}
-            for i, n in instruments:
-                for r in self.exec('SELECT  price, date FROM quote WHERE instrument = ? ORDER BY date DESC LIMIT 1', (i,)):
+            for i, n in [(r['ROWID'], r['name']) for r in self.exec('SELECT ROWID, name from instrument')]:
+                for r in self.exec('SELECT  price, date FROM quote WHERE instrument = ? ORDER BY date DESC LIMIT 1',
+                                   (i,)):
                     quotes[i] = Quote(i, n, r['price'], r['date'])
 
             return quotes

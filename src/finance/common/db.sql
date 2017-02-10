@@ -49,17 +49,15 @@ CREATE TABLE IF NOT EXISTS performance (
   profit     REAL,
   capital    REAL,
   date       INT NOT NULL,
-  FOREIGN KEY (
-    instrument
-  )
-  REFERENCES instrument (rowid)
+  FOREIGN KEY (instrument) REFERENCES instrument (rowid)
 );
 
 CREATE TABLE IF NOT EXISTS asset_allocation (
   instrument INT NOT NULL,
   asset      INT NOT NULL,
   ratio      INT NOT NULL,
-  FOREIGN KEY (instrument) REFERENCES instrument (rowid)
+  FOREIGN KEY (instrument) REFERENCES instrument (rowid),
+  FOREIGN KEY (asset) REFERENCES asset(rowid)
 );
 
 CREATE TABLE IF NOT EXISTS quote (
@@ -74,8 +72,10 @@ CREATE TABLE IF NOT EXISTS quote (
 
 CREATE TABLE IF NOT EXISTS country_allocation (
   instrument INT  NOT NULL,
-  country     INT  NOT NULL,
-  ratio      REAL NOT NULL
+  country    INT  NOT NULL,
+  ratio      REAL NOT NULL,
+  FOREIGN KEY (instrument) REFERENCES instrument (rowid),
+  FOREIGN KEY (country) REFERENCES country (rowid)
 );
 
 CREATE TABLE IF NOT EXISTS regions (
