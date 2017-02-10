@@ -161,11 +161,6 @@ def region_allocation(dao, instrument_id):
     return get_pie_chart_data_json(dao.get_region_allocation(instrument_id=instrument_id))
 
 
-def raw_xccy(dao):
-    q = [[str(epoch2date(x['date'])), x['From'], x['To'], x['rate']] for x in
-         dao.exec('SELECT * FROM xccy_hist')]
-    return Report.to_json_packed({'data': q})
-
 
 if __name__ == "__main__":
     # import codecs,locale
