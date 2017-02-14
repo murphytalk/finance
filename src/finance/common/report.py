@@ -167,7 +167,7 @@ def stock_allocation(dao):
     :param dao: dao
     """
     def calc(stocks):
-        return [(x['symbol'], x['value']['JPY']) for x in stocks]
+        return [(x['symbol'], x['value']['JPY']) for x in stocks if x['value']['JPY'] > 0]
     stocks = StockReport(dao, date.today()).stock_positions()
     return get_pie_chart_data(calc(stocks['ETF'] if 'ETF' in stocks else []) + calc(stocks['Stock'] if 'Stock' in stocks else []))
 
