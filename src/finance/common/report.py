@@ -2,6 +2,7 @@
 import sys
 from json import dumps, encoder
 from functools import reduce
+from datetime import date
 
 from finance.common.calculate import CalcPosition
 from finance.common.dao import Dao
@@ -131,6 +132,8 @@ class SummaryReport(Report):
                 'asset': get_pie_chart_data(asset_class_generator(dao)),
                 'country': get_pie_chart_data(country_generator(dao)),
                 'region': get_pie_chart_data(region_generator(dao)),
+                'stock': stock_allocation(dao),
+                'funds': funds_allocation(dao)
                 }
 
 
@@ -139,10 +142,7 @@ def get_pie_chart_data(generator):
     return an array to be fed to HighCharts to plot pie chart
     generator should return a tuple of (name, ratio) for each iteration
     """
-    data = []
-    for e in generator:
-        data.append({'name': e[0], 'y': e[1]})
-    return data
+    return [{'name': e[0], 'y': e[1]} for e in generator]
 
 
 def get_pie_chart_data_json(generator):
@@ -161,6 +161,19 @@ def region_allocation(dao, instrument_id):
     return get_pie_chart_data_json(dao.get_region_allocation(instrument_id=instrument_id))
 
 
+def stock_allocation(dao):
+    """
+    get stock instruments allocation, see /stock.json
+    :param dao: dao
+    """
+    def calc(stocks):
+        return [(x['symbol'], x['value']['JPY']) for x in stocks]
+    stocks = StockReport(dao, date.today()).stock_positions()
+    return get_pie_chart_data(calc(stocks['ETF'] if 'ETF' in stocks else []) + calc(stocks['Stock'] if 'Stock' in stocks else []))
+
+
+def funds_allocation(dao):
+    return get_pie_chart_data([(x['name'], x['price']) for x in FundReport(dao, date.today()).positions])
 
 if __name__ == "__main__":
     # import codecs,locale
@@ -177,8 +190,6 @@ if __name__ == "__main__":
             print(r.to_json(r.stock_positions()))
         elif 'fund' in others:
             r = FundReport(dao, args['end_date'])
-        elif 'xccy' in others:
-            print(Report.to_json(raw_xccy(dao)))
         elif 'sum' in others:
             r = SummaryReport(dao, args['end_date'])
             print(Report.to_json(r.report(dao)))

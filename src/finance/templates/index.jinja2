@@ -3,9 +3,9 @@
 {% block content %}
 
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6">
             <h2 class="text-center">Wealth Allocations</h2>
-            <ul class="nav nav-tabs">
+            <ul id="tab1" class="nav nav-tabs">
                 <li class="active"><a data-toggle="tab" href="#asset">Asset</a></li>
                 <li><a data-toggle="tab" href="#region">Region</a></li>
                 <li><a data-toggle="tab" href="#country">Country</a></li>
@@ -22,7 +22,22 @@
                 </div>
             </div>
         </div>
-    </div>
+        <div class="col-md-6">
+            <h2 class="text-center">Instrument Allocations</h2>
+            <ul id="tab2" class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#stock">Stock/ETF</a></li>
+                <li><a data-toggle="tab" href="#fund">Mutual Funds</a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="stock" class="tab-pane fade">
+                    <div id="pieStock"></div>
+                </div>
+                <div id="fund" class="tab-pane fade">
+                    <div id="pieFund"></div>
+                </div>
+            </div>
+        </div>
+     </div>
 
     <div class="row">
         <div class="col-md-12">
@@ -42,27 +57,14 @@
                     $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', data['country'], false));
                     $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', data['region'], false));
                     $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', data['asset'], false));
+                    $('#pieStock').highcharts(pieChartOptions(null, 'Market Value', data['stock'], false));
+                    $('#pieFund').highcharts(pieChartOptions(null, 'Market Value', data['funds'], false));
                     $('#totalValue').text(data['total'].toLocaleString());
-
-                    $('.nav-tabs a').on('shown.bs.tab', function (event) {
-                        var x = $(event.target).text();         // active tab
-                        var chart_selector;
-                        if (x == 'Asset') {
-                            chart_selector = "#pieAsset";
-                        }
-                        else if (x == 'Region') {
-                            chart_selector = "#pieRegion";
-                        }
-                        else {
-                            chart_selector = "#pieCountry";
-                        }
-                        var chart = $(chart_selector).highcharts();
-                        chart.reflow();
-                    });
 
                     //if any of the 2 show below is missing, the chart won't flow
                     $('.nav-tabs').tab("show");
-                    $('.nav-tabs a[href="#asset"]').tab("show");
+                    $('#tab1 a[href="#asset"]').tab("show");
+                    $('#tab2 a[href="#stock"]').tab("show");
                 });
 
         });

@@ -103,4 +103,3 @@ def sum_json():
     r = SummaryReport(g.dao, date.today())
     return Response(r.to_json_packed(r.report(g.dao)), mimetype='application/json')
 
-
