@@ -127,12 +127,13 @@ class SummaryReport(Report):
             for k, v in region.items():
                 yield (k, v)
 
-        # return {'total': reduce(lambda a, b: a[1]+b[1], self.positions),
+        stock, etf = stock_allocation(dao)
         return {'total': reduce(lambda a, b: a + b, [x[1] for x in self.positions]),
                 'asset': get_pie_chart_data(asset_class_generator(dao)),
                 'country': get_pie_chart_data(country_generator(dao)),
                 'region': get_pie_chart_data(region_generator(dao)),
-                'stock': stock_allocation(dao),
+                'stock': stock,
+                'ETF': etf,
                 'funds': funds_allocation(dao)
                 }
 
@@ -165,11 +166,17 @@ def stock_allocation(dao):
     """
     get stock instruments allocation, see /stock.json
     :param dao: dao
+    :return (Stock,ETF)
     """
     def calc(stocks):
-        return [(x['symbol'], x['value']['JPY']) for x in stocks if x['value']['JPY'] > 0]
+        return [{'symbol': x['symbol'],
+                 'id': x['instrument'],
+                 'ccy':x['value']['ccy'],
+                 'value':x['value'][x['value']['ccy']],
+                 'JPY':x['value']['JPY'],
+                 'profit':x['value']['JPY'] - x['liquidated']['JPY']} for x in stocks if x['shares'] > 0]
     stocks = StockReport(dao, date.today()).stock_positions()
-    return get_pie_chart_data(calc(stocks['ETF'] if 'ETF' in stocks else []) + calc(stocks['Stock'] if 'Stock' in stocks else []))
+    return calc(stocks['Stock'] if 'Stock' in stocks else []), calc(stocks['ETF'] if 'ETF' in stocks else [])
 
 
 def funds_allocation(dao):
