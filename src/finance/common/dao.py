@@ -575,6 +575,11 @@ class Dao:
             stocks = [x['ROWID'] for x in self.exec('SELECT ROWID FROM instrument WHERE type = ? OR type = ?',
                                                     (instrument_type["Stock"], instrument_type["ETF"]))]
 
+            # populate instrument filters
+            self.exec_many('INSERT INTO INSTRUMENT_FILTER_NAME VALUES (?)', [("ALL", ), ("PreDefined!", )])
+            self.exec_many('INSERT INTO INSTRUMENT_FILTER VALUES (?,?)',
+                           [(1, x) for x in stocks] + [(2, x) for x in stocks[:2]])
+
             # randomly generate stock quotes - from DAY1 to today
             quotes = []
             for day in Dao.FakeDao.gen_dates():

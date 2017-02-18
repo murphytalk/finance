@@ -109,6 +109,17 @@ CREATE TABLE IF NOT EXISTS xccy (
   REFERENCES currency (rowid)
 );
 
+CREATE TABLE IF NOT EXISTS INSTRUMENT_FILTER_NAME(
+  name text not null
+);
+
+CREATE TABLE IF NOT EXISTS INSTRUMENT_FILTER(
+  filter      INT  NOT NULL,
+  instrument  INT  NOT NULL,
+  FOREIGN KEY (filter) REFERENCES INSTRUMENT_FILTER_NAME(ROWID),
+  FOREIGN KEY (instrument) REFERENCES instrument(ROWID)
+);
+
 -- Views
 CREATE VIEW fund_performance AS
   SELECT
