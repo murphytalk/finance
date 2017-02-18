@@ -180,7 +180,10 @@ def stock_allocation(dao):
 
 
 def funds_allocation(dao):
-    return get_pie_chart_data([(x['name'], x['price']) for x in FundReport(dao, date.today()).positions])
+    return [{'symbol': x['name'],
+             'id': x['instrument_id'],
+             'JPY':x['value'],
+             'profit':x['profit']} for x in FundReport(dao, date.today()).positions]
 
 if __name__ == "__main__":
     # import codecs,locale
