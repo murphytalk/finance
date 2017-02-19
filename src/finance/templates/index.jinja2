@@ -37,12 +37,68 @@
                 </div>
             </div>
         </div>
-     </div>
+    </div>
 
     <div class="row">
-        <div class="col-md-12">
-            <p>Total Market Value: </p>
-            <p id="totalValue"></p>
+        <div class="col-md-6">
+            <div class="row">
+                <h3 class="text-center">Overview</h3>
+            </div>
+            <div class="row">
+                <table class="table table-hover" id="overview">
+                    <thead>
+                    <tr>
+                        <th rowspan="2" class="text-left`">Type</th>
+                        <th rowspan="2" class="text-right">CCY</th>
+                        <th colspan="2" class="text-right">Market Value</th>
+                        <th colspan="1" class="text-right">Profit</th>
+                    </tr>
+                    <tr>
+                        <th class="text-right">CCY</th>
+                        <th class="text-right">JPY</th>
+                        <th class="text-right">JPY</th>
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th class="text-right">
+                            <div id="value_ccy"></div>
+                        </th>
+                        <th class="text-right">
+                            <div id="value_jpy"></div>
+                        </th>
+                        <th class="text-right">
+                            <div id="profit"></div>
+                        </th>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="row">
+                <div class="dropdown left5">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Instrument Filters
+                        <span class="caret"></span></button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">HTML</a></li>
+                        <li><a href="#">CSS</a></li>
+                        <li><a href="#">JavaScript</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <table class="table table-hover" id="overview">
+                    <thead>
+                    <tr>
+                        <th class="text-right">Type</th>
+                        <th class="text-right">Instrument</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
     </div>
 {% endblock %}
@@ -51,14 +107,31 @@
     {{ super() }}
     <script src="/static/finance/scripts/chart.js"></script>
     <script>
+        function to_chart_data(data) {
+            return {'y': data['JPY'], 'name': data['symbol']};
+        }
         $(document).ready(function () {
             $.getJSON("{{ url_for('finance_page.sum_json')}}",
                 function (data) {
                     $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', data['country'], false));
                     $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', data['region'], false));
                     $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', data['asset'], false));
-                    $('#pieStock').highcharts(pieChartOptions(null, 'Market Value', data['stock'], false));
-                    $('#pieFund').highcharts(pieChartOptions(null, 'Market Value', data['funds'], false));
+
+                    var stocks = [];
+                    $.each(data['stock'], function (i, v) {
+                        stocks.push(to_chart_data(v));
+                    });
+                    $.each(data['ETF'], function (i, v) {
+                        stocks.push(to_chart_data(v));
+                    });
+
+                    $('#pieStock').highcharts(pieChartOptions(null, 'Market Value', stocks, false));
+
+                    var funds = [];
+                    $.each(data['funds'], function (i, v) {
+                        funds.push(to_chart_data(v));
+                    });
+                    $('#pieFund').highcharts(pieChartOptions(null, 'Market Value', funds, false));
                     $('#totalValue').text(data['total'].toLocaleString());
 
                     //if any of the 2 show below is missing, the chart won't flow
