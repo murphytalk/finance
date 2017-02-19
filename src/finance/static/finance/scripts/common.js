@@ -50,8 +50,8 @@ function build_header(table_selector,headers) {
     $(table_selector+" thead").replaceWith(head);
 };
 
- function populate_data(table_selector,url,col_order,row_per_page,lengthMenu,colDefs,footer,searching) {
-    searching = (typeof searching !== 'undefined') ?  searching : true;
+ function populate_data(table_selector,url,col_order,row_per_page,lengthMenu,colDefs,footer,extra_options) {
+    extra_options = (typeof extra_options !== 'undefined') ?  extra_options: null;
     var lenMenu;
     if(lengthMenu==null){
         lenMenu = [10, 15, 50, 100];
@@ -67,7 +67,6 @@ function build_header(table_selector,headers) {
         ajax: url,
         pageLength: row_per_page,
         responsive: jQuery.browser.mobile,
-        searching: searching
     };
 
     if(col_order != null){
@@ -76,9 +75,6 @@ function build_header(table_selector,headers) {
     if(lengthMenu != null ){
         parameter['lengthMenu'] = lenMenu;
     }
-    else{
-        parameter['paging'] = false;
-    }
 
     if(colDefs != null){
         parameter['columnDefs'] = colDefs;
@@ -86,6 +82,12 @@ function build_header(table_selector,headers) {
 
     if(footer != null){
         parameter["footerCallback"] = footer;
+    }
+
+    if(extra_options != null){
+        $.each(extra_options,function (n,v) {
+           parameter[n] = v;
+        });
     }
 
     return $(table_selector).DataTable(parameter);
