@@ -84,9 +84,11 @@
                         Filters
                         <span class="caret"></span></button>
                     <ul class="dropdown-menu">
+                        <!--
                         <li><a href="#">HTML</a></li>
                         <li><a href="#">CSS</a></li>
                         <li><a href="#">JavaScript</a></li>
+                        -->
                     </ul>
                 </div>
             </div>
@@ -163,6 +165,14 @@
                     $('.nav-tabs').tab("show");
                     $('#tab1 a[href="#asset"]').tab("show");
                     $('#tab2 a[href="#stock"]').tab("show");
+
+                    //get filters
+                    $.getJSON("{{ url_for('api.instrument_instrument_filters') }}", function (filters) {
+                        //populate filters dropdown
+                        $.each(filters, function (i, v) {
+                            $('.dropdown-menu').append("<li><a href=\"#\">".concat(v['name'],"</a></li>"));
+                        })
+                    });
                 });
 
         });
