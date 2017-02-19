@@ -69,12 +69,12 @@ instrument_country_allocation = api.model('Instrument country allocation', {
 
 Instrument = api.model('Instrument', {
     'id':   fields.Integer(description='Instrument ID', required=False),
-    'name': fields.String(description='Instrument name', required=False),
-    'type': fields.String(description='Instrument type'),
-    'broker': fields.String(description='Broker'),
-    'currency': fields.String(description='Currency'),
-    'url': fields.String(description='Instrument URL'),
-    'expense': fields.Float(description='Expense ratio'),
+    'name': fields.String(description='Instrument name', required=True),
+    'type': fields.String(description='Instrument type', required=False),
+    'broker': fields.String(description='Broker', required=False),
+    'currency': fields.String(description='Currency', required=False),
+    'url': fields.String(description='Instrument URL', required=False),
+    'expense': fields.Float(description='Expense ratio', required=False),
 })
 
 stock_transaction = api.model('Stock transactions', {
@@ -103,5 +103,14 @@ xccy_quote = api.model('Xccy quotes', {
     'Rate':  fields.Float(description='Exchange rate'),
 })
 
+_simple_instrument = api.model('Simple Instrument', {
+    'id':   fields.Integer(description='Instrument ID', required=False),
+    'name': fields.String(description='Instrument name', required=True),
+})
+
+instrument_filter = api.model('Instrument filter', {
+    'name': fields.String(description='Filter name'),
+    'instruments': fields.List(fields.Nested(_simple_instrument), description='Instruments'),
+})
 
 

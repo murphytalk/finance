@@ -121,6 +121,15 @@ CREATE TABLE IF NOT EXISTS INSTRUMENT_FILTER(
 );
 
 -- Views
+CREATE VIEW instrument_filters AS
+  SELECT
+    n.name  as filter_name,
+    i.name  as instrument_name,
+    i.ROWID as instrument_id
+  FROM INSTRUMENT_FILTER_NAME n, INSTRUMENT_FILTER f, instrument i
+  WHERE n.ROWID = f.filter and f.instrument = i.ROWID;
+
+
 CREATE VIEW fund_performance AS
   SELECT
     b.name                    AS broker,

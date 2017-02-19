@@ -1,5 +1,5 @@
 from finance.api import api
-from finance.api import instrument_asset_allocation, instrument_country_allocation, Instrument
+from finance.api import instrument_asset_allocation, instrument_country_allocation, Instrument, instrument_filter
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
 
@@ -98,4 +98,17 @@ class InstrumentCountryAllocation(Resource):
         """
         return None, run_func_against_dao(
             lambda dao: 201 if dao.update_instrument_country_allocations(instrument, api.payload) else 500)
+
+
+@ns.route('/filter')
+class InstrumentFilters(Resource):
+    @api.marshal_list_with(instrument_filter)
+    def get(self):
+        """
+        Return list of instrument filters
+        """
+        def _gen(filters):
+            return [{'name': x, 'instruments': filters[x]} for x in filters.keys()]
+        return run_func_against_dao(lambda dao: _gen(dao.get_instrument_filters()))
+
 

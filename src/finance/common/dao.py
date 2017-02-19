@@ -371,13 +371,6 @@ class Dao:
                     'shares': x['shares'],
                     'fee': x['fee']}
 
-#        def _get_instrument_id(self, name):
-#            iid = -1
-#            for x in self.exec('SELECT ROWID FROM instrument WHERE name = ?', (name,)):
-#                iid = x['ROWID']
-#                break
-#            return iid
-
         @_remove_empty_value
         def update_stock_transaction(self, stock_name, transaction):
             """
@@ -479,6 +472,16 @@ class Dao:
             sql += 'ORDER BY date DESC'
             for x in self.exec(sql, params if len(params) > 0 else None):
                 yield {'date': str(epoch2date(x['date'])), 'symbol': x['name'], 'price': x['price']}
+
+        def get_instrument_filters(self):
+            filters = {}
+            for x in self.exec('SELECT * from instrument_filters'):
+                f = {'id': x['instrument_id'], 'name': x['instrument_name']}
+                if x['filter_name'] in filters:
+                    filters[x['filter_name']].append(f)
+                else:
+                    filters[x['filter_name']] = [f]
+            return filters
 
     class FakeDao(RealDao):
         """
