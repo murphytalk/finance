@@ -1,6 +1,43 @@
 {% extends "datatable.jinja2" %}
 
 {% block content %}
+    <div class="row">
+        <h2 class="text-center">Overview</h2>
+    </div>
+    <div class="row top5 bottom5">
+        <div class="col-md-12">
+            <table class="table table-hover" id="overview">
+                <thead>
+                <tr>
+                    <th rowspan="2" class="text-left`">Type</th>
+                    <th rowspan="2" class="text-left">CCY</th>
+                    <th colspan="2" class="text-right">Market Value</th>
+                    <th colspan="1" class="text-right">Profit</th>
+                </tr>
+                <tr>
+                    <th class="text-right">CCY</th>
+                    <th class="text-right">JPY</th>
+                    <th class="text-right">JPY</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th class="text-right">
+                        <div id="value_ccy"></div>
+                    </th>
+                    <th class="text-right">
+                        <div id="value_jpy"></div>
+                    </th>
+                    <th class="text-right">
+                        <div id="profit"></div>
+                    </th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
 
     <div class="row">
         <div class="col-md-6">
@@ -39,43 +76,6 @@
         </div>
     </div>
 
-    <div class="row">
-        <h3 class="text-center">Overview</h3>
-    </div>
-    <div class="row top5 bottom5">
-        <div class="col-md-12">
-            <table class="table table-hover" id="overview">
-                <thead>
-                <tr>
-                    <th rowspan="2" class="text-left`">Type</th>
-                    <th rowspan="2" class="text-left">CCY</th>
-                    <th colspan="2" class="text-right">Market Value</th>
-                    <th colspan="1" class="text-right">Profit</th>
-                </tr>
-                <tr>
-                    <th class="text-right">CCY</th>
-                    <th class="text-right">JPY</th>
-                    <th class="text-right">JPY</th>
-                </tr>
-                </thead>
-                <tfoot>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <th class="text-right">
-                        <div id="value_ccy"></div>
-                    </th>
-                    <th class="text-right">
-                        <div id="value_jpy"></div>
-                    </th>
-                    <th class="text-right">
-                        <div id="profit"></div>
-                    </th>
-                </tr>
-                </tfoot>
-            </table>
-        </div>
-    </div>
 {% endblock %}
 
 {% block scripts %}
