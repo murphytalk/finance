@@ -1,9 +1,9 @@
-{% extends "layout.jinja2" %}
+{% extends "datatable.jinja2" %}
 
 {% block content %}
 
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-6">
             <h2 class="text-center">Wealth Allocations</h2>
             <ul id="tab1" class="nav nav-tabs">
                 <li class="active"><a data-toggle="tab" href="#asset">Asset</a></li>
@@ -22,7 +22,25 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
+            <h2 class="text-center">Instrument Allocations</h2>
+            <ul id="tab2" class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#stock">Stock/ETF</a></li>
+                <li><a data-toggle="tab" href="#fund">Mutual Funds</a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="stock" class="tab-pane fade">
+                    <div id="pieStock"></div>
+                </div>
+                <div id="fund" class="tab-pane fade">
+                    <div id="pieFund"></div>
+                </div>
+            </div>
+        </div>
+   </div>
+
+    <div class="row">
+         <div class="col-md-8">
             <div class="row">
                 <h3 class="text-center">Overview</h3>
             </div>
@@ -59,36 +77,15 @@
                 </table>
             </div>
         </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-8">
-            <h2 class="text-center">Instrument Allocations</h2>
-            <ul id="tab2" class="nav nav-tabs">
-                <li class="active"><a data-toggle="tab" href="#stock">Stock/ETF</a></li>
-                <li><a data-toggle="tab" href="#fund">Mutual Funds</a></li>
-            </ul>
-            <div class="tab-content">
-                <div id="stock" class="tab-pane fade">
-                    <div id="pieStock"></div>
-                </div>
-                <div id="fund" class="tab-pane fade">
-                    <div id="pieFund"></div>
-                </div>
-            </div>
-        </div>
         <div class="col-md-4">
             <div class="row">
-                <div class="dropdown left5">
-                    <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Instrument
-                        Filters
-                        <span class="caret"></span></button>
+                <div class="dropdown">
+                    <!--
+                    <span>Instrument Filters</span>
+                    -->
+                    <button id="filter_btn" class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+                    </button>
                     <ul class="dropdown-menu">
-                        <!--
-                        <li><a href="#">HTML</a></li>
-                        <li><a href="#">CSS</a></li>
-                        <li><a href="#">JavaScript</a></li>
-                        -->
                     </ul>
                 </div>
             </div>
@@ -112,6 +109,30 @@
     <script>
         function to_chart_data(data) {
             return {'y': data['JPY'], 'name': data['symbol']};
+        }
+        function calc_overview(t, data) {
+            //see /sum.json, stock or ETF or fund
+            var sum  = {};
+            var rows = [];
+            $.each(data[t],function (i,v) {
+                if(v['ccy'] in sum){
+                    sum[v['ccy']]['value'] += v['value'];
+                    sum[v['ccy']]['JPY'] += v['JPY'];
+                    sum[v['ccy']]['profit'] += v['profit'];
+                }
+                else{
+                    sum[v['ccy']]= {'value':v['value'], 'JPY':v['JPY'],'profit':v['profit']};
+                }
+            });
+            $.each(sum,function (n,v) {
+                var row = [t];
+                row.push(n);
+                row.push(v['value']);
+                row.push(v['JPY']);
+                row.push(v['profit']);
+                rows.push(row);
+            });
+            return rows;
         }
         $(document).ready(function () {
             $.getJSON("{{ url_for('finance_page.sum_json')}}",
@@ -166,14 +187,42 @@
                     $('#tab1 a[href="#asset"]').tab("show");
                     $('#tab2 a[href="#stock"]').tab("show");
 
+                    //populate overview table
+                    populate_data(
+                        '#overview',
+                        function (d, callback, s) {
+                            callback({'data': calc_overview('stock',data).concat(calc_overview('ETF',data)/*,
+                                                                                 calc_overview('funcs',data)*/)});
+                        },
+                        null,
+                        100,
+                        null,
+                        [
+                            {
+                                "render": function (data, type, row) {
+                                    return data.toLocaleString();
+                                }, "targets": [2,3,4]
+                            }
+                        ],
+                        null,false
+                    );
+
+
                     //get filters
                     $.getJSON("{{ url_for('api.instrument_instrument_filters') }}", function (filters) {
                         //populate filters dropdown
                         $.each(filters, function (i, v) {
                             $('.dropdown-menu').append("<li><a href=\"#\">".concat(v['name'],"</a></li>"));
-                        })
+                        });
+                        $("#filter_btn").html(filters[0]['name'].concat("<span class=\"caret\"></span>"));
+                    $(".dropdown-menu li a").click(function(){
+                        console.log('dddd');
+                        $(this).parents(".dropdown").find('.selection').text($(this).text());
+                        $(this).parents(".dropdown").find('.selection').val($(this).text());
                     });
-                });
+                     });
+
+               });
 
         });
     </script>

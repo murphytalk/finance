@@ -50,7 +50,8 @@ function build_header(table_selector,headers) {
     $(table_selector+" thead").replaceWith(head);
 };
 
- function populate_data(table_selector,url,col_order,row_per_page,lengthMenu,colDefs,footer) {
+ function populate_data(table_selector,url,col_order,row_per_page,lengthMenu,colDefs,footer,searching) {
+    searching = (typeof searching !== 'undefined') ?  searching : true;
     var lenMenu;
     if(lengthMenu==null){
         lenMenu = [10, 15, 50, 100];
@@ -64,11 +65,20 @@ function build_header(table_selector,headers) {
      
     var parameter = {
         ajax: url,
-        order: col_order,
         pageLength: row_per_page,
-        lengthMenu: lenMenu,
-        responsive: jQuery.browser.mobile
+        responsive: jQuery.browser.mobile,
+        searching: searching
     };
+
+    if(col_order != null){
+        parameter['order'] = col_order;
+    }
+    if(lengthMenu != null ){
+        parameter['lengthMenu'] = lenMenu;
+    }
+    else{
+        parameter['paging'] = false;
+    }
 
     if(colDefs != null){
         parameter['columnDefs'] = colDefs;
