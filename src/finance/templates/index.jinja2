@@ -40,66 +40,40 @@
     </div>
 
     <div class="row">
-        <div class="col-md-8">
-            <div class="row">
-                <h3 class="text-center">Overview</h3>
-            </div>
-            <div class="row">
-                <table class="table table-hover" id="overview">
-                    <thead>
-                    <tr>
-                        <th rowspan="2" class="text-left`">Type</th>
-                        <th rowspan="2" class="text-left">CCY</th>
-                        <th colspan="2" class="text-right">Market Value</th>
-                        <th colspan="1" class="text-right">Profit</th>
-                    </tr>
-                    <tr>
-                        <th class="text-right">CCY</th>
-                        <th class="text-right">JPY</th>
-                        <th class="text-right">JPY</th>
-                    </tr>
-                    </thead>
-                    <tfoot>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <th class="text-right">
-                            <div id="value_ccy"></div>
-                        </th>
-                        <th class="text-right">
-                            <div id="value_jpy"></div>
-                        </th>
-                        <th class="text-right">
-                            <div id="profit"></div>
-                        </th>
-                    </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="row">
-                <div class="dropdown">
-                    <!--
-                    <span>Instrument Filters</span>
-                    -->
-                    <button id="filter_btn" class="btn btn-primary dropdown-toggle" type="button"
-                            data-toggle="dropdown">
-                    </button>
-                    <ul class="dropdown-menu">
-                    </ul>
-                </div>
-            </div>
-            <div class="row">
-                <table class="table table-hover" id="filter">
-                    <thead>
-                    <tr>
-                        <th class="text-left">Type</th>
-                        <th class="text-left">Instrument</th>
-                    </tr>
-                    </thead>
-                </table>
-            </div>
+        <h3 class="text-center">Overview</h3>
+    </div>
+    <div class="row top5 bottom5">
+        <div class="col-md-12">
+            <table class="table table-hover" id="overview">
+                <thead>
+                <tr>
+                    <th rowspan="2" class="text-left`">Type</th>
+                    <th rowspan="2" class="text-left">CCY</th>
+                    <th colspan="2" class="text-right">Market Value</th>
+                    <th colspan="1" class="text-right">Profit</th>
+                </tr>
+                <tr>
+                    <th class="text-right">CCY</th>
+                    <th class="text-right">JPY</th>
+                    <th class="text-right">JPY</th>
+                </tr>
+                </thead>
+                <tfoot>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th class="text-right">
+                        <div id="value_ccy"></div>
+                    </th>
+                    <th class="text-right">
+                        <div id="value_jpy"></div>
+                    </th>
+                    <th class="text-right">
+                        <div id="profit"></div>
+                    </th>
+                </tr>
+                </tfoot>
+            </table>
         </div>
     </div>
 {% endblock %}
@@ -217,37 +191,12 @@
 
                     //get filters
                     $.getJSON("{{ url_for('api.instrument_instrument_filters') }}", function (filters) {
-                        //populate filters dropdown
-                        $.each(filters, function (i, v) {
-                            $('.dropdown-menu').append("<li><a href=\"#\">".concat(v['name'], "</a></li>"));
-                        });
-
-                        //populate filter table with all instruments
-                    populate_data(
-                        '#filter',
-                        function (d, callback, s) {
-                            var all_instruments = [];
-                            $.each(data['stock'],function (i,v) {
-                                all_instruments.push(['Stock',v['symbol']]);
-                            });
-                            callback({
-                                'data': all_instruments
-                            });
-                        },
-                        null,
-                        10,
-                        null,
-                        null,
-                        null,
-                    );
-
-
-                        $("#filter_btn").html(filters[0]['name'].concat("<span class=\"caret\"></span>"));
-                        $(".dropdown-menu li a").click(function () {
-                            console.log('dddd');
-                            $(this).parents(".dropdown").find('.selection').text($(this).text());
-                            $(this).parents(".dropdown").find('.selection').val($(this).text());
-                        });
+                        /*
+                         //populate filters dropdown
+                         $.each(filters, function (i, v) {
+                         $('.dropdown-menu').append("<li><a href=\"#\">".concat(v['name'], "</a></li>"));
+                         });
+                         */
                     });
 
                 });
