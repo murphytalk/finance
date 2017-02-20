@@ -103,29 +103,25 @@ class SummaryReport(Report):
             funds.positions)]
 
     def report(self, dao):
-        def asset_class_generator(dao):
-            asset_class = {}
+        def get_allocation(get_allocation_func):
+            allocation = {}
             for instrument, value in self.positions:
-                for asset, ratio in dao.get_asset_allocation(instrument_id=instrument):
-                    self.put(asset_class, asset, value * ratio / 100)
-            for k, v in asset_class.items():
-                yield (k, v)
+                if value > 0:
+                    for n, ratio in get_allocation_func(instrument_id=instrument):
+                        if n not in allocation:
+                            allocation[n] = {}
+                        instruments = allocation[n]
+                        instruments[instrument] = value * ratio / 100
+            return allocation
 
-        def country_generator(dao):
-            country = {}
-            for instrument, value in self.positions:
-                for rg, ratio in dao.get_country_allocation(instrument_id=instrument):
-                    self.put(country, rg, value * ratio / 100)
-            for k, v in country.items():
-                yield (k, v)
+        def get_asset_class(dao):
+            return get_allocation(dao.get_asset_allocation)
 
-        def region_generator(dao):
-            region = {}
-            for instrument, value in self.positions:
-                for rg, ratio in dao.get_region_allocation(instrument_id=instrument):
-                    self.put(region, rg, value * ratio / 100)
-            for k, v in region.items():
-                yield (k, v)
+        def get_country(dao):
+            return get_allocation(dao.get_country_allocation)
+
+        def get_region(dao):
+            return get_allocation(dao.get_region_allocation)
 
         def stock_allocation(dao):
             """
@@ -153,9 +149,9 @@ class SummaryReport(Report):
 
         stock, etf = stock_allocation(dao)
         return {
-                'asset': get_pie_chart_data(asset_class_generator(dao)),
-                'country': get_pie_chart_data(country_generator(dao)),
-                'region': get_pie_chart_data(region_generator(dao)),
+                'asset': get_asset_class(dao),
+                'country': get_country(dao),
+                'region': get_region(dao),
                 'Stock': stock,
                 'ETF': etf,
                 'Funds': funds_allocation(dao)
