@@ -124,7 +124,7 @@ function fuzzy_eq(a,b){
 
 function update_footer(table, ccy_sign, col_idx, total_value, footer_id,calc){
     var data = table.column(col_idx,{search:'applied'}).data();
-    console.log('col '+col_idx+':'+data.length);
+    //console.log('col '+col_idx+':'+data.length);
     var v = data.reduce(function(a, b) { return a + b; }, 0);
     if(fuzzy_eq(v,total_value)){
         $(footer_id).html(ccy_sign+calc(table,total_value,table.data().length).toLocaleString());

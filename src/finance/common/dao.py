@@ -577,11 +577,14 @@ class Dao:
             # what stocks/ETFs we have generated ?
             stocks = [x['ROWID'] for x in self.exec('SELECT ROWID FROM instrument WHERE type = ? OR type = ?',
                                                     (instrument_type["Stock"], instrument_type["ETF"]))]
-
+            # what funds we have generated ?
+            funds = [x['ROWID'] for x in self.exec('SELECT ROWID FROM instrument WHERE type = ?',
+                                                   (instrument_type["Funds"],))]
             # populate instrument filters
-            self.exec_many('INSERT INTO INSTRUMENT_FILTER_NAME VALUES (?)', [("ALL", ), ("PreDefined", )])
+            self.exec_many('INSERT INTO INSTRUMENT_FILTER_NAME VALUES (?)',
+                           [("All-Stocks", ), ("First-Two-Stocks", ), ("All-Funds", )])
             self.exec_many('INSERT INTO INSTRUMENT_FILTER VALUES (?,?)',
-                           [(1, x) for x in stocks] + [(2, x) for x in stocks[:2]])
+                           [(1, x) for x in stocks] + [(2, x) for x in stocks[:2]] + [(3, x) for x in funds])
 
             # randomly generate stock quotes - from DAY1 to today
             quotes = []
@@ -619,8 +622,6 @@ class Dao:
             self.exec_many('INSERT INTO [transaction] VALUES (?,?,?,?,?,?)', sell)
 
             # randomly generate mutual funds performance
-            funds = [x['ROWID'] for x in self.exec('SELECT ROWID FROM instrument WHERE type = ?',
-                                                   (instrument_type["Funds"],))]
             performance = []
             for day in Dao.FakeDao.gen_dates():
                 for i in funds:

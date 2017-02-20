@@ -77,14 +77,15 @@
     <div class="row">
         <div class="col-md-12 top5 bottom5">
             <div class="btn-toolbar" role="toolbar" aria-label="Instrument filter toolbar">
-            <div id="filters" class="btn-group" role="group">
+                <div id="filters" class="btn-group" role="group">
+                    <button type="button" class="btn btn-success" id="filter-All">All</button>
+                </div>
+                <!--
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-warning" id="x">Customize Filter</button>
+                </div>
+                -->
             </div>
-            <!--
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-warning" id="x">Customize Filter</button>
-            </div>
-            -->
-        </div>
         </div>
     </div>
 
@@ -94,128 +95,192 @@
     {{ super() }}
     <script src="/static/finance/scripts/chart.js"></script>
     <script>
+        var the_filters = {'filter-All': {}};
+        var the_sum_data;
+
         function to_chart_data(data) {
             return {'y': data['JPY'], 'name': data['symbol']};
         }
+
+
+        function get_active_filter() {
+            return $('#filters').find('.btn-success').attr('id');
+        }
+
+        function filter_btn_clicked() {
+            var filter_id = $(this).attr('id');
+            console.log(filter_id + ' clicked');
+            $("#filters").children().removeClass('btn-success');
+            $("#filters").children().addClass('btn-primary');
+            $(this).removeClass('btn-primary');
+            $(this).addClass('btn-success');
+
+            refresh(the_sum_data);
+        }
+
+        function add_instrument_to_all_filter(instruments) {
+            $.each(instruments, function (i, v) {
+                the_filters['filter-All'][v['id']] = v['symbol'];
+            });
+        }
+
+        function instrument_is_not_filtered(instrument_id){
+            var filter = get_active_filter();
+            return instrument_id in the_filters[filter];
+        }
+
         function calc_overview(t, data) {
             //see /sum.json, stock or ETF or fund
             var sum = {};
             var rows = [];
             $.each(data[t], function (i, v) {
-                if (v['ccy'] in sum) {
-                    sum[v['ccy']]['value'] += v['value'];
-                    sum[v['ccy']]['JPY'] += v['JPY'];
-                    sum[v['ccy']]['profit'] += v['profit'];
-                }
-                else {
-                    sum[v['ccy']] = {'value': v['value'], 'JPY': v['JPY'], 'profit': v['profit']};
+                if(instrument_is_not_filtered(v['id'])) {
+                    if (v['ccy'] in sum) {
+                        sum[v['ccy']]['value'] += v['value'];
+                        sum[v['ccy']]['JPY'] += v['JPY'];
+                        sum[v['ccy']]['profit'] += v['profit'];
+                    }
+                    else {
+                        sum[v['ccy']] = {'value': v['value'], 'JPY': v['JPY'], 'profit': v['profit']};
+                    }
                 }
             });
             $.each(sum, function (n, v) {
-                rows.push([t,n,v['value'],v['JPY'],v['profit']]);
+                rows.push([t, n, v['value'], v['JPY'], v['profit']]);
             });
             return rows;
         }
+
+        function refresh(data) {
+            $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', data['country'], false));
+            $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', data['region'], false));
+            $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', data['asset'], false));
+
+            var stocks = [];
+            $.each(data['Stock'], function (i, v) {
+                if(instrument_is_not_filtered(v['id'])){
+                    stocks.push(to_chart_data(v));
+                }
+            });
+            $.each(data['ETF'], function (i, v) {
+                if(instrument_is_not_filtered(v['id'])){
+                    stocks.push(to_chart_data(v));
+                }
+            });
+
+            $('#pieStock').highcharts(pieChartOptions(null, 'Market Value', stocks, false));
+
+            var funds = [];
+            $.each(data['Funds'], function (i, v) {
+                if(instrument_is_not_filtered(v['id'])) {
+                    funds.push(to_chart_data(v));
+                }
+            });
+            $('#pieFund').highcharts(pieChartOptions(null, 'Market Value', funds, false));
+
+            if ($.fn.dataTable.isDataTable('#overview')) {
+                table = $('#overview').DataTable();
+                table.destroy();
+            }
+            //populate overview table
+            var overview_data = calc_overview('Funds', data).concat(calc_overview('Stock', data),
+                    calc_overview('ETF', data));
+            var overview_table = populate_data(
+                    '#overview',
+                    function (d, callback, s) {
+                        callback({
+                            'data': overview_data
+                        });
+                    },
+                    null,
+                    100,
+                    null,
+                    [
+                        {
+                            "render": function (data, type, row) {
+                                return data.toLocaleString();
+                            }, "targets": [2, 3, 4]
+                        },
+                        {"className": "text-right", "targets": [2, 3, 4]},
+                    ],
+                    null,
+                    {
+                        searching: false,
+                        paging: false
+                    }
+            );
+
+            var total_value  = 0;
+            var total_profit = 0;
+            $.each(overview_data, function(i,v){
+                total_value += v[3];
+                total_profit+= v[4];
+            });
+
+            update_sum(overview_table, '¥', 3, total_value, '#value_jpy');
+            update_sum(overview_table, '¥', 4, total_profit, '#profit_jpy');
+        }
+
         $(document).ready(function () {
             $.getJSON("{{ url_for('finance_page.sum_json')}}",
-                function (data) {
-                    $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', data['country'], false));
-                    $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', data['region'], false));
-                    $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', data['asset'], false));
+                    function (data) {
+                        the_sum_data = data;
 
-                    var stocks = [];
-                    $.each(data['Stock'], function (i, v) {
-                        stocks.push(to_chart_data(v));
-                    });
-                    $.each(data['ETF'], function (i, v) {
-                        stocks.push(to_chart_data(v));
-                    });
+                        //reflow chart when its host tab is shown, otherwise the chart won't position itself at center
+                        $('.nav-tabs a').on('shown.bs.tab', function (event) {
+                            var x = $(event.target).text();         // active tab
+                            var chart_selector;
+                            if (x == 'Asset') {
+                                chart_selector = "#pieAsset";
+                            }
+                            else if (x == 'Region') {
+                                chart_selector = "#pieRegion";
+                            }
+                            else if (x == 'Country') {
+                                chart_selector = "#pieCountry";
+                            }
+                            else if (x == 'Stock/ETF') {
+                                chart_selector = "#pieStock";
+                            }
+                            else {
+                                chart_selector = "#pieFund";
+                            }
+                            var chart = $(chart_selector).highcharts();
+                            chart.reflow();
+                        });
 
-                    $('#pieStock').highcharts(pieChartOptions(null, 'Market Value', stocks, false));
+                        //the ALL filter
+                        add_instrument_to_all_filter(data['Stock']);
+                        add_instrument_to_all_filter(data['ETF']);
+                        add_instrument_to_all_filter(data['Funds']);
+                        $("#filter-All").click(filter_btn_clicked);
 
-                    var funds = [];
-                    $.each(data['Funds'], function (i, v) {
-                        funds.push(to_chart_data(v));
-                    });
-                    $('#pieFund').highcharts(pieChartOptions(null, 'Market Value', funds, false));
+                        refresh(data);
 
-                    //reflow chart when its host tab is shown, otherwise the chart won't position itself at center
-                    $('.nav-tabs a').on('shown.bs.tab', function (event) {
-                        var x = $(event.target).text();         // active tab
-                        var chart_selector;
-                        if (x == 'Asset') {
-                            chart_selector = "#pieAsset";
-                        }
-                        else if (x == 'Region') {
-                            chart_selector = "#pieRegion";
-                        }
-                        else if (x == 'Country') {
-                            chart_selector = "#pieCountry";
-                        }
-                        else if (x == 'Stock/ETF') {
-                            chart_selector = "#pieStock";
-                        }
-                        else {
-                            chart_selector = "#pieFund";
-                        }
-                        var chart = $(chart_selector).highcharts();
-                        chart.reflow();
-                    });
+                        //if any of the 2 show below is missing, the chart won't flow
+                        $('.nav-tabs').tab("show");
+                        $('#tab1 a[href="#asset"]').tab("show");
+                        $('#tab2 a[href="#stock"]').tab("show");
 
 
-                    //if any of the 2 show below is missing, the chart won't flow
-                    $('.nav-tabs').tab("show");
-                    $('#tab1 a[href="#asset"]').tab("show");
-                    $('#tab2 a[href="#stock"]').tab("show");
-
-                    //populate overview table
-                    var overview_data = calc_overview('Funds', data).concat(calc_overview('Stock', data),
-                                                                     calc_overview('ETF',data));
-                    var overview_table = populate_data(
-                        '#overview',
-                        function (d, callback, s) {
-                            callback({
-                                'data': overview_data
+                        //get the other filters
+                        $.getJSON("{{ url_for('api.instrument_instrument_filters') }}", function (filters) {
+                            //Populate filter buttons
+                            $.each(filters, function (i, v) {
+                                var filter_id = 'filter-' + v['name'];
+                                $("#filters").append("<button type=\"button\" class=\"btn btn-primary\" id=\"" + filter_id + "\">" + v['name'] + "</button>");
+                                $('#' + filter_id).click(filter_btn_clicked);
+                                //change to {filter name => {instrument id => instrument name}}
+                                var instruments = {};
+                                $.each(v['instruments'], function (i2, v2) {
+                                    instruments[v2['id']] = v2['name'];
+                                });
+                                the_filters[filter_id] = instruments;
                             });
-                        },
-                        null,
-                        100,
-                        null,
-                        [
-                            {
-                                "render": function (data, type, row) {
-                                    return data.toLocaleString();
-                                }, "targets": [2, 3, 4]
-                            },
-                            { "className": "text-right", "targets": [2,3,4] },
-                        ],
-                        null,
-                        {
-                            searching: false,
-                            paging: false
-                        }
-                    );
-
-                    update_sum(overview_table,'¥',3 ,overview_data[0][3]+overview_data[1][3]+overview_data[2][3],'#value_jpy');
-                    update_sum(overview_table,'¥',4 ,overview_data[0][4]+overview_data[1][4]+overview_data[2][4],'#profit_jpy');
-
-                    //get filters
-                    $.getJSON("{{ url_for('api.instrument_instrument_filters') }}", function (filters) {
-                        //Populate filter buttons
-                        $.each(filters, function (i, v) {
-                            var filter_id = 'filter-'+v['name'];
-                            $("#filters").append("<button type=\"button\" class=\"btn btn-primary\" id=\""+filter_id+"\">"+v['name']+"</button>");
-                            $('#'+filter_id).click(function(){
-                                $("#filters").children().removeClass('btn-success');
-                                $("#filters").children().addClass('btn-primary');
-                                $(this).removeClass('btn-primary');
-                                $(this).addClass('btn-success');
-                            });
+                            //console.log(JSON.stringify(the_filters,null,4));
+                            //console.log(get_active_filter());
                         });
                     });
-
-                });
-
         });
     </script>
 {% endblock %}
