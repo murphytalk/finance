@@ -107,6 +107,34 @@
             return $('#filters').find('.btn-success').attr('id');
         }
 
+        function instrument_is_not_filtered(instrument_id){
+            var filter = get_active_filter();
+            return instrument_id in the_filters[filter];
+        }
+
+        function allocation_to_chart_data(data){
+            var chart_data = {};
+            $.each(data, function(n,instruments){
+                $.each(instruments,function(instrument_id,value){
+                    if(instrument_is_not_filtered(instrument_id)) {
+                        if (!(n in chart_data)) {
+                            chart_data[n] = {'name': n, 'y': value};
+                        }
+                        else{
+                            chart_data[n]['y'] += value;
+                        }
+                    }
+                });
+            });
+
+            var ret = [];
+            $.each(chart_data,function(n,v){
+                ret.push(v);
+            });
+
+            return ret;
+        }
+
         function filter_btn_clicked() {
             var filter_id = $(this).attr('id');
             console.log(filter_id + ' clicked');
@@ -124,12 +152,7 @@
             });
         }
 
-        function instrument_is_not_filtered(instrument_id){
-            var filter = get_active_filter();
-            return instrument_id in the_filters[filter];
-        }
-
-        function calc_overview(t, data) {
+       function calc_overview(t, data) {
             //see /sum.json, stock or ETF or fund
             var sum = {};
             var rows = [];
@@ -152,9 +175,9 @@
         }
 
         function refresh(data) {
-            $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', data['country'], false));
-            $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', data['region'], false));
-            $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', data['asset'], false));
+            $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', allocation_to_chart_data(data['country']), false));
+            $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', allocation_to_chart_data(data['region']), false));
+            $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', allocation_to_chart_data(data['asset']), false));
 
             var stocks = [];
             $.each(data['Stock'], function (i, v) {
