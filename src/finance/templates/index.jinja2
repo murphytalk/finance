@@ -79,9 +79,11 @@
             <div class="btn-toolbar" role="toolbar" aria-label="Instrument filter toolbar">
             <div id="filters" class="btn-group" role="group">
             </div>
+            <!--
             <div class="btn-group" role="group">
-                <button type="button" class="btn btn-success" id="x">Customize Filter</button>
+                <button type="button" class="btn btn-warning" id="x">Customize Filter</button>
             </div>
+            -->
         </div>
         </div>
     </div>
@@ -204,7 +206,10 @@
                             var filter_id = 'filter-'+v['name'];
                             $("#filters").append("<button type=\"button\" class=\"btn btn-primary\" id=\""+filter_id+"\">"+v['name']+"</button>");
                             $('#'+filter_id).click(function(){
-                                console.log($(this).attr('id'));
+                                $("#filters").children().removeClass('btn-success');
+                                $("#filters").children().addClass('btn-primary');
+                                $(this).removeClass('btn-primary');
+                                $(this).addClass('btn-success');
                             });
                         });
                     });
