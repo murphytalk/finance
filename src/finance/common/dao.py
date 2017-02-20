@@ -473,15 +473,41 @@ class Dao:
             for x in self.exec(sql, params if len(params) > 0 else None):
                 yield {'date': str(epoch2date(x['date'])), 'symbol': x['name'], 'price': x['price']}
 
-        def get_instrument_filters(self):
+        def get_instrument_filters(self, name=None):
             filters = {}
-            for x in self.exec('SELECT * from instrument_filters'):
+
+            sql = 'SELECT * from instrument_filters '
+            if name is None:
+                param = None
+            else:
+                sql += 'WHERE filter_name=?'
+                param = (name,)
+
+            for x in self.exec(sql, param):
                 f = {'id': x['instrument_id'], 'name': x['instrument_name']}
                 if x['filter_name'] in filters:
                     filters[x['filter_name']].append(f)
                 else:
                     filters[x['filter_name']] = [f]
             return filters
+
+        @_remove_empty_value
+        def update_instrument_filter(self, name, filters):
+            def _get_id():
+                for r in self.exec('SELECT ROWID FROM INSTRUMENT_FILTER_NAME WHERE name=?', [name, ]):
+                    return r['ROWID']
+                return None
+
+            filter_id = _get_id()
+            if filter_id is None:
+                self.exec('INSERT INTO INSTRUMENT_FILTER_NAME VALUES (?)', [name, ])
+                filter_id = _get_id()
+
+            self.exec('DELETE FROM INSTRUMENT_FILTER WHERE filter = ?', [filter_id, ])
+
+            all_instruments = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,name FROM instrument')}
+            params = [(filter_id, all_instruments[i['name']]) for i in filters['instruments']]
+            self.exec_many('INSERT INTO INSTRUMENT_FILTER VALUES (?,?)', params)
 
     class FakeDao(RealDao):
         """

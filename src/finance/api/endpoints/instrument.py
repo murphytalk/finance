@@ -16,7 +16,7 @@ def _get_instruments(dao, instrument_name=None):
              'currency': x['currency'],
              'broker': x['broker'],
              'url': x['url'],
-             'expense': x['expense']} for x in dao.get_instruments(instrument_name)];
+             'expense': x['expense']} for x in dao.get_instruments(instrument_name)]
 
 
 @ns.route('/')
@@ -111,4 +111,30 @@ class InstrumentFilters(Resource):
             return [{'name': x, 'instruments': filters[x]} for x in filters.keys()]
         return run_func_against_dao(lambda dao: _gen(dao.get_instrument_filters()))
 
+
+@ns.route('/filter/<string:filter_name>')
+@api.doc(params={'filter_name': 'Filter name'})
+class InstrumentFilter(Resource):
+    @api.marshal_with(instrument_filter)
+    def get(self, filter_name):
+        """
+        Returns the instruments in the given filter
+        :param filter_name: filter name
+        """
+        def _gen(dao):
+            for name, instruments in dao.get_instrument_filters(filter_name).items():
+                return {'name': name, 'instruments': instruments}
+
+        return run_func_against_dao(lambda dao: _gen(dao))
+
+    @api.response(201, 'Instrument filter successfully updated.')
+    @api.response(500, 'Cannot update instrument filter.')
+    @api.expect(instrument_filter)
+    def post(self, filter_name):
+        """
+        Create/Update given instrument filter.
+        :param filter_name filter name
+        """
+        return None, run_func_against_dao(
+            lambda dao: 201 if dao.update_instrument_filter(filter_name, api.payload) else 500)
 
