@@ -24,14 +24,12 @@
                 <tr>
                     <th></th>
                     <th></th>
-                    <th class="text-right">
-                        <div id="value_ccy"></div>
-                    </th>
+                    <th></th>
                     <th class="text-right">
                         <div id="value_jpy"></div>
                     </th>
                     <th class="text-right">
-                        <div id="profit"></div>
+                        <div id="profit_jpy"></div>
                     </th>
                 </tr>
                 </tfoot>
@@ -172,12 +170,13 @@
                     $('#tab2 a[href="#stock"]').tab("show");
 
                     //populate overview table
-                    populate_data(
+                    var overview_data = calc_overview('Funds', data).concat(calc_overview('Stock', data),
+                                                                     calc_overview('ETF',data));
+                    var overview_table = populate_data(
                         '#overview',
                         function (d, callback, s) {
                             callback({
-                                'data': calc_overview('Stock', data).concat(calc_overview('ETF', data),
-                                 calc_overview('Funds',data))
+                                'data': overview_data
                             });
                         },
                         null,
@@ -198,6 +197,8 @@
                         }
                     );
 
+                    update_sum(overview_table,'¥',3 ,overview_data[0][3]+overview_data[1][3]+overview_data[2][3],'#value_jpy');
+                    update_sum(overview_table,'¥',4 ,overview_data[0][4]+overview_data[1][4]+overview_data[2][4],'#profit_jpy');
 
                     //get filters
                     $.getJSON("{{ url_for('api.instrument_instrument_filters') }}", function (filters) {

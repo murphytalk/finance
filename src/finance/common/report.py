@@ -186,7 +186,6 @@ def region_allocation(dao, instrument_id):
     return get_pie_chart_data_json(dao.get_region_allocation(instrument_id=instrument_id))
 
 
-
 if __name__ == "__main__":
     # import codecs,locale
     # sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
