@@ -127,15 +127,39 @@ class SummaryReport(Report):
             for k, v in region.items():
                 yield (k, v)
 
+        def stock_allocation(dao):
+            """
+            get stock instruments allocation, see /stock.json
+            :param dao: dao
+            :return (Stock,ETF)
+            """
+            def calc(stocks):
+                return [{'symbol': x['symbol'],
+                         'id': x['instrument'],
+                         'ccy':x['value']['ccy'],
+                         'value':x['value'][x['value']['ccy']],
+                         'JPY':x['value']['JPY'],
+                         'profit':x['value']['JPY'] - x['liquidated']['JPY']} for x in stocks if x['shares'] > 0]
+            stocks = StockReport(dao, date.today()).stock_positions()
+            return calc(stocks['Stock'] if 'Stock' in stocks else []), calc(stocks['ETF'] if 'ETF' in stocks else [])
+
+        def funds_allocation(dao):
+            return [{'symbol': x['name'],
+                     'id': x['instrument_id'],
+                     'ccy':'JPY',
+                     'value':x['value'],
+                     'JPY':x['value'],
+                     'profit':x['profit']} for x in FundReport(dao, date.today()).positions]
+
         stock, etf = stock_allocation(dao)
-        return {'total': reduce(lambda a, b: a + b, [x[1] for x in self.positions]),
+        return {
                 'asset': get_pie_chart_data(asset_class_generator(dao)),
                 'country': get_pie_chart_data(country_generator(dao)),
                 'region': get_pie_chart_data(region_generator(dao)),
-                'stock': stock,
+                'Stock': stock,
                 'ETF': etf,
-                'funds': funds_allocation(dao)
-                }
+                'Funds': funds_allocation(dao)
+               }
 
 
 def get_pie_chart_data(generator):
@@ -162,28 +186,6 @@ def region_allocation(dao, instrument_id):
     return get_pie_chart_data_json(dao.get_region_allocation(instrument_id=instrument_id))
 
 
-def stock_allocation(dao):
-    """
-    get stock instruments allocation, see /stock.json
-    :param dao: dao
-    :return (Stock,ETF)
-    """
-    def calc(stocks):
-        return [{'symbol': x['symbol'],
-                 'id': x['instrument'],
-                 'ccy':x['value']['ccy'],
-                 'value':x['value'][x['value']['ccy']],
-                 'JPY':x['value']['JPY'],
-                 'profit':x['value']['JPY'] - x['liquidated']['JPY']} for x in stocks if x['shares'] > 0]
-    stocks = StockReport(dao, date.today()).stock_positions()
-    return calc(stocks['Stock'] if 'Stock' in stocks else []), calc(stocks['ETF'] if 'ETF' in stocks else [])
-
-
-def funds_allocation(dao):
-    return [{'symbol': x['name'],
-             'id': x['instrument_id'],
-             'JPY':x['value'],
-             'profit':x['profit']} for x in FundReport(dao, date.today()).positions]
 
 if __name__ == "__main__":
     # import codecs,locale

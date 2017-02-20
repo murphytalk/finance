@@ -115,12 +115,7 @@
                 }
             });
             $.each(sum, function (n, v) {
-                var row = [t];
-                row.push(n);
-                row.push(v['value']);
-                row.push(v['JPY']);
-                row.push(v['profit']);
-                rows.push(row);
+                rows.push([t,n,v['value'],v['JPY'],v['profit']]);
             });
             return rows;
         }
@@ -132,7 +127,7 @@
                     $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', data['asset'], false));
 
                     var stocks = [];
-                    $.each(data['stock'], function (i, v) {
+                    $.each(data['Stock'], function (i, v) {
                         stocks.push(to_chart_data(v));
                     });
                     $.each(data['ETF'], function (i, v) {
@@ -142,11 +137,10 @@
                     $('#pieStock').highcharts(pieChartOptions(null, 'Market Value', stocks, false));
 
                     var funds = [];
-                    $.each(data['funds'], function (i, v) {
+                    $.each(data['Funds'], function (i, v) {
                         funds.push(to_chart_data(v));
                     });
                     $('#pieFund').highcharts(pieChartOptions(null, 'Market Value', funds, false));
-                    $('#totalValue').text(data['total'].toLocaleString());
 
                     //reflow chart when its host tab is shown, otherwise the chart won't position itself at center
                     $('.nav-tabs a').on('shown.bs.tab', function (event) {
@@ -182,8 +176,8 @@
                         '#overview',
                         function (d, callback, s) {
                             callback({
-                                'data': calc_overview('stock', data).concat(calc_overview('ETF', data)/*,
-                                 calc_overview('funcs',data)*/)
+                                'data': calc_overview('Stock', data).concat(calc_overview('ETF', data),
+                                 calc_overview('Funds',data))
                             });
                         },
                         null,
