@@ -579,7 +579,7 @@ class Dao:
                                                     (instrument_type["Stock"], instrument_type["ETF"]))]
 
             # populate instrument filters
-            self.exec_many('INSERT INTO INSTRUMENT_FILTER_NAME VALUES (?)', [("ALL", ), ("PreDefined!", )])
+            self.exec_many('INSERT INTO INSTRUMENT_FILTER_NAME VALUES (?)', [("ALL", ), ("PreDefined", )])
             self.exec_many('INSERT INTO INSTRUMENT_FILTER VALUES (?,?)',
                            [(1, x) for x in stocks] + [(2, x) for x in stocks[:2]])
 
