@@ -87,7 +87,7 @@ class FundReport(Report):
 
 
 class SummaryReport(Report):
-    def __init__(self, dao, the_date):
+    def __init__(self, dao, the_date, filter_name):
         def get_stock_positions(stock_positions):
             for v in stock_positions.values():
                 for p in v:

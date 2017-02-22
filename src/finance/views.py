@@ -38,6 +38,7 @@ def summary():
         head_title=get_head_title(),
         title='Home Page',
         year=datetime.now().year,
+        filters=g.dao.get_filter_names()
     )
 
 
@@ -98,8 +99,12 @@ def region_allocation_json(instrument):
     return Response(region_allocation(g.dao, instrument), mimetype='application/json')
 
 
+@finance_page.route('/filter/<name>')
+def instrument_filter(name):
+    rpt = SummaryReport(g.dao, date.today(), name)
+    return Response(rpt.to_json_packed(rpt.report(g.dao)), mimetype='application/json')
+
+
 @finance_page.route('/sum.json')
 def sum_json():
-    r = SummaryReport(g.dao, date.today())
-    return Response(r.to_json_packed(r.report(g.dao)), mimetype='application/json')
-
+    return instrument_filter(None)

@@ -473,6 +473,9 @@ class Dao:
             for x in self.exec(sql, params if len(params) > 0 else None):
                 yield {'date': str(epoch2date(x['date'])), 'symbol': x['name'], 'price': x['price']}
 
+        def get_filter_names(self):
+            return [x['name'] for x in self.exec('SELECT name FROM filter')]
+
         def get_filters(self, name=None):
             extras = {x['name']: x['extra'] for x in self.exec('SELECT * FROM filter')}
 
