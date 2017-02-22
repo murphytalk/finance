@@ -109,14 +109,15 @@ CREATE TABLE IF NOT EXISTS xccy (
   REFERENCES currency (rowid)
 );
 
-CREATE TABLE IF NOT EXISTS INSTRUMENT_FILTER_NAME(
-  name text not null
+CREATE TABLE IF NOT EXISTS filter(
+  name  TEXT NOT NULL,
+  extra TEXT
 );
 
-CREATE TABLE IF NOT EXISTS INSTRUMENT_FILTER(
+CREATE TABLE IF NOT EXISTS instrument_filter(
   filter      INT  NOT NULL,
   instrument  INT  NOT NULL,
-  FOREIGN KEY (filter) REFERENCES INSTRUMENT_FILTER_NAME(ROWID),
+  FOREIGN KEY (filter) REFERENCES filter(ROWID),
   FOREIGN KEY (instrument) REFERENCES instrument(ROWID)
 );
 
@@ -126,7 +127,7 @@ CREATE VIEW instrument_filters AS
     n.name  as filter_name,
     i.name  as instrument_name,
     i.ROWID as instrument_id
-  FROM INSTRUMENT_FILTER_NAME n, INSTRUMENT_FILTER f, instrument i
+  FROM filter n, instrument_filter f, instrument i
   WHERE n.ROWID = f.filter and f.instrument = i.ROWID;
 
 

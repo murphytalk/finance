@@ -473,7 +473,9 @@ class Dao:
             for x in self.exec(sql, params if len(params) > 0 else None):
                 yield {'date': str(epoch2date(x['date'])), 'symbol': x['name'], 'price': x['price']}
 
-        def get_instrument_filters(self, name=None):
+        def get_filters(self, name=None):
+            extras = {x['name']: x['extra'] for x in self.exec('SELECT * FROM filter')}
+
             filters = {}
 
             sql = 'SELECT * from instrument_filters '
@@ -486,28 +488,30 @@ class Dao:
             for x in self.exec(sql, param):
                 f = {'id': x['instrument_id'], 'name': x['instrument_name']}
                 if x['filter_name'] in filters:
-                    filters[x['filter_name']].append(f)
+                    filters[x['filter_name']]['instruments'].append(f)
                 else:
-                    filters[x['filter_name']] = [f]
+                    filters[x['filter_name']] = {'extra': extras[x['filter_name']], 'instruments': [f]}
             return filters
 
         @_remove_empty_value
-        def update_instrument_filter(self, name, filters):
+        def update_filter(self, name, filters):
             def _get_id():
-                for r in self.exec('SELECT ROWID FROM INSTRUMENT_FILTER_NAME WHERE name=?', [name, ]):
+                for r in self.exec('SELECT ROWID FROM instrument_filter_name WHERE name=?', [name, ]):
                     return r['ROWID']
                 return None
 
             filter_id = _get_id()
             if filter_id is None:
-                self.exec('INSERT INTO INSTRUMENT_FILTER_NAME VALUES (?)', [name, ])
+                self.exec('INSERT INTO instrument_filter_name VALUES (?,?)', (name, filters['extra']))
                 filter_id = _get_id()
+            else:
+                self.exec('UPDATE instrument_filter_name SET extra = ? WHERE ROWID = ?', (filters['extra'], filter_id))
 
-            self.exec('DELETE FROM INSTRUMENT_FILTER WHERE filter = ?', [filter_id, ])
+            self.exec('DELETE FROM filter WHERE filter = ?', [filter_id, ])
 
             all_instruments = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,name FROM instrument')}
             params = [(filter_id, all_instruments[i['name']]) for i in filters['instruments']]
-            self.exec_many('INSERT INTO INSTRUMENT_FILTER VALUES (?,?)', params)
+            self.exec_many('INSERT INTO filter VALUES (?,?)', params)
 
     class FakeDao(RealDao):
         """
@@ -607,9 +611,9 @@ class Dao:
             funds = [x['ROWID'] for x in self.exec('SELECT ROWID FROM instrument WHERE type = ?',
                                                    (instrument_type["Funds"],))]
             # populate instrument filters
-            self.exec_many('INSERT INTO INSTRUMENT_FILTER_NAME VALUES (?)',
+            self.exec_many('INSERT INTO filter (name) VALUES (?)',
                            [("All-Stocks", ), ("First-Two-Stocks", ), ("All-Funds", )])
-            self.exec_many('INSERT INTO INSTRUMENT_FILTER VALUES (?,?)',
+            self.exec_many('INSERT INTO instrument_filter VALUES (?,?)',
                            [(1, x) for x in stocks] + [(2, x) for x in stocks[:2]] + [(3, x) for x in funds])
 
             # randomly generate stock quotes - from DAY1 to today

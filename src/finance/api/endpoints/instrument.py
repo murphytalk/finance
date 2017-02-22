@@ -108,12 +108,12 @@ class InstrumentFilters(Resource):
         Return list of instrument filters
         """
         def _gen(filters):
-            return [{'name': x, 'instruments': filters[x]} for x in filters.keys()]
-        return run_func_against_dao(lambda dao: _gen(dao.get_instrument_filters()))
+            return [{'name': x, 'extra': filters[x]['extra'], 'instruments': filters[x]['instruments']} for x in filters.keys()]
+        return run_func_against_dao(lambda dao: _gen(dao.get_filters()))
 
 
-@ns.route('/filter/<string:filter_name>')
-@api.doc(params={'filter_name': 'Filter name'})
+@ns.route('/filter/<string:name>')
+@api.doc(params={'name': 'Filter name'})
 class InstrumentFilter(Resource):
     @api.marshal_with(instrument_filter)
     def get(self, filter_name):
@@ -122,19 +122,19 @@ class InstrumentFilter(Resource):
         :param filter_name: filter name
         """
         def _gen(dao):
-            for name, instruments in dao.get_instrument_filters(filter_name).items():
-                return {'name': name, 'instruments': instruments}
+            for name, f in dao.get_filters(filter_name).items():
+                return {'name': name, 'instruments': f['instruments'], 'extra': f['extra']}
 
         return run_func_against_dao(lambda dao: _gen(dao))
 
     @api.response(201, 'Instrument filter successfully updated.')
     @api.response(500, 'Cannot update instrument filter.')
     @api.expect(instrument_filter)
-    def post(self, filter_name):
+    def post(self, name):
         """
         Create/Update given instrument filter.
-        :param filter_name filter name
+        :param name filter name
         """
         return None, run_func_against_dao(
-            lambda dao: 201 if dao.update_instrument_filter(filter_name, api.payload) else 500)
+            lambda dao: 201 if dao.update_filter(name, api.payload) else 500)
 

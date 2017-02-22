@@ -109,7 +109,8 @@ _simple_instrument = api.model('Simple Instrument', {
 })
 
 instrument_filter = api.model('Instrument filter', {
-    'name': fields.String(description='Filter name'),
+    'name':  fields.String(description='Filter name'),
+    'extra': fields.String(description='Extra filter'),
     'instruments': fields.List(fields.Nested(_simple_instrument), description='Instruments'),
 })
 
