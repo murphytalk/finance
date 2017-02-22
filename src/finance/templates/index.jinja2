@@ -93,45 +93,14 @@
 
 {% block scripts %}
     {{ super() }}
-    <script src="/static/finance/scripts/chart.js"></script>
-    <script>
-        var the_filters = {'filter-All': {}};
-        var the_sum_data;
-
+    <script type="text/javascript" src="/static/finance/scripts/chart.js"></script>
+    <script type="text/javascript">
         function to_chart_data(data) {
             return {'y': data['JPY'], 'name': data['symbol']};
         }
 
         function get_active_filter() {
             return $('#filters').find('.btn-success').attr('id');
-        }
-
-        function instrument_is_not_filtered(instrument_id){
-            var filter = get_active_filter();
-            return instrument_id in the_filters[filter];
-        }
-
-        function allocation_to_chart_data(data){
-            var chart_data = {};
-            $.each(data, function(n,instruments){
-                $.each(instruments,function(instrument_id,value){
-                    if(instrument_is_not_filtered(instrument_id)) {
-                        if (!(n in chart_data)) {
-                            chart_data[n] = {'name': n, 'y': value};
-                        }
-                        else{
-                            chart_data[n]['y'] += value;
-                        }
-                    }
-                });
-            });
-
-            var ret = [];
-            $.each(chart_data,function(n,v){
-                ret.push(v);
-            });
-
-            return ret;
         }
 
         function filter_btn_clicked() {
@@ -141,8 +110,6 @@
             $("#filters").children().addClass('btn-primary');
             $(this).removeClass('btn-primary');
             $(this).addClass('btn-success');
-
-            refresh(the_sum_data);
         }
 
         function add_instrument_to_all_filter(instruments) {
@@ -156,7 +123,6 @@
             var sum = {};
             var rows = [];
             $.each(data[t], function (i, v) {
-                if(instrument_is_not_filtered(v['id'])) {
                     if (v['ccy'] in sum) {
                         sum[v['ccy']]['value'] += v['value'];
                         sum[v['ccy']]['JPY'] += v['JPY'];
@@ -165,7 +131,6 @@
                     else {
                         sum[v['ccy']] = {'value': v['value'], 'JPY': v['JPY'], 'profit': v['profit']};
                     }
-                }
             });
             $.each(sum, function (n, v) {
                 rows.push([t, n, v['value'], v['JPY'], v['profit']]);
@@ -174,29 +139,23 @@
         }
 
         function refresh(data) {
-            $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', allocation_to_chart_data(data['country']), false));
-            $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', allocation_to_chart_data(data['region']), false));
-            $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', allocation_to_chart_data(data['asset']), false));
+            $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', data['country'], false));
+            $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', data['region'], false));
+            $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', data['asset'], false));
 
             var stocks = [];
             $.each(data['Stock'], function (i, v) {
-                if(instrument_is_not_filtered(v['id'])){
                     stocks.push(to_chart_data(v));
-                }
             });
             $.each(data['ETF'], function (i, v) {
-                if(instrument_is_not_filtered(v['id'])){
                     stocks.push(to_chart_data(v));
-                }
             });
 
             $('#pieStock').highcharts(pieChartOptions(null, 'Market Value', stocks, false));
 
             var funds = [];
             $.each(data['Funds'], function (i, v) {
-                if(instrument_is_not_filtered(v['id'])) {
                     funds.push(to_chart_data(v));
-                }
             });
             $('#pieFund').highcharts(pieChartOptions(null, 'Market Value', funds, false));
 
@@ -246,8 +205,6 @@
         $(document).ready(function () {
             $.getJSON("{{ url_for('finance_page.sum_json')}}",
                     function (data) {
-                        the_sum_data = data;
-
                         //reflow chart when its host tab is shown, otherwise the chart won't position itself at center
                         $('.nav-tabs a').on('shown.bs.tab', function (event) {
                             var x = $(event.target).text();         // active tab
@@ -271,10 +228,6 @@
                             chart.reflow();
                         });
 
-                        //the ALL filter
-                        add_instrument_to_all_filter(data['Stock']);
-                        add_instrument_to_all_filter(data['ETF']);
-                        add_instrument_to_all_filter(data['Funds']);
                         $("#filter-All").click(filter_btn_clicked);
 
                         refresh(data);
@@ -292,12 +245,6 @@
                                 var filter_id = 'filter-' + v['name'];
                                 $("#filters").append("<button type=\"button\" class=\"btn btn-primary\" id=\"" + filter_id + "\">" + v['name'] + "</button>");
                                 $('#' + filter_id).click(filter_btn_clicked);
-                                //change to {filter name => {instrument id => instrument name}}
-                                var instruments = {};
-                                $.each(v['instruments'], function (i2, v2) {
-                                    instruments[v2['id']] = v2['name'];
-                                });
-                                the_filters[filter_id] = instruments;
                             });
                             //console.log(JSON.stringify(the_filters,null,4));
                             //console.log(get_active_filter());

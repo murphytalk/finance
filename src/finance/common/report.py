@@ -106,21 +106,18 @@ class SummaryReport(Report):
         def get_allocation(get_allocation_func):
             allocation = {}
             for instrument, value in self.positions:
-                if value > 0:
-                    for n, ratio in get_allocation_func(instrument_id=instrument):
-                        if n not in allocation:
-                            allocation[n] = {}
-                        instruments = allocation[n]
-                        instruments[instrument] = value * ratio / 100
-            return allocation
+                for n, ratio in get_allocation_func(instrument_id=instrument):
+                    self.put(allocation, n, value * ratio / 100)
+            for k, v in allocation.items():
+                yield (k, v)
 
-        def get_asset_class(dao):
+        def asset_class(dao):
             return get_allocation(dao.get_asset_allocation)
 
-        def get_country(dao):
+        def country(dao):
             return get_allocation(dao.get_country_allocation)
 
-        def get_region(dao):
+        def region(dao):
             return get_allocation(dao.get_region_allocation)
 
         def stock_allocation(dao):
@@ -149,13 +146,14 @@ class SummaryReport(Report):
 
         stock, etf = stock_allocation(dao)
         return {
-                'asset': get_asset_class(dao),
-                'country': get_country(dao),
-                'region': get_region(dao),
-                'Stock': stock,
-                'ETF': etf,
-                'Funds': funds_allocation(dao)
-               }
+            'asset': get_pie_chart_data(asset_class(dao)),
+            'country': get_pie_chart_data(country(dao)),
+            'region': get_pie_chart_data(region(dao)),
+            'Stock': stock,
+            'ETF': etf,
+            'Funds': funds_allocation(dao)
+        }
+
 
 
 def get_pie_chart_data(generator):
