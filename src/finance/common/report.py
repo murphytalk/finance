@@ -70,6 +70,42 @@ class StockReport(Report):
         return positions
 
 
+class StockReport2(Report):
+    def __init__(self, dao, date):
+        super(self.__class__, self).__init__(dao, date)
+        self.q = dao.get_stock_latest_quotes(date)
+        self.stock_position = CalcPosition(date)
+        self.stock_position.calc(dao)
+
+    def stock_positions(self, positions=None):
+        def calc_stock(instrument, position):
+            v = position.shares * self.q[instrument].price
+            rpt = {
+                'instrument': instrument,
+                'symbol': position.name,
+                'url': self.i[instrument].url,
+                'ccy': self.i[instrument].currency,
+                'xccy': self.i[instrument].xccy_rate,
+                'shares': position.shares,
+                'price': self.q[instrument].price,
+                'value': v,
+                'liquidated': position.liquidated}
+
+            t = self.i[instrument].instrument_type.name
+            if t in positions:
+                by_instrument = positions[t]
+            else:
+                by_instrument = []
+
+            by_instrument.append(rpt)
+            positions[t] = by_instrument
+
+        if positions is None:
+            positions = {}
+        self.stock_position.dump(calc_stock)
+        return positions
+
+
 class FundReport(Report):
     def __init__(self, dao, the_date):
         self.positions = [{

@@ -88,6 +88,10 @@ class Dao:
             parameter:
               instrument id
               instrument name
+              type id
+              type name
+              url
+              expense ration
             return:
               the new object
               :param create_new_obj_func:
@@ -512,6 +516,10 @@ class Dao:
             all_instruments = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,name FROM instrument')}
             params = [(filter_id, all_instruments[i['name']]) for i in filters['instruments']]
             self.exec_many('INSERT INTO filter VALUES (?,?)', params)
+
+        def get_all_positions(self):
+            pass
+
 
     class FakeDao(RealDao):
         """

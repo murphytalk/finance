@@ -1,5 +1,6 @@
 from finance.api import api
-from finance.api import instrument_asset_allocation, instrument_country_allocation, Instrument, instrument_filter
+from finance.api import instrument_asset_allocation, instrument_country_allocation, instrument_region_allocation
+from finance.api import Instrument, instrument_filter
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
 
@@ -98,6 +99,19 @@ class InstrumentCountryAllocation(Resource):
         """
         return None, run_func_against_dao(
             lambda dao: 201 if dao.update_instrument_country_allocations(instrument, api.payload) else 500)
+
+
+@ns.route('/allocation/region/<string:instrument>')
+@api.doc(params={'instrument': 'Instrument name'})
+class InstrumentRegionAllocation(Resource):
+    @api.marshal_list_with(instrument_region_allocation)
+    def get(self, instrument):
+        """
+        Returns list of region allocations of instruments.
+        :param instrument: instrument name
+        """
+        return run_func_against_dao(lambda dao: [
+            {'regions': [{'Region': x[0], 'ratio': x[1]} for x in dao.get_region_allocation(instrument_name=instrument)]}])
 
 
 @ns.route('/filter')
