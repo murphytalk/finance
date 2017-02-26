@@ -520,7 +520,6 @@ class Dao:
         def get_all_positions(self):
             pass
 
-
     class FakeDao(RealDao):
         """
         Using in memory DB with randomly generated market and position data
