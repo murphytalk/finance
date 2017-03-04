@@ -102,7 +102,7 @@
         function filter_by_allocation(chart_data, filter, positions, allocation_name){
             var allocation_collection = allocation_name + '_allocation';
             $.each(positions, function(idx,position){
-                var shares = apply_filter(filter, position['instrument']['id'],position['instrument']['name'],position['shares']);
+                var shares = apply_filter(filter, position)['shares'];
                 if(shares>0){
                     $.each(position[allocation_collection],function(idx,allocation){
                         var ratio = allocation['ratio']/100.0;
@@ -123,11 +123,13 @@
             var sum = {};
             var rows = [];
             $.each(positions, function(idx,position){
-                var shares = apply_filter(filter, position['instrument']['id'],position['instrument']['name'], position['shares']);
+                const new_pos = apply_filter(filter, position);
+                const shares  = new_pos['shares'];
+                const capital = new_pos['capital'];
                 if(shares>0) {
                     var value = shares*position['price'];
                     var base_ccy_value = value*position['xccy'];
-                    var profit_ccy = value - position['capital'];
+                    var profit_ccy = value - capital;
                     var profit = profit_ccy * position['xccy'];
                     var ccy = position['ccy'];
                     if (ccy in sum) {
@@ -169,7 +171,7 @@
                 filter_by_allocation(asset_allocation,filter,data[t],'asset');
 
                 $.each(data[t], function(idx,position) {
-                    var shares = apply_filter(filter, position['instrument']['id'],position['instrument']['name'],position['shares']);
+                    var shares = apply_filter(filter, position)['shares'];
                     if(shares>0){
                         var value = shares*position['price']*position['xccy'];
                         var chart_data = {'y': value, 'name': position['instrument']['name']};

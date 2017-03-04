@@ -12,42 +12,54 @@ function get_active_filter() {
    Extra logic is defined as an array of object {action, parameter}
    Extra action will be mapped to the following extra filter functions.
    All those functions share the same parameters:
-    - instrument name
-    - shares
+    - position
     - parameters read from extra filter definition
 
-   They all return shares , which might be adjusted.
+   They either  return a new position : {capital, shares}
 */
 
 //=== extra filter functions ======
-function adjust_shares(instrument_name, shares, parameters){
+function adjust_shares(position, parameters){
     /* parameters format : {instrument, adjustment}
     * */
-    if(parameters['instrument'] === instrument_name){
-        return shares+parameters['adjustment'];
+    const instrument= position['instrument']['name'];
+    const shares = position['shares'];
+    const capital = position['capital'];
+    if(parameters['instrument'] === instrument){
+        const cost_per_share = capital / shares;
+        const new_share =  shares+parameters['adjustment'];
+        return  {shares: new_share, capital: new_share*cost_per_share};
     }
-    else return shares;
+    else return null;
 }
 //==================================
 
-/* Input is filter(one in the_filters), instrument id and shares.
- *  If returned value <0 means this instrument is filtered by the filter
+/* Input is filter(one in the_filters) and position
+ * If returned value <0 means this instrument is filtered by the filter
  * */
-function apply_filter(filter, instrument_id,instrument_name, shares) {
+function apply_filter(filter, position) {
+    const instrument_id = position['instrument']['id'];
+    var shares = position['shares'];
+    var capital = position['capital'];
+
     //if instruments not specified (null) meaning no instrument is being filtered
     if ((filter['instruments'] != null) && !(instrument_id in filter['instruments'])) {
-        return -1;
+        return {shares: -1};
     }
 
     if (filter['extra']) {
         var extras = JSON.parse(filter['extra']);
         $.each(extras,function(idx,extra) {
             var func = window[extra['action']];
-            shares = func(instrument_name, shares, extra['parameters']);
+            var new_position = func(position, extra['parameters']);
+            if(new_position){
+                shares = new_position['shares'];
+                capital = new_position['capital'];
+            }
         });
-        return shares;
     }
-    else return shares;
+
+    return {shares: shares, capital: capital};
 }
 
 function on_filter_btn_clicked(btn) {
