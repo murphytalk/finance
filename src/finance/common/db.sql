@@ -125,11 +125,14 @@ CREATE TABLE IF NOT EXISTS instrument_filter(
 CREATE VIEW instrument_filters AS
   SELECT
     n.name  as filter_name,
+    n.extra as extra,
     i.name  as instrument_name,
     i.ROWID as instrument_id
-  FROM filter n, instrument_filter f, instrument i
-  WHERE n.ROWID = f.filter and f.instrument = i.ROWID;
-
+  FROM filter n
+    LEFT JOIN instrument_filter f
+      ON n.ROWID = f.filter
+    LEFT JOIN instrument i
+      ON f.instrument = i.ROWID;
 
 CREATE VIEW fund_performance AS
   SELECT

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
 import sqlite3
+from json import dumps
 from calendar import timegm
 from finance.common.utils import date_str2epoch, get_current_date_epoch, SECONDS_PER_DAY
 from finance.common.db import get_sql_scripts
@@ -484,8 +485,6 @@ class Dao:
             return [x['name'] for x in self.exec('SELECT name FROM filter')]
 
         def get_filters(self, name=None):
-            extras = {x['name']: x['extra'] for x in self.exec('SELECT * FROM filter')}
-
             filters = {}
 
             sql = 'SELECT * from instrument_filters '
@@ -500,7 +499,7 @@ class Dao:
                 if x['filter_name'] in filters:
                     filters[x['filter_name']]['instruments'].append(f)
                 else:
-                    filters[x['filter_name']] = {'extra': extras[x['filter_name']], 'instruments': [f]}
+                    filters[x['filter_name']] = {'extra': x['extra'], 'instruments': [f] if f['id'] else None}
             return filters
 
         @_remove_empty_value
@@ -628,6 +627,13 @@ class Dao:
                            [("All-Stocks", ), ("First-Two-Stocks", ), ("All-Funds", )])
             self.exec_many('INSERT INTO instrument_filter VALUES (?,?)',
                            [(1, x) for x in stocks] + [(2, x) for x in stocks[:2]] + [(3, x) for x in funds])
+
+            # one filter with extra logic : reduce the first stock's shares by 100
+            for x in self.exec('SELECT name from instrument WHERE ROWID = ?', (stocks[0],)):
+                extra = [{'action': 'adjust_shares', 'parameters': {'instrument': x['name'], 'adjustment': -100}}]
+                self.exec('INSERT INTO filter (name,extra) VALUES (?,?)', ('First-Stock-Reduce-100-Shares',
+                                                                           dumps(extra)))
+                break
 
             # randomly generate stock quotes - from DAY1 to today
             quotes = []

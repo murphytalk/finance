@@ -80,10 +80,10 @@
 
 {% block scripts %}
     {{ super() }}
-    <script src="/static/finance/scripts/chart.js"></script>
-    <script>
+    <script type="text/javascript" src="/static/finance/scripts/chart.js"></script>
+    <script type="text/javascript">
         var the_sum_data;
-        const asset_types = ['ETF', 'Stock', 'Funds'];
+        const instrument_types = ['ETF', 'Stock', 'Funds'];
         var the_filters = {};
 
         function to_chart_data_array(chart_data){
@@ -100,7 +100,7 @@
         function filter_by_allocation(chart_data, filter, positions, allocation_name){
             var allocation_collection = allocation_name + '_allocation';
             $.each(positions, function(idx,position){
-                var shares = apply_filter(filter, position['instrument']['id'],position['shares']);
+                var shares = apply_filter(filter, position['instrument']['id'],position['instrument']['name'],position['shares']);
                 if(shares>0){
                     $.each(position[allocation_collection],function(idx,allocation){
                         var ratio = allocation['ratio']/100.0;
@@ -121,7 +121,7 @@
             var sum = {};
             var rows = [];
             $.each(positions, function(idx,position){
-                var shares = apply_filter(filter, position['instrument']['id'], position['shares']);
+                var shares = apply_filter(filter, position['instrument']['id'],position['instrument']['name'], position['shares']);
                 if(shares>0) {
                     var value = shares*position['price'];
                     var base_ccy_value = value*position['xccy'];
@@ -159,13 +159,13 @@
             var funds = [];
             var overview_data = [];
 
-            $.each(asset_types, function(idx,t){
+            $.each(instrument_types, function(idx, t){
                 filter_by_allocation(country_allocation,filter,data[t],'country');
                 filter_by_allocation(region_allocation,filter,data[t],'region');
                 filter_by_allocation(asset_allocation,filter,data[t],'asset');
 
                 $.each(data[t], function(idx,position) {
-                    var shares = apply_filter(filter, position['instrument']['id'], position['shares']);
+                    var shares = apply_filter(filter, position['instrument']['id'],position['instrument']['name'],position['shares']);
                     if(shares>0){
                         var value = shares*position['price']*position['xccy'];
                         var chart_data = {'y': value, 'name': position['instrument']['name']};

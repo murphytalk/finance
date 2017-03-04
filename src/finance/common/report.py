@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
 from json import dumps, encoder
-from functools import reduce
 from datetime import date
 
 from finance.common.calculate import CalcPosition

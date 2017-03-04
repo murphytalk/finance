@@ -2,7 +2,7 @@
 Routes and views for the flask application.
 """
 
-from datetime import datetime, date
+from datetime import datetime
 from flask import render_template, g, current_app, Response
 from finance import finance_page
 from finance.common.report import *
