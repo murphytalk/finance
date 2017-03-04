@@ -12,11 +12,12 @@
                     <th rowspan="2" class="text-left`">Type</th>
                     <th rowspan="2" class="text-left">CCY</th>
                     <th colspan="2" class="text-right">Market Value</th>
-                    <th colspan="1" class="text-right">Profit</th>
+                    <th colspan="2" class="text-right">Profit</th>
                 </tr>
                 <tr>
                     <th class="text-right">CCY</th>
                     <th class="text-right">JPY</th>
+                    <th class="text-right">CCY</th>
                     <th class="text-right">JPY</th>
                 </tr>
                 </thead>
@@ -28,6 +29,7 @@
                     <th class="text-right">
                         <div id="value_jpy"></div>
                     </th>
+                    <th></th>
                     <th class="text-right">
                         <div id="profit_jpy"></div>
                     </th>
@@ -125,20 +127,22 @@
                 if(shares>0) {
                     var value = shares*position['price'];
                     var base_ccy_value = value*position['xccy'];
-                    var profit = value - position['capital'];
+                    var profit_ccy = value - position['capital'];
+                    var profit = profit_ccy * position['xccy'];
                     var ccy = position['ccy'];
                     if (ccy in sum) {
                         sum[ccy]['value'] += value;
                         sum[ccy]['base_ccy_value'] += base_ccy_value;
-                        sum[ccy]['profit'] += profit*position['xccy'];
+                        sum[ccy]['profit_ccy'] += profit_ccy;
+                        sum[ccy]['profit'] += profit;
                     }
                     else {
-                        sum[ccy] = {value: value, base_ccy_value: base_ccy_value, profit: profit};
+                        sum[ccy] = {value: value, base_ccy_value: base_ccy_value, profit_ccy: profit_ccy, profit: profit};
                     }
                 }
             });
             $.each(sum, function (n, v) {
-                rows.push([instrument_type, n, v['value'], v['base_ccy_value'], v['profit']]);
+                rows.push([instrument_type, n, v['value'], v['base_ccy_value'], v['profit_ccy'], v['profit']]);
             });
             return rows;
         }
@@ -194,6 +198,7 @@
                 table.destroy();
             }
             //populate overview table
+            const cols = [2, 3, 4, 5];
             var overview_table = populate_data(
                     '#overview',
                     function (d, callback, s) {
@@ -208,9 +213,9 @@
                         {
                             "render": function (data, type, row) {
                                 return data.toLocaleString();
-                            }, "targets": [2, 3, 4]
+                            }, "targets": cols
                         },
-                        {"className": "text-right", "targets": [2, 3, 4]},
+                        {"className": "text-right", "targets": cols},
                     ],
                     null,
                     {
@@ -223,11 +228,11 @@
             var total_profit = 0;
             $.each(overview_data, function(i,v){
                 total_value += v[3];
-                total_profit+= v[4];
+                total_profit+= v[5];
             });
 
             update_sum(overview_table, '¥', 3, total_value, '#value_jpy');
-            update_sum(overview_table, '¥', 4, total_profit, '#profit_jpy');
+            update_sum(overview_table, '¥', 5, total_profit, '#profit_jpy');
         }
 
         $(document).ready(function () {
