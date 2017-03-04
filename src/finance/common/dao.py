@@ -88,6 +88,10 @@ class Dao:
             parameter:
               instrument id
               instrument name
+              type id
+              type name
+              url
+              expense ration
             return:
               the new object
               :param create_new_obj_func:
@@ -406,8 +410,11 @@ class Dao:
             kwargs = {'instrument_name': stock_name}
             instrument_id = self._get_instrument_id(**kwargs)
             if instrument_id > 0:
-                parameters = [(instrument_id, q['Price'], date_str2epoch(q['Date'])) for q in quotes['quotes']]
-                self.exec_many('INSERT INTO quote (instrument, price, date) '
+                parameters = [(instrument_id, date_str2epoch(q['Date']), q['Price']) for q in quotes['quotes']]
+                # remove existing quotes if there is any
+                self.exec_many('DELETE FROM quote WHERE instrument = ? and date = ?', [p[:2] for p in parameters])
+                # then insert
+                self.exec_many('INSERT INTO quote (instrument, date, price) '
                                'VALUES (?,?,?)', parameters)
                 return True
             else:
@@ -515,6 +522,9 @@ class Dao:
             all_instruments = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,name FROM instrument')}
             params = [(filter_id, all_instruments[i['name']]) for i in filters['instruments']]
             self.exec_many('INSERT INTO filter VALUES (?,?)', params)
+
+        def get_all_positions(self):
+            pass
 
     class FakeDao(RealDao):
         """

@@ -47,6 +47,11 @@ country = api.model('Country', {
     'country': fields.String(description='Country')
 })
 
+region = api.model('Region', {
+    'id':   fields.Integer(description='Region ID'),
+    'region': fields.String(description='Region')
+})
+
 instrument_type = api.model('Instrument types', {
     'id':   fields.Integer(description='Instrument type ID'),
     'type': fields.String(description='Instrument type')
@@ -63,8 +68,17 @@ country_allocation = api.model('Country allocation', {
     'ratio': fields.Float(description='Allocation percentage', required=True)
 })
 
+region_allocation = api.model('Region allocation', {
+    'region': fields.String(description='Region', required=True),
+    'ratio': fields.Float(description='Allocation percentage', required=True)
+})
+
 instrument_country_allocation = api.model('Instrument country allocation', {
     'countries': fields.List(fields.Nested(country_allocation), description='Country allocations', required=True)
+})
+
+instrument_region_allocation = api.model('Instrument region allocation', {
+    'regions': fields.List(fields.Nested(region_allocation), description='Region allocations', required=True)
 })
 
 Instrument = api.model('Instrument', {
@@ -114,4 +128,23 @@ instrument_filter = api.model('Instrument filter', {
     'instruments': fields.List(fields.Nested(_simple_instrument), description='Instruments'),
 })
 
+instrument_position = api.model('Position of one instrument', {
+    'instrument': fields.Nested(_simple_instrument, description='Instrument'),
+    # 'broker': fields.String(description='The broker that keeps the position'),
+    'asset_allocation': fields.List(fields.Nested(asset_allocation), description='Asset allocations'),
+    'country_allocation': fields.List(fields.Nested(country_allocation), description='Country allocations'),
+    'region_allocation': fields.List(fields.Nested(region_allocation), description='Region allocations'),
+    'ccy': fields.String(description='Currency'),
+    'xccy': fields.Float(description='Currency exchange rate to JPY'),
+    'shares': fields.Float(description='Shares'),
+    'price': fields.Float(description='Current market price'),
+    'capital': fields.Float(description='Invested capital')
+})
+
+
+positions = api.model('Summary of all positions', {
+    'ETF': fields.List(fields.Nested(instrument_position), description='ETF positions'),
+    'Stock': fields.List(fields.Nested(instrument_position), description='Stock positions'),
+    'Funds': fields.List(fields.Nested(instrument_position), description='Mutual funds positions'),
+})
 
