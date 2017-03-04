@@ -82,109 +82,111 @@
     {{ super() }}
     <script src="/static/finance/scripts/chart.js"></script>
     <script>
-        var the_filters = {'filter-All': {}};
         var the_sum_data;
+        const asset_types = ['ETF', 'Stock', 'Funds'];
+        var the_filters = {};
 
-        function to_chart_data(data) {
-            return {'y': data['JPY'], 'name': data['symbol']};
-        }
-
-        function get_active_filter() {
-            return $('#filters').find('.btn-success').attr('id');
-        }
-
-        function instrument_is_not_filtered(instrument_id){
-            var filter = get_active_filter();
-            return instrument_id in the_filters[filter];
-        }
-
-        function allocation_to_chart_data(data){
-            var chart_data = {};
-            $.each(data, function(n,instruments){
-                $.each(instruments,function(instrument_id,value){
-                    if(instrument_is_not_filtered(instrument_id)) {
-                        if (!(n in chart_data)) {
-                            chart_data[n] = {'name': n, 'y': value};
-                        }
-                        else{
-                            chart_data[n]['y'] += value;
-                        }
-                    }
-                });
-            });
-
+        function to_chart_data_array(chart_data){
             var ret = [];
             $.each(chart_data,function(n,v){
                 ret.push(v);
             });
-
             return ret;
         }
 
-        function filter_btn_clicked() {
-            var filter_id = $(this).attr('id');
-            console.log(filter_id + ' clicked');
-            $("#filters").children().removeClass('btn-success');
-            $("#filters").children().addClass('btn-primary');
-            $(this).removeClass('btn-primary');
-            $(this).addClass('btn-success');
-
-            refresh(the_sum_data);
-        }
-
-        function add_instrument_to_all_filter(instruments) {
-            $.each(instruments, function (i, v) {
-                the_filters['filter-All'][v['id']] = v['symbol'];
+        /*
+        see /finance_demo/api/report/positions for position structure
+         */
+        function filter_by_allocation(chart_data, filter, positions, allocation_name){
+            var allocation_collection = allocation_name + '_allocation';
+            $.each(positions, function(idx,position){
+                var shares = apply_filter(filter, position['instrument']['id'],position['shares']);
+                if(shares>0){
+                    $.each(position[allocation_collection],function(idx,allocation){
+                        var ratio = allocation['ratio']/100.0;
+                        var value = shares*position['price']*ratio*position['xccy'];
+                        if(allocation[allocation_name] in chart_data){
+                            chart_data[allocation[allocation_name]]['y'] += value;
+                        }
+                        else{
+                            chart_data[allocation[allocation_name]] = {name:allocation[allocation_name],y:value};
+                        }
+                    });
+                }
             });
         }
 
-       function calc_overview(t, data) {
-            //see /sum.json, stock or ETF or fund
+        function calc_overview(filter, instrument_type, positions) {
+            //see /finance_demo/api/report/positions
             var sum = {};
             var rows = [];
-            $.each(data[t], function (i, v) {
-                if(instrument_is_not_filtered(v['id'])) {
-                    if (v['ccy'] in sum) {
-                        sum[v['ccy']]['value'] += v['value'];
-                        sum[v['ccy']]['JPY'] += v['JPY'];
-                        sum[v['ccy']]['profit'] += v['profit'];
+            $.each(positions, function(idx,position){
+                var shares = apply_filter(filter, position['instrument']['id'], position['shares']);
+                if(shares>0) {
+                    var value = shares*position['price'];
+                    var base_ccy_value = value*position['xccy'];
+                    var profit = value - position['capital'];
+                    var ccy = position['ccy'];
+                    if (ccy in sum) {
+                        sum[ccy]['value'] += value;
+                        sum[ccy]['base_ccy_value'] += base_ccy_value;
+                        sum[ccy]['profit'] += profit*position['xccy'];
                     }
                     else {
-                        sum[v['ccy']] = {'value': v['value'], 'JPY': v['JPY'], 'profit': v['profit']};
+                        sum[ccy] = {value: value, base_ccy_value: base_ccy_value, profit: profit};
                     }
                 }
             });
             $.each(sum, function (n, v) {
-                rows.push([t, n, v['value'], v['JPY'], v['profit']]);
+                rows.push([instrument_type, n, v['value'], v['base_ccy_value'], v['profit']]);
             });
             return rows;
         }
 
+        function filter_btn_clicked() {
+            on_filter_btn_clicked(this);
+            refresh(the_sum_data);
+        }
+
         function refresh(data) {
-            $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', allocation_to_chart_data(data['country']), false));
-            $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', allocation_to_chart_data(data['region']), false));
-            $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', allocation_to_chart_data(data['asset']), false));
+            var filter = the_filters[get_active_filter()];
+
+            var country_allocation = {};
+            var region_allocation = {};
+            var asset_allocation = {};
 
             var stocks = [];
-            $.each(data['Stock'], function (i, v) {
-                if(instrument_is_not_filtered(v['id'])){
-                    stocks.push(to_chart_data(v));
-                }
+            var funds = [];
+            var overview_data = [];
+
+            $.each(asset_types, function(idx,t){
+                filter_by_allocation(country_allocation,filter,data[t],'country');
+                filter_by_allocation(region_allocation,filter,data[t],'region');
+                filter_by_allocation(asset_allocation,filter,data[t],'asset');
+
+                $.each(data[t], function(idx,position) {
+                    var shares = apply_filter(filter, position['instrument']['id'], position['shares']);
+                    if(shares>0){
+                        var value = shares*position['price']*position['xccy'];
+                        var chart_data = {'y': value, 'name': position['instrument']['name']};
+                        if (t === "Funds") {
+                            funds.push(chart_data);
+                        }
+                        else {
+                            //Stock and ETF
+                            stocks.push(chart_data);
+                        }
+                    }
+                });
+
+                overview_data = overview_data.concat(calc_overview(filter,t, data[t]));
             });
-            $.each(data['ETF'], function (i, v) {
-                if(instrument_is_not_filtered(v['id'])){
-                    stocks.push(to_chart_data(v));
-                }
-            });
+
+            $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', to_chart_data_array(country_allocation), false));
+            $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', to_chart_data_array(region_allocation), false));
+            $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', to_chart_data_array(asset_allocation), false));
 
             $('#pieStock').highcharts(pieChartOptions(null, 'Market Value', stocks, false));
-
-            var funds = [];
-            $.each(data['Funds'], function (i, v) {
-                if(instrument_is_not_filtered(v['id'])) {
-                    funds.push(to_chart_data(v));
-                }
-            });
             $('#pieFund').highcharts(pieChartOptions(null, 'Market Value', funds, false));
 
             if ($.fn.dataTable.isDataTable('#overview')) {
@@ -192,8 +194,6 @@
                 table.destroy();
             }
             //populate overview table
-            var overview_data = calc_overview('Funds', data).concat(calc_overview('Stock', data),
-                    calc_overview('ETF', data));
             var overview_table = populate_data(
                     '#overview',
                     function (d, callback, s) {
@@ -231,7 +231,7 @@
         }
 
         $(document).ready(function () {
-            $.getJSON("{{ url_for('finance_page.sum_json')}}",
+            $.getJSON("{{ url_for('api.report_positions')}}",
                     function (data) {
                         the_sum_data = data;
 
@@ -258,38 +258,17 @@
                             chart.reflow();
                         });
 
-                        //the ALL filter
-                        add_instrument_to_all_filter(data['Stock']);
-                        add_instrument_to_all_filter(data['ETF']);
-                        add_instrument_to_all_filter(data['Funds']);
                         $("#filter-All").click(filter_btn_clicked);
+                        the_filters = populate_filters("{{ url_for('api.instrument_instrument_filters') }}",function(f){
+                            the_filters = f;
+                            refresh(data);
+                            //if any of the 2 show below is missing, the chart won't flow
+                            $('.nav-tabs').tab("show");
+                            $('#tab1 a[href="#asset"]').tab("show");
+                            $('#tab2 a[href="#stock"]').tab("show");
+                         });
 
-                        refresh(data);
-
-                        //if any of the 2 show below is missing, the chart won't flow
-                        $('.nav-tabs').tab("show");
-                        $('#tab1 a[href="#asset"]').tab("show");
-                        $('#tab2 a[href="#stock"]').tab("show");
-
-
-                        //get the other filters
-                        $.getJSON("{{ url_for('api.instrument_instrument_filters') }}", function (filters) {
-                            //Populate filter buttons
-                            $.each(filters, function (i, v) {
-                                var filter_id = 'filter-' + v['name'];
-                                $("#filters").append("<button type=\"button\" class=\"btn btn-primary\" id=\"" + filter_id + "\">" + v['name'] + "</button>");
-                                $('#' + filter_id).click(filter_btn_clicked);
-                                //change to {filter name => {instrument id => instrument name}}
-                                var instruments = {};
-                                $.each(v['instruments'], function (i2, v2) {
-                                    instruments[v2['id']] = v2['name'];
-                                });
-                                the_filters[filter_id] = instruments;
-                            });
-                            //console.log(JSON.stringify(the_filters,null,4));
-                            //console.log(get_active_filter());
-                        });
-                    });
+                  });
         });
     </script>
 {% endblock %}

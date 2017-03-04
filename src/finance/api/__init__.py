@@ -135,8 +135,8 @@ instrument_position = api.model('Position of one instrument', {
     'country_allocation': fields.List(fields.Nested(country_allocation), description='Country allocations'),
     'region_allocation': fields.List(fields.Nested(region_allocation), description='Region allocations'),
     'ccy': fields.String(description='Currency'),
-    'xccy': fields.String(description='Currency exchange rate to JPY'),
-    'shares': fields.Integer(description='Shares'),
+    'xccy': fields.Float(description='Currency exchange rate to JPY'),
+    'shares': fields.Float(description='Shares'),
     'price': fields.Float(description='Current market price'),
     'capital': fields.Float(description='Invested capital')
 })
