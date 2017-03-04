@@ -130,14 +130,14 @@ class InstrumentFilters(Resource):
 @api.doc(params={'name': 'Filter name'})
 class InstrumentFilter(Resource):
     @api.marshal_with(instrument_filter)
-    def get(self, filter_name):
+    def get(self, name):
         """
         Returns the instruments in the given filter
-        :param filter_name: filter name
+        :param name: filter name
         """
         def _gen(dao):
-            for name, f in dao.get_filters(filter_name).items():
-                return {'name': name, 'instruments': f['instruments'], 'extra': f['extra']}
+            for n, f in dao.get_filters(name).items():
+                return {'name': n, 'instruments': f['instruments'], 'extra': f['extra']}
 
         return run_func_against_dao(lambda dao: _gen(dao))
 

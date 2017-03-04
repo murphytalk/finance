@@ -505,22 +505,24 @@ class Dao:
         @_remove_empty_value
         def update_filter(self, name, filters):
             def _get_id():
-                for r in self.exec('SELECT ROWID FROM instrument_filter_name WHERE name=?', [name, ]):
+                for r in self.exec('SELECT ROWID FROM filter WHERE name=?', [name, ]):
                     return r['ROWID']
                 return None
 
+            extra = filters['extra'] if 'extra' in filters else None
+
             filter_id = _get_id()
             if filter_id is None:
-                self.exec('INSERT INTO instrument_filter_name VALUES (?,?)', (name, filters['extra']))
+                self.exec('INSERT INTO filter VALUES (?,?)', (name, extra))
                 filter_id = _get_id()
             else:
-                self.exec('UPDATE instrument_filter_name SET extra = ? WHERE ROWID = ?', (filters['extra'], filter_id))
+                self.exec('UPDATE filter SET extra = ? WHERE ROWID = ?', (extra, filter_id))
 
-            self.exec('DELETE FROM filter WHERE filter = ?', [filter_id, ])
+            self.exec('DELETE FROM instrument_filter WHERE filter = ?', (filter_id, ))
 
             all_instruments = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,name FROM instrument')}
             params = [(filter_id, all_instruments[i['name']]) for i in filters['instruments']]
-            self.exec_many('INSERT INTO filter VALUES (?,?)', params)
+            self.exec_many('INSERT INTO instrument_filter VALUES (?,?)', params)
 
         def get_all_positions(self):
             pass

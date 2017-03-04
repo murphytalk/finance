@@ -51,12 +51,14 @@ class Positions(Resource):
         def _get_all(dao):
             stocks = _get_stock_etf_positions(dao)
             # change to the same format as stock position
+            # Japan mutual funds have different ways to calculate amount(口),
+            # we simplify here by assigning total market value (scraped from broker's page) to price and keep share be 1
             funds = [{'instrument': p['instrument_id'],
                       'symbol': p['name'],
                       'ccy': 'JPY',
                       'xccy': 1,
-                      'shares': p['amount'],
-                      'price': p['price'],
+                      'shares': 1,
+                      'price': p['value'],
                       'liquidated': -p['capital']
                       } for p in FundReport(dao, date.today()).positions]
             return {'ETF': stocks[0],
