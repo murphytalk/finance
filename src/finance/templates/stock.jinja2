@@ -105,7 +105,7 @@
                                 return '<a href="#" onclick="showInstrumentDetail(' + row[14] + ');return false;">' + data + '</a>'
                                 }, "targets": 1
                             },
-                            { "render": function(data, type, row){return data.toLocaleString();} ,"targets": num_cols },
+                            { "render": function(data, type, row){return format_num(data);} ,"targets": num_cols },
                             { "className": "text-right", "targets": num_cols },
                             { "className": "text-center", "targets": txt_cols },
                         ],
