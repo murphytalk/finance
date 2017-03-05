@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
 import sqlite3
-from json import dumps
 from calendar import timegm
 from finance.common.utils import date_str2epoch, get_current_date_epoch, SECONDS_PER_DAY
 from finance.common.db import get_sql_scripts
@@ -524,8 +523,39 @@ class Dao:
             params = [(filter_id, all_instruments[i['name']]) for i in filters['instruments']]
             self.exec_many('INSERT INTO instrument_filter VALUES (?,?)', params)
 
-        def get_all_positions(self):
-            pass
+        def get_cash_balance(self):
+            for x in self.exec('SELECT * from cash_balance'):
+                if x['ccy'] != 'JPY':
+                    for r in self.exec('SELECT rate from xccy_hist2 WHERE [From] =? ORDER BY datestr DESC LIMIT 1 ',
+                                       (x['ccy'],)):
+                        rate = r['rate']
+                        break
+                else:
+                    rate = 1
+                yield x['ccy'], x['broker'], x['balance'], rate
+
+        def update_cash_balance(self, ccy, broker, balance):
+            ccy_id = None
+            broker_id = None
+            for x in self.exec('SELECT ROWID FROM currency WHERE name=?', (ccy,)):
+                ccy_id = x['ROWID']
+                break
+            for x in self.exec('SELECT ROWID FROM broker WHERE name=?', (broker,)):
+                broker_id = x['ROWID']
+                break
+            if ccy_id is None or broker_id is None:
+                return False
+            else:
+                cash_id = None
+                for x in self.exec('SELECT ROWID FROM cash WHERE ccy=? and broker=?', (ccy_id, broker_id)):
+                    cash_id = x['ROWID']
+                    break
+                if cash_id is None:
+                    sql = 'INSERT INTO cash (balance,ccy,broker) VALUES (?,?,?)'
+                else:
+                    sql = 'UPDATE cash SET balance = ? WHERE ccy=? and broker=?'
+                self.exec(sql, (balance['balance'], ccy_id, broker_id))
+                return True
 
     class FakeDao(RealDao):
         """
@@ -612,6 +642,13 @@ class Dao:
             # read back meta data
             instrument_type = self.get_instrument_types_mapper()
             currencies = self.get_currency_mapper()
+
+            # randomly generate cash positions
+            self.exec_many('INSERT INTO cash (ccy,broker,balance) VALUES (?,?,?)',
+                           ((currencies['USD'], 1, Dao.FakeDao.gen_price(10000, 20000)),
+                            (currencies['USD'], 2, Dao.FakeDao.gen_price(20000, 30000)),
+                            (currencies['CNY'], 1, Dao.FakeDao.gen_price(50000, 80000)),
+                            (currencies['JPY'], 1, Dao.FakeDao.gen_price(1000000, 2000000))))
 
             # randomly generate instruments
             self.gen_instruments("XYZ", currencies["USD"], (instrument_type["Stock"], instrument_type["ETF"]), 3,

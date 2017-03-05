@@ -188,6 +188,21 @@
                 overview_data = overview_data.concat(calc_overview(filter,t, data[t]));
             });
 
+            //Cash balance
+            var cash = {}
+            $.each(data['Cash'],function(idx,balance){
+                if(balance['ccy'] in cash){
+                    cash[balance['ccy']][0] += balance['balance']
+                    cash[balance['ccy']][1] += balance['balance']*balance['xccy']
+                }
+                else{
+                    cash[balance['ccy']] = [balance['balance'], balance['balance']*balance['xccy']]
+                }
+            });
+            $.each(cash,function(ccy,balance){
+                overview_data.push(['Cash',ccy,balance[0],balance[1],0,0]);
+            });
+
             $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', to_chart_data_array(country_allocation), false));
             $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', to_chart_data_array(region_allocation), false));
             $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', to_chart_data_array(asset_allocation), false));

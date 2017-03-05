@@ -121,7 +121,23 @@ CREATE TABLE IF NOT EXISTS instrument_filter(
   FOREIGN KEY (instrument) REFERENCES instrument(ROWID)
 );
 
+CREATE TABLE IF NOT EXISTS cash(
+  ccy INT NOT NULL,
+  broker INT NOT NULL,
+  balance REAL NOT NULL,
+  FOREIGN KEY (ccy) REFERENCES currency(ROWID),
+  FOREIGN KEY (broker) REFERENCES broker(ROWID)
+);
+
 -- Views
+CREATE VIEW cash_balance AS
+  SELECT
+    ccy.name AS ccy,
+    b.name AS broker,
+    c.balance
+  FROM currency ccy, broker b, cash c
+  WHERE c.ccy=ccy.ROWID AND c.broker=b.ROWID;
+
 CREATE VIEW instrument_filters AS
   SELECT
     n.name  as filter_name,
@@ -261,6 +277,7 @@ INSERT INTO instrument_type (type) VALUES ('ETF');
 INSERT INTO instrument_type (type) VALUES ('Stock');
 INSERT INTO instrument_type (type) VALUES ('Funds');
 INSERT INTO instrument_type (type) VALUES ('Bond');
+INSERT INTO instrument_type (type) VALUES ('Cash');
 
 -- country
 INSERT INTO country (name) VALUES ('US');

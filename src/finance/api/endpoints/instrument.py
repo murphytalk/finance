@@ -1,5 +1,5 @@
 from finance.api import api
-from finance.api import instrument_asset_allocation, instrument_country_allocation, instrument_region_allocation
+from finance.api import instrument_asset_allocation, instrument_country_allocation, instrument_region_allocation,cash
 from finance.api import Instrument, instrument_filter
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
@@ -151,4 +151,23 @@ class InstrumentFilter(Resource):
         """
         return None, run_func_against_dao(
             lambda dao: 201 if dao.update_filter(name, api.payload) else 500)
+
+
+@ns.route('/cash')
+class CashList(Resource):
+    @api.marshal_list_with(cash)
+    def get(self):
+        return run_func_against_dao(lambda dao: [{'ccy': x[0], 'broker': x[1], 'balance': x[2], 'xccy': x[3]}
+                                                 for x in dao.get_cash_balance()])
+
+
+@ns.route('/cash/<string:ccy>/<string:broker>')
+@api.doc(params={'ccy': 'Currency', 'broker': 'Broker'})
+class Cash(Resource):
+    @api.response(201, 'Cash balance successfully updated.')
+    @api.response(500, 'Cannot update cash balance.')
+    @api.expect(cash)
+    def post(self, ccy, broker):
+        return None, run_func_against_dao(
+            lambda dao: 201 if dao.update_cash_balance(ccy, broker, api.payload) else 500)
 

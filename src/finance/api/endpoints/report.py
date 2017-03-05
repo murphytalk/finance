@@ -63,6 +63,8 @@ class Positions(Resource):
                       } for p in FundReport(dao, date.today()).positions]
             return {'ETF': stocks[0],
                     'Stock': stocks[1],
-                    'Funds': _get_position(dao, funds)}
+                    'Funds': _get_position(dao, funds),
+                    'Cash': [{'ccy': x[0], 'broker': x[1], 'balance': x[2], 'xccy': x[3]}
+                             for x in dao.get_cash_balance()]}
 
         return run_func_against_dao(lambda dao: _get_all(dao))

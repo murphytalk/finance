@@ -141,10 +141,17 @@ instrument_position = api.model('Position of one instrument', {
     'capital': fields.Float(description='Invested capital')
 })
 
+cash = api.model('Cash balance', {
+    'ccy': fields.String(description='Currency', readonly=True),
+    'broker': fields.String(description='The broker that we keeps the position with', readonly=True),
+    'balance': fields.Float(description='Cash balance'),
+    'xccy': fields.Float(description='To JPY exchange rate', readonly=True)
+})
 
 positions = api.model('Summary of all positions', {
     'ETF': fields.List(fields.Nested(instrument_position), description='ETF positions'),
     'Stock': fields.List(fields.Nested(instrument_position), description='Stock positions'),
     'Funds': fields.List(fields.Nested(instrument_position), description='Mutual funds positions'),
+    'Cash': fields.List(fields.Nested(cash), description='Cash balance')
 })
 
