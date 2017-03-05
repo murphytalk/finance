@@ -229,7 +229,10 @@
                     [
                         {
                             "render": function (data, type, row) {
-                                return data.toLocaleString();
+                                if(data===0){
+                                    return ""
+                                }
+                                else return data.toLocaleString();
                             }, "targets": cols
                         },
                         {"className": "text-right", "targets": cols},
