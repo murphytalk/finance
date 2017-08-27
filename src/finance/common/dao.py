@@ -162,10 +162,8 @@ class Dao:
             return a generator which generates a stream of (broker,name,price,amount,capital,value,profit,date in epoch)
             """
             sql = ('SELECT broker,name,instrument_id,url,expense_ratio,amount,price,value,profit,capital,date '
-                   'FROM fund_performance WHERE '
-                   'date = (SELECT max(date) FROM fund_performance WHERE date<= :date)')
-            epoch = int(timegm(the_date.timetuple()))
-            for r in self.exec(sql, {'date': epoch}):
+                   'FROM fund_performance2')
+            for r in self.exec(sql):
                 yield r
 
         def _get_instrument_id(self, **kwargs):

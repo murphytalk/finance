@@ -2,8 +2,8 @@
 from finance import app
 from flask_script import Manager
 
-
 manager = Manager(app)
+
 
 @manager.command
 def list_routes():
@@ -23,6 +23,7 @@ def list_routes():
 
     for line in sorted(output):
         print(line)
+
 
 if __name__ == "__main__":
     manager.run()
