@@ -56,8 +56,8 @@ def stock():
         head_title=get_head_title(),
         title='Stock & ETF',
         year=datetime.now().year,
-        instrument_id_idx=14,
-        url_idx=15
+        instrument_id_idx=16,
+        url_idx=17
     )
 
 
