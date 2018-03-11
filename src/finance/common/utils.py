@@ -124,4 +124,4 @@ def cmdline_args(argv, db_adapter_clz=None):
     else:
         result['dbfile'] = None
 
-    return (result, others)
+    return result, others

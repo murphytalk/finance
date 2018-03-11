@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+from collections import deque
+from functools import reduce
 from json import dumps
+
 from finance.common.utils import epoch2date
 
 
@@ -12,22 +15,63 @@ class Model:
 
 
 class Position(Model):
+    class Unclosed:
+        # data class will be introduced in 3.7
+        def __init__(self, price, shares, fee):
+            self.price = price
+            self.shares = shares
+            self.fee = fee
+
+        def split(self, factor):
+            self.price = self.price / factor
+            self.shares = self.shares * factor
+
+        def __str__(self):
+            return "Unclosed position, price=%f, shares=%d, fee=%f" % (self.price, self.shares, self.fee)
+
     def __init__(self, instrument, name):
         self.instrument = instrument
         self.name = name
-        self.shares = 0
+        self.shares = 0  # current shares
         self.liquidated = 0  # negative value => money(original value) still in market
         self.fee = 0
+        self.unclosed_positions = deque()
 
     def transaction(self, trans_type, price, shares, fee):
         if trans_type == 'SPLIT':
             # 1 to N share split, here price is the N
             self.shares = self.shares * price
+
+            # apply to all unclosed positions
+            for c in self.unclosed_positions:
+                c.split(price)
         else:
             s = shares if trans_type == 'BUY' else -1 * shares
             self.shares = self.shares + s
             self.liquidated -= price * s
             self.fee = self.fee + fee
+
+            if s > 0:
+                # buy
+                self.unclosed_positions.append(Position.Unclosed(price, shares, fee))
+            else:
+                # sell
+                while shares > 0:
+                    if len(self.unclosed_positions) == 0:
+                        raise RuntimeError("Not enough unclosed position")
+                    if self.unclosed_positions[0].shares > shares:
+                        self.unclosed_positions[0].shares -= shares
+                    elif self.unclosed_positions[0].shares == shares:
+                        self.unclosed_positions.popleft()
+                    else:
+                        shares -= self.unclosed_positions[0].shares
+                        self.unclosed_positions.popleft()
+
+    def VWAP(self):
+        calc_vwap = reduce(
+            lambda x, y: Position.Unclosed(x.price * x.share + y.price * y.share, x.share + y.share, x.fee + y.fee),
+            self.unclosed_positions, Position.Unclosed(0, 0, 0))
+        return (calc_vwap.price + calc_vwap.fee) / calc_vwap.shares
 
     def __str__(self):
         return "Name=%4s,Shares=%4d,Fee=%6.2f,Liquidated=%10.2f" % (self.name, self.shares, self.fee, self.liquidated)
