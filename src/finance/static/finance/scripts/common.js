@@ -52,11 +52,7 @@ function build_header(table_selector,headers) {
 
  function populate_data(table_selector,url,col_order,row_per_page,lengthMenu,colDefs,footer,extra_options) {
     extra_options = (typeof extra_options !== 'undefined') ?  extra_options: null;
-    var lenMenu;
-    if(lengthMenu==null){
-        lenMenu = [10, 15, 50, 100];
-    }
-    else lenMenu = lengthMenu;
+    var lenMenu = lengthMenu==null ? [10, 15, 50, 100] : lengthMenu;
 
 //    var pageLen =  getDataTablePageLength(table_selector);
 //    if(pageLen == null){
@@ -72,7 +68,7 @@ function build_header(table_selector,headers) {
     if(col_order != null){
         parameter['order'] = col_order;
     }
-    if(lengthMenu != null ){
+    if(lenMenu != null ){
         parameter['lengthMenu'] = lenMenu;
     }
 
@@ -89,7 +85,6 @@ function build_header(table_selector,headers) {
            parameter[n] = v;
         });
     }
-
     return $(table_selector).DataTable(parameter);
 /*
     $(table_selector).on( 'length.dt', function ( e, settings, len ) {
