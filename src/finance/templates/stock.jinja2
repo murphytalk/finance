@@ -117,7 +117,22 @@
                             { "className": "text-right", "targets": num_cols },
                             { "className": "text-center", "targets": txt_cols },
                         ],
-                        null
+                        null,
+                        {'rowCallback': function(row, data, index){
+                                if(data[5] == 0){
+                                    //closed position
+                                    for (i = 5;i<11;i++){
+                                        $(row).find('td:eq(' +i +')').html('');
+                                    }
+                                }
+                                else if(data[2] != data[5]){
+                                    var cell_vwap = $(row).find('td:eq(5)');
+                                    var cell_vwap_jpy = $(row).find('td:eq(6)');
+                                    var color = data[2] < data[5] ? 'red' : 'green';
+                                    cell_vwap.css('color', color);
+                                    cell_vwap_jpy.css('color', color);
+                                }
+                           }}
                 );
 
                 install_detail_event_callback();
