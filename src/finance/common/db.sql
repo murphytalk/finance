@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS country (
   name TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS region(
+CREATE TABLE IF NOT EXISTS region (
   name TEXT NOT NULL
 );
 
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS asset_allocation (
   asset      INT NOT NULL,
   ratio      INT NOT NULL,
   FOREIGN KEY (instrument) REFERENCES instrument (rowid),
-  FOREIGN KEY (asset) REFERENCES asset(rowid)
+  FOREIGN KEY (asset) REFERENCES asset (rowid)
 );
 
 CREATE TABLE IF NOT EXISTS quote (
@@ -79,8 +79,8 @@ CREATE TABLE IF NOT EXISTS country_allocation (
 );
 
 CREATE TABLE IF NOT EXISTS regions (
-  region      INT  NOT NULL,
-  country     INT  NOT NULL,
+  region  INT NOT NULL,
+  country INT NOT NULL,
   FOREIGN KEY (region) REFERENCES region (rowid),
   FOREIGN KEY (country) REFERENCES country (rowid)
 );
@@ -109,41 +109,41 @@ CREATE TABLE IF NOT EXISTS xccy (
   REFERENCES currency (rowid)
 );
 
-CREATE TABLE IF NOT EXISTS filter(
+CREATE TABLE IF NOT EXISTS filter (
   name  TEXT NOT NULL,
   extra TEXT
 );
 
-CREATE TABLE IF NOT EXISTS instrument_filter(
-  filter      INT  NOT NULL,
-  instrument  INT  NOT NULL,
-  FOREIGN KEY (filter) REFERENCES filter(ROWID),
-  FOREIGN KEY (instrument) REFERENCES instrument(ROWID)
+CREATE TABLE IF NOT EXISTS instrument_filter (
+  filter     INT NOT NULL,
+  instrument INT NOT NULL,
+  FOREIGN KEY (filter) REFERENCES filter (ROWID),
+  FOREIGN KEY (instrument) REFERENCES instrument (ROWID)
 );
 
-CREATE TABLE IF NOT EXISTS cash(
-  ccy INT NOT NULL,
-  broker INT NOT NULL,
+CREATE TABLE IF NOT EXISTS cash (
+  ccy     INT  NOT NULL,
+  broker  INT  NOT NULL,
   balance REAL NOT NULL,
-  FOREIGN KEY (ccy) REFERENCES currency(ROWID),
-  FOREIGN KEY (broker) REFERENCES broker(ROWID)
+  FOREIGN KEY (ccy) REFERENCES currency (ROWID),
+  FOREIGN KEY (broker) REFERENCES broker (ROWID)
 );
 
 -- Views
 CREATE VIEW cash_balance AS
   SELECT
     ccy.name AS ccy,
-    b.name AS broker,
+    b.name   AS broker,
     c.balance
   FROM currency ccy, broker b, cash c
-  WHERE c.ccy=ccy.ROWID AND c.broker=b.ROWID;
+  WHERE c.ccy = ccy.ROWID AND c.broker = b.ROWID;
 
 CREATE VIEW instrument_filters AS
   SELECT
-    n.name  as filter_name,
-    n.extra as extra,
-    i.name  as instrument_name,
-    i.ROWID as instrument_id
+    n.name  AS filter_name,
+    n.extra AS extra,
+    i.name  AS instrument_name,
+    i.ROWID AS instrument_id
   FROM filter n
     LEFT JOIN instrument_filter f
       ON n.ROWID = f.filter
@@ -151,30 +151,49 @@ CREATE VIEW instrument_filters AS
       ON f.instrument = i.ROWID;
 
 CREATE VIEW fund_performance AS
-  SELECT
-    b.name                    AS broker,
-    i.name,
-    i.rowid                   AS instrument_id,
-    i.url,
-    i.expense_ratio,
-    t.type,
-    c.name                       currency,
-    p.amount,
-    p.price,
-    p.value,
-    p.profit,
-    p.capital,
-    date(p.date, 'unixepoch') AS datestr,
-    p.date
-  FROM performance p,
-    instrument i,
-    broker b,
-    instrument_type t,
-    currency c
-  WHERE p.instrument = i.rowid AND
-        i.broker = b.rowid AND
-        i.type = t.rowid AND
-        i.currency = c.rowid;
+SELECT
+  p.rowid                   AS rowid,
+  b.name                    AS broker,
+  i.name,
+  i.rowid                   AS instrument_id,
+  i.url,
+  i.expense_ratio,
+  t.type,
+  c.name                       currency,
+  p.amount,
+  p.price,
+  p.value,
+  p.profit,
+  p.capital,
+  date(p.date, 'unixepoch') AS datestr,
+  p.date
+FROM performance p, instrument i, broker b, instrument_type t, currency c
+WHERE p.instrument = i.rowid AND i.broker = b.rowid AND i.type = t.rowid AND i.currency = c.rowid;
+
+
+CREATE VIEW fund_performance2 AS
+  SELECT v1.*
+  FROM fund_performance v1
+    JOIN
+    (
+      SELECT
+        broker,
+        date
+      FROM fund_performance
+        JOIN (
+               SELECT max(rowid) AS rowid
+               FROM fund_performance
+                 JOIN (
+                        SELECT
+                          broker,
+                          max(date) AS date
+                        FROM fund_performance
+                        GROUP BY broker
+                      ) t1 USING (broker, date)
+               GROUP BY broker
+             ) t2 USING (rowid)
+      ORDER BY broker
+    ) v2 USING (broker, date);
 
 
 CREATE VIEW stock_quote AS
@@ -301,7 +320,7 @@ INSERT INTO country (name) VALUES ('Other');
 INSERT INTO country (name) VALUES ('Middle East');
 INSERT INTO country (name) VALUES ('S.America');
 
- -- region
+-- region
 INSERT INTO region (name) VALUES ('N.America');
 INSERT INTO region (name) VALUES ('S.America');
 INSERT INTO region (name) VALUES ('Asia');
@@ -313,48 +332,92 @@ INSERT INTO region (name) VALUES ('Other');
 
 -- country => region
 INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID FROM region  WHERE name = 'N.America'),
-  (SELECT ROWID FROM country WHERE name = 'US')
+  (SELECT ROWID
+   FROM region
+   WHERE name = 'N.America'),
+  (SELECT ROWID
+   FROM country
+   WHERE name = 'US')
 );
 INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID FROM region  WHERE name = 'N.America'),
-  (SELECT ROWID FROM country WHERE name = 'Canada')
+  (SELECT ROWID
+   FROM region
+   WHERE name = 'N.America'),
+  (SELECT ROWID
+   FROM country
+   WHERE name = 'Canada')
 );
 INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID FROM region  WHERE name = 'Asia'),
-  (SELECT ROWID FROM country WHERE name = 'China')
+  (SELECT ROWID
+   FROM region
+   WHERE name = 'Asia'),
+  (SELECT ROWID
+   FROM country
+   WHERE name = 'China')
 );
 INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID FROM region  WHERE name = 'Asia'),
-  (SELECT ROWID FROM country WHERE name = 'Japan')
+  (SELECT ROWID
+   FROM region
+   WHERE name = 'Asia'),
+  (SELECT ROWID
+   FROM country
+   WHERE name = 'Japan')
 );
 INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID FROM region  WHERE name = 'Asia'),
-  (SELECT ROWID FROM country WHERE name = 'India')
+  (SELECT ROWID
+   FROM region
+   WHERE name = 'Asia'),
+  (SELECT ROWID
+   FROM country
+   WHERE name = 'India')
 );
 INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID FROM region  WHERE name = 'Asia'),
-  (SELECT ROWID FROM country WHERE name = 'S.Korea')
+  (SELECT ROWID
+   FROM region
+   WHERE name = 'Asia'),
+  (SELECT ROWID
+   FROM country
+   WHERE name = 'S.Korea')
 );
 INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID FROM region  WHERE name = 'Asia'),
-  (SELECT ROWID FROM country WHERE name = 'Singapore')
+  (SELECT ROWID
+   FROM region
+   WHERE name = 'Asia'),
+  (SELECT ROWID
+   FROM country
+   WHERE name = 'Singapore')
 );
 INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID FROM region  WHERE name = 'Asia'),
-  (SELECT ROWID FROM country WHERE name = 'Asia Other')
+  (SELECT ROWID
+   FROM region
+   WHERE name = 'Asia'),
+  (SELECT ROWID
+   FROM country
+   WHERE name = 'Asia Other')
 );
 INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID FROM region  WHERE name = 'W.Europe'),
-  (SELECT ROWID FROM country WHERE name = 'UK')
+  (SELECT ROWID
+   FROM region
+   WHERE name = 'W.Europe'),
+  (SELECT ROWID
+   FROM country
+   WHERE name = 'UK')
 );
 INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID FROM region  WHERE name = 'W.Europe'),
-  (SELECT ROWID FROM country WHERE name = 'France')
+  (SELECT ROWID
+   FROM region
+   WHERE name = 'W.Europe'),
+  (SELECT ROWID
+   FROM country
+   WHERE name = 'France')
 );
 INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID FROM region  WHERE name = 'W.Europe'),
-  (SELECT ROWID FROM country WHERE name = 'Germany')
+  (SELECT ROWID
+   FROM region
+   WHERE name = 'W.Europe'),
+  (SELECT ROWID
+   FROM country
+   WHERE name = 'Germany')
 );
 
 COMMIT TRANSACTION;
