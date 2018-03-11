@@ -71,6 +71,7 @@
                         var value = d["value"];
                         var liquidated = d["liquidated"];
                         var vwap = d["vwap"];
+                        var market_profit = d["market_profit"];
                         sum["value"] += value[value["ccy"]];
                         sum["value_jpy"] += value["JPY"];
                         sum["liquidated"] += liquidated[liquidated["ccy"]];
@@ -84,8 +85,8 @@
                                 vwap["JPY"],
                                 value[value["ccy"]],
                                 value["JPY"],
-                                0,
-                                0,
+                                market_profit[market_profit["ccy"]],
+                                market_profit["JPY"],
                                 liquidated[liquidated["ccy"]],
                                 liquidated["JPY"],
                                 value[value["ccy"]]+liquidated[liquidated["ccy"]], //profit
@@ -128,9 +129,13 @@
                                 else if(data[2] != data[5]){
                                     var cell_vwap = $(row).find('td:eq(5)');
                                     var cell_vwap_jpy = $(row).find('td:eq(6)');
+                                    var cell_market_profit = $(row).find('td:eq(9)');
+                                    var cell_market_profit_jpy= $(row).find('td:eq(10)');
                                     var color = data[2] < data[5] ? 'red' : 'green';
                                     cell_vwap.css('color', color);
                                     cell_vwap_jpy.css('color', color);
+                                    cell_market_profit.css('color', color);
+                                    cell_market_profit_jpy.css('color', color);
                                 }
                            }}
                 );

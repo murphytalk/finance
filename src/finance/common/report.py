@@ -46,6 +46,8 @@ class StockReport(Report):
     def stock_positions(self, positions=None):
         def calc_stock(instrument, position):
             v = position.shares * self.q[instrument].price
+            vwap = position.VWAP()
+            market_profit = v - vwap * position.shares
             rpt = {
                 'instrument': instrument, 'url': self.i[instrument].url, 'symbol': position.name,
                 'shares': position.shares, 'price': self.q[instrument].price,
@@ -53,8 +55,10 @@ class StockReport(Report):
                                                   self.i[instrument].xccy_date),
                 'liquidated': self.gen_price_with_xccy(position.liquidated, self.i[instrument].currency,
                                                        self.i[instrument].xccy_rate, self.i[instrument].xccy_date),
-                'vwap': self.gen_price_with_xccy(position.VWAP(), self.i[instrument].currency,
-                                                       self.i[instrument].xccy_rate, self.i[instrument].xccy_date)
+                'vwap': self.gen_price_with_xccy(vwap, self.i[instrument].currency,
+                                                       self.i[instrument].xccy_rate, self.i[instrument].xccy_date),
+                'market_profit': self.gen_price_with_xccy(market_profit, self.i[instrument].currency,
+                                                   self.i[instrument].xccy_rate, self.i[instrument].xccy_date)
             }
 
             t = self.i[instrument].instrument_type.name
