@@ -12,7 +12,7 @@
                 <th rowspan="2" class="text-right">Price</th>
                 <th rowspan="2" class="text-right">Shares</th>
                 <th rowspan="2" class="text-right">CCY</th>
-                <th colspan="2" class="text-right">Average Cost</th>
+                <th colspan="2" class="text-right">VWAP</th>
                 <th colspan="2" class="text-right">Market Value</th>
                 <th colspan="2" class="text-right" data-toggle="tooltip" data-placement="right" title="Profit of stocks still in the market">Market Profit(?)</th>
                 <th colspan="2" class="text-right" data-toggle="tooltip" data-placement="right" title="Gross liquidation value. Negative value indicates still in the market">Liquidated(?)</th>
@@ -70,6 +70,7 @@
                         var row = [instrument_type];
                         var value = d["value"];
                         var liquidated = d["liquidated"];
+                        var vwap = d["vwap"];
                         sum["value"] += value[value["ccy"]];
                         sum["value_jpy"] += value["JPY"];
                         sum["liquidated"] += liquidated[liquidated["ccy"]];
@@ -79,8 +80,8 @@
                                 d["price"],
                                 d["shares"],
                                 value["ccy"],
-                                0,//avg value
-                                0,
+                                vwap[vwap["ccy"]],
+                                vwap["JPY"],
                                 value[value["ccy"]],
                                 value["JPY"],
                                 0,

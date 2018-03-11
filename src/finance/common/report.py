@@ -52,7 +52,10 @@ class StockReport(Report):
                 'value': self.gen_price_with_xccy(v, self.i[instrument].currency, self.i[instrument].xccy_rate,
                                                   self.i[instrument].xccy_date),
                 'liquidated': self.gen_price_with_xccy(position.liquidated, self.i[instrument].currency,
-                                                       self.i[instrument].xccy_rate, self.i[instrument].xccy_date)}
+                                                       self.i[instrument].xccy_rate, self.i[instrument].xccy_date),
+                'vwap': self.gen_price_with_xccy(position.VWAP(), self.i[instrument].currency,
+                                                       self.i[instrument].xccy_rate, self.i[instrument].xccy_date)
+            }
 
             t = self.i[instrument].instrument_type.name
             if t in positions:

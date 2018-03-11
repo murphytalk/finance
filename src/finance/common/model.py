@@ -73,7 +73,7 @@ class Position(Model):
         calc_vwap = reduce(
             lambda x, y: Position.Unclosed(x.price + y.price * y.shares, x.shares + y.shares, x.fee + y.fee),
             self.unclosed_positions, Position.Unclosed(0, 0, 0))
-        return (calc_vwap.price + calc_vwap.fee) / calc_vwap.shares
+        return 0 if calc_vwap.shares == 0 else (calc_vwap.price + calc_vwap.fee) / calc_vwap.shares
 
     def __str__(self):
         return "Name=%4s,Shares=%4d,Fee=%6.2f,Liquidated=%10.2f" % (self.name, self.shares, self.fee, self.liquidated)
