@@ -61,15 +61,17 @@ class Position(Model):
                         raise RuntimeError("Not enough unclosed position")
                     if self.unclosed_positions[0].shares > shares:
                         self.unclosed_positions[0].shares -= shares
+                        shares = 0
                     elif self.unclosed_positions[0].shares == shares:
                         self.unclosed_positions.popleft()
+                        shares = 0
                     else:
                         shares -= self.unclosed_positions[0].shares
                         self.unclosed_positions.popleft()
 
     def VWAP(self):
         calc_vwap = reduce(
-            lambda x, y: Position.Unclosed(x.price * x.share + y.price * y.share, x.share + y.share, x.fee + y.fee),
+            lambda x, y: Position.Unclosed(x.price + y.price * y.shares, x.shares + y.shares, x.fee + y.fee),
             self.unclosed_positions, Position.Unclosed(0, 0, 0))
         return (calc_vwap.price + calc_vwap.fee) / calc_vwap.shares
 
