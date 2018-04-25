@@ -60,8 +60,43 @@
 {{ super() }}
 <script>
     var table;
-    var sum = {"value":0,"value_jpy":0,"liquidated":0,"liquidated_jpy":0};
+    var sum = {/*"value": {"USD":0,...}*/"value_jpy":0,/*"liquidated":{"USD":0,...}*/"liquidated_jpy":0};
+
+    function update_sum_by_ccy(type, ccy, value){
+        if( type in sum ) {
+        }
+        else{
+            sum[type] = {}
+        }
+        if(ccy in sum[type]){
+            sum[type][ccy]+=value;
+        }
+        else{
+            sum[type][ccy]=value;
+        }
+    }
+
+    function sum_by_ccy(table, col_idx, type, footer_id){
+        var value = table.column(col_idx,{search:'applied'}).data();
+        var currency = table.column(4,{search:'applied'}).data();
+        var total_html = '';
+
+        $.each(sum[type], function(ccy, v){
+            total_html += format_num(v) + ' ' +ccy + '<br>';
+        });
+
+        if(value.length == 0){
+            $(footer_id).html(total_html);
+        }
+        else{
+            var by_ccy_html= '';
+            
+            $(footer_id).html(total_html + '<br><div class="filtered_sum">'+by_ccy_html+'</div>');
+        }
+    }
+
     $(document).ready(function () {
+        $("div.toolbar").html('<label class="checkbox-inline"><input type="checkbox" value="" id="showClosedPos">Show Closed Positions</label>');
         $.getJSON("{{ url_for('finance_page.stock_json')}}",
             function (data) {
                 var rows = [];
@@ -72,9 +107,9 @@
                         var liquidated = d["liquidated"];
                         var vwap = d["vwap"];
                         var market_profit = d["market_profit"];
-                        sum["value"] += value[value["ccy"]];
+                        update_sum_by_ccy("value", value["ccy"], value[value["ccy"]]);
                         sum["value_jpy"] += value["JPY"];
-                        sum["liquidated"] += liquidated[liquidated["ccy"]];
+                        update_sum_by_ccy("liquidated", liquidated["ccy"], liquidated[liquidated["ccy"]]);
                         sum["liquidated_jpy"] += liquidated["JPY"];
                         row.push(
                                 d["symbol"],
@@ -98,6 +133,7 @@
                         rows.push(row);
                     });
                 });
+                console.log(sum);
                 const num_cols = [2,3,5,6,7,8,9,10,11,12,13,14];
                 const txt_cols = [0,1,4];
                 table = populate_data(
@@ -144,7 +180,7 @@
 
                 $('#xccy_date').html(rows[0][15]);
 
-                update_sum(table,'$',7 ,sum["value"],'#value');
+                sum_by_ccy(table, 7 ,"value",'#value');
                 update_sum(table,'¥',8 ,sum["value_jpy"],'#value-jpy');
                 update_sum(table,'$',11 ,sum["liquidated"],'#liq');
                 update_sum(table,'¥',12 ,sum["liquidated_jpy"],'#liq-jpy');

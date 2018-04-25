@@ -7,8 +7,6 @@ parameter:
  -i        do not update db file
 
 """
-import sys
-
 from finance.common.const import STOCK_START_DATE
 from finance.common.model import Position
 from finance.common.utils import cmdline_args
