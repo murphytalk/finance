@@ -1,4 +1,5 @@
-﻿import sys
+﻿import random
+import sys
 import time
 from datetime import datetime, date
 from os import environ
@@ -10,6 +11,26 @@ except ImportError:
     from const import STOCK_START_DATE
 
 SECONDS_PER_DAY = 3600 * 24
+
+
+def get_random_dict_value(dict_data, predicate=None):
+    while True:
+        i = dict_data[random.sample(dict_data.keys(), 1)[0]]
+        if predicate is not None:
+            if predicate(i):
+                return i
+        else:
+            return i
+
+
+def get_random_dict_key(dict_data, predicate=None):
+    while True:
+        i = random.sample(dict_data.keys(), 1)[0]
+        if predicate is not None:
+            if predicate(i):
+                return i
+        else:
+            return i
 
 
 def add_lib_to_path(zip):

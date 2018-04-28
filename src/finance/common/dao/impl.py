@@ -170,6 +170,12 @@ class ImplDao(Raw):
             for r in self.exec(sql, (int(instrument_id),)):
                 yield (r['name'], r['ratio'])
 
+    def get_country_region_lookup(self):
+        # get country id => region def
+        sql = ('SELECT r.name region, rs.country FROM regions rs '
+                'JOIN region r ON rs.region = r.ROWID JOIN country c ON rs.country = c.ROWID')
+        return {r['country']: r['region'] for r in self.exec(sql)}
+
     def get_region_allocation(self, **kwargs):
         """
         get region allocation of the given instrument
@@ -178,14 +184,10 @@ class ImplDao(Raw):
         """
         instrument_id = self._get_instrument_id(**kwargs)
         if instrument_id:
-            # get country id => region def
-            sql = ('SELECT r.name region, rs.country FROM regions rs '
-                   'JOIN region r ON rs.region = r.ROWID JOIN country c ON rs.country = c.ROWID')
-            region_lookup = {r['country']: r['region'] for r in self.exec(sql)}
+            region_lookup = self.get_country_region_lookup()
 
             sql = ('SELECT t.ROWID as cid, a.ratio FROM country_allocation a, country t '
                    'WHERE a.instrument = ? AND a.country=t.rowid')
-
             regions = {}
             for r in self.exec(sql, (int(instrument_id),)):
                 country = r['cid']
