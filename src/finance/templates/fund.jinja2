@@ -48,8 +48,8 @@
 {{ super() }}
 
 <script>
-    var table;
     var sum = {value: 0, capital: 0, profit: 0, expense: 0};
+    var table; //needed by instrument detals callback
 
     $(document).ready(function () {
         $.getJSON("{{ url_for('api.report_fund_performance')}}",
