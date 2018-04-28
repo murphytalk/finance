@@ -1,7 +1,7 @@
 from calendar import timegm
 from finance.common.utils import date_str2epoch, get_current_date_epoch, SECONDS_PER_DAY
 from finance.common.model import *
-from dao.db import Raw
+from finance.common.dao.db import Raw
 
 import logging.config
 
@@ -75,7 +75,7 @@ class ImplDao(Raw):
                'instrument i,instrument_type it WHERE i.type = it.rowid')
         if instrument_filter is not None:
             sql = sql + ' and ' + instrument_filter
-        return {x['rowid']: c(x['rowid'], x['name'], x['type_id'], x['type'], x['url'], x['expense_ratio'])
+        return {x['id']: c(x['id'], x['name'], x['type_id'], x['type'], x['url'], x['expense_ratio'])
                 for x in self.exec(sql)}
 
     def get_stock_latest_quotes(self, quote_date):
@@ -85,7 +85,7 @@ class ImplDao(Raw):
         :return: dict {instrument id : Quote}
         """
         quotes = {}
-        for i, n in [(r['ROWID'], r['name']) for r in self.exec('SELECT ROWID, name from instrument')]:
+        for i, n in [(r['id'], r['name']) for r in self.exec('SELECT id, name from instrument')]:
             for r in self.exec('SELECT  price, date FROM quote WHERE instrument = ? ORDER BY date DESC LIMIT 1',
                                (i,)):
                 quotes[i] = Quote(i, n, r['price'], r['date'])

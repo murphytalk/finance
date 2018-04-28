@@ -36,6 +36,7 @@ app.config.from_object(__name__)
 app.debug = DEBUG
 
 finance_page = Blueprint('finance_page', __name__, url_prefix=URL_ROOT)
+from finance import views
 # need to register after all URLS are defined in views
 app.register_blueprint(finance_page)
 

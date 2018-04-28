@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from dao.impl import ImplDao
-from dao.random import RandomDataDao
+from finance.common.dao.impl import ImplDao
+from finance.common.dao.random import RandomDataDao
 
 
 class Dao:

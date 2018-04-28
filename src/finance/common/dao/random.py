@@ -1,10 +1,10 @@
 import random
 from json import dumps
 
-from dao import ImplDao
-from dao.db import get_sql_scripts
-from dao.utils import *
-from utils import get_valid_db_from_env
+from finance.common.dao import ImplDao
+from finance.common.dao.db import get_sql_scripts
+from finance.common.dao.utils import *
+from finance.common.utils import get_valid_db_from_env
 
 
 class RandomDataDao(ImplDao):
