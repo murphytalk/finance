@@ -1,54 +1,90 @@
-from finance.common.utils import get_valid_db_from_env
 from sqlalchemy import create_engine, Column, String, Float, Integer, ForeignKey
-from sqlalchemy.ext.automap import automap_base, relationship
+from sqlalchemy.ext.automap import relationship
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+from finance.common.utils import get_valid_db_from_env
+
 DATABASE = get_valid_db_from_env('FINANCE_DB')
-Base = automap_base()
-
-# Overriding Naming Schemes to avoid error :
-# WARNING: when configuring property 'broker' on Mapper|instrument|instrument, column 'broker' conflicts with property '<RelationshipProperty at 0x7f1b12d1a2c8; broker>'.
-# see http://docs.sqlalchemy.org/en/rel_1_0/orm/extensions/automap.html#overriding-naming-schemes
-# see https://bitbucket.org/zzzeek/sqlalchemy/issues/3449/automap_base-fails-on-my-database
-def name_for_scalar_relationship(base, local_cls, referred_cls, constraint):
-    return referred_cls.__name__.lower() + "_ref"
-
-#class Instrument(Base):
-#    __tablename__ = 'instrument'
-#
-#    # override schema elements like Columns
-#    name = Column('name', String)
-#
-#    instrument_type = relationship("instrument_type", collection_class=set)
-#    broker_id = Column(Integer, ForeignKey('broker.id'))
-#    broker = relationship("broker", collection_class=set)
-#    currency = relationship("currency", collection_class=set)
-#    url = Column('url', String)
-#    expense = Column('expsens_ratio', Float)
+Base = declarative_base()
 
 
-engine = create_engine("sqlite:///%s" % DATABASE if DATABASE else ":memory:")
-Base.prepare(engine, reflect=True, name_for_scalar_relationship=name_for_scalar_relationship)
+class Broker(Base):
+    __tablename__ = "broker"
 
-Session = sessionmaker()
-Session.configure(bind=engine)
-session = Session()
+    id = Column('id', Integer, primary_key=True)
+    name = Column('name', String)
+    full_name = Column('fullName', String)
 
-Broker = Base.classes.broker
-Currency = Base.classes.currency
-Country = Base.classes.country
-Asset = Base.classes.asset
-InstrumentType = Base.classes.instrument_type
-#AssetAllocation = Base.classes.asset_allocation
-#CountryAllocation = Base.classes.country_allocation
-Region = Base.classes.region
-#Regions = Base.classes.regions
-Filter = Base.classes.filter
-#InstrumentFilter = Base.classes.instrument_filter
-#Cash = Base.classes.cash
-Instrument = Base.classes.instrument
-#for k,v in Base.classes.items():
-#    print(k,v)
+    def __repr__(self):
+        return self.full_name
 
 
+class Country(Base):
+    __tablename__ = "country"
 
+    id = Column('id', Integer, primary_key=True)
+    name = Column('name', String)
+
+    def __repr__(self):
+        return self.name
+
+
+class Currency(Base):
+    __tablename__ = "currency"
+
+    id = Column('id', Integer, primary_key=True)
+    name = Column('name', String)
+
+    def __repr__(self):
+        return self.name
+
+
+class Asset(Base):
+    __tablename__ = "asset"
+
+    id = Column('id', Integer, primary_key=True)
+    asset_type = Column('type', String)
+
+    def __repr__(self):
+        return self.asset_type
+
+
+class InstrumentType(Base):
+    __tablename__ = "instrument_type"
+
+    id = Column('id', Integer, primary_key=True)
+    instrument_type = Column('type', String)
+
+    def __repr__(self):
+        return self.instrument_type
+
+
+class Instrument(Base):
+    __tablename__ = 'instrument'
+
+    id = Column('id', Integer, primary_key=True)
+    # override schema elements like Columns
+    name = Column('name', String)
+
+    instrument_type_id = Column('type', Integer, ForeignKey('instrument_type.id'))
+    instrument_type = relationship("InstrumentType", backref='instrument')
+
+    broker_id = Column('broker', Integer, ForeignKey('broker.id'))
+    broker = relationship("Broker", backref='instrument')
+
+    currency_id = Column('currency', Integer, ForeignKey('currency.id'))
+    currency = relationship("Currency", backref='instrument')
+
+    url = Column('url', String)
+    expense = Column('expense_ratio', Float)
+
+    def __repr__(self):
+        return self.name
+
+
+def map_models():
+    engine = create_engine("sqlite:///%s" % DATABASE if DATABASE else "sqlite://")
+    session = sessionmaker()
+    session.configure(bind=engine)
+    return session()

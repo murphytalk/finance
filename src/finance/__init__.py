@@ -2,20 +2,23 @@
 The flask application package.
 """
 from platform import node
-from flask import Flask, Blueprint
-from finance.common.utils import get_valid_db_from_env
-from finance.api import api
-from finance.api.endpoints.report import ns as api_reports
-from finance.api.endpoints.reference import ns as api_reference
-from finance.api.endpoints.instrument import ns as api_instrument
-from finance.api.endpoints.transaction import ns as api_transaction
 
+import flask_admin as admin
+from flask import Flask, Blueprint
+from flask_admin.contrib.sqla import ModelView
+
+import finance.common.dao.models as models
+from finance.api import api
+from finance.api.endpoints.instrument import ns as api_instrument
+from finance.api.endpoints.reference import ns as api_reference
+from finance.api.endpoints.report import ns as api_reports
+from finance.api.endpoints.transaction import ns as api_transaction
 
 # check hostname to determine if it is a production deployment
 deployed_in_production = node() == "anchor"
 
 DEBUG = not deployed_in_production
-DATABASE = get_valid_db_from_env('FINANCE_DB')
+DATABASE = models.DATABASE
 
 # deployed behind ngix
 URL_ROOT = ("/finance" if DATABASE is not None else "/finance_demo")
@@ -33,7 +36,6 @@ app.config.from_object(__name__)
 app.debug = DEBUG
 
 finance_page = Blueprint('finance_page', __name__, url_prefix=URL_ROOT)
-from finance import views
 # need to register after all URLS are defined in views
 app.register_blueprint(finance_page)
 
@@ -45,3 +47,20 @@ api.add_namespace(api_instrument)
 api.add_namespace(api_transaction)
 app.register_blueprint(api_page)
 
+# Create admin
+admin = admin.Admin(app, name='Finance Admin', url='%s/admin' % URL_ROOT)
+
+
+# Add views
+class MyModelView(ModelView):
+    column_hide_backrefs = False
+    column_display_all_relations = True
+
+
+session = models.map_models()
+admin.add_view(MyModelView(models.Broker, session))
+admin.add_view(MyModelView(models.Country, session))
+admin.add_view(MyModelView(models.Currency, session))
+admin.add_view(MyModelView(models.Asset, session))
+admin.add_view(MyModelView(models.InstrumentType, session))
+admin.add_view(MyModelView(models.Instrument, session))
