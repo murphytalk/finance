@@ -119,4 +119,4 @@ class Instrument(Model):
                           url, expense_ratio, currency, xccy_rate, xccy_rate_date)
 
     def __str__(self):
-        return "id={},type={}".format(self.id, self.instrument_type)
+        return u"id={},type={}".format(self.id, self.instrument_type)

@@ -6,7 +6,7 @@ Personal finance and investment portal.
 
 ## DB schema
 
-The DB backend is SQLite. This [SQL script](src/finance/common/db.sql) defines all DB objects and is also being used by the [Live demo](http://murphytalk.vicp.net/finance_demo/) to populate random data in a in-momory DB.
+The DB backend is SQLite. This [SQL script](src/finance/common/dao/db.sql) defines all DB objects and is also being used by the [Live demo](http://murphytalk.vicp.net/finance_demo/) to populate random data in a in-momory DB.
 
 ## Configuration
 
