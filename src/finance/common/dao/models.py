@@ -1,9 +1,10 @@
+import sqlalchemy.types as types
 from sqlalchemy import create_engine, Column, String, Float, Integer, ForeignKey
 from sqlalchemy.ext.automap import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from finance.common.utils import get_valid_db_from_env
+from finance.common.utils import get_valid_db_from_env, epoch2date, date2epoch
 
 DATABASE = get_valid_db_from_env('FINANCE_DB')
 Base = declarative_base()
@@ -81,6 +82,54 @@ class Instrument(Base):
 
     def __repr__(self):
         return self.name
+
+
+class AssetAllocation(Base):
+    __tablename__ = "asset_allocation"
+
+    id = Column('ROWID', Integer, primary_key=True)
+    instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
+    instrument = relationship("Instrument")
+
+    asset_id = Column('asset', Integer, ForeignKey('asset.id'))
+    asset = relationship("Asset")
+    ratio = Column('ratio', Float)
+
+
+class CountryAllocation(Base):
+    __tablename__ = "country_allocation"
+
+    id = Column('ROWID', Integer, primary_key=True)
+    instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
+    instrument = relationship("Instrument")
+
+    asset_id = Column('country', Integer, ForeignKey('country.id'))
+    asset = relationship("Country")
+    ratio = Column('ratio', Float)
+
+
+class MyEpochType(types.TypeDecorator):
+    impl = types.Integer
+
+    def process_bind_param(self, value, dialect):
+        return date2epoch(value)
+
+    def process_result_value(self, value, dialect):
+        return epoch2date(value)
+
+
+class FundPerformance(Base):
+    __tablename__ = "performance"
+
+    id = Column('ROWID', Integer, primary_key=True)
+    instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
+    instrument = relationship("Instrument")
+
+    amount = Column(Integer)
+    price = Column(Float)
+    value = Column(Float)
+    capital = Column(Float)
+    date = Column(MyEpochType)
 
 
 def map_models():

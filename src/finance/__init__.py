@@ -36,7 +36,7 @@ app.config.from_object(__name__)
 app.debug = DEBUG
 
 finance_page = Blueprint('finance_page', __name__, url_prefix=URL_ROOT)
-from finance import views
+
 # need to register after all URLS are defined in views
 app.register_blueprint(finance_page)
 
@@ -59,9 +59,15 @@ class MyModelView(ModelView):
 
 
 session = models.map_models()
-admin.add_view(MyModelView(models.Broker, session))
-admin.add_view(MyModelView(models.Country, session))
-admin.add_view(MyModelView(models.Currency, session))
-admin.add_view(MyModelView(models.Asset, session))
-admin.add_view(MyModelView(models.InstrumentType, session))
-admin.add_view(MyModelView(models.Instrument, session))
+
+for model in (
+        models.Instrument,
+        models.FundPerformance,
+        models.Asset,
+        models.AssetAllocation,
+        models.Broker,
+        models.Country,
+        models.Currency,
+        models.InstrumentType
+):
+    admin.add_view(MyModelView(model, session))
