@@ -139,8 +139,8 @@ class ImplDao(Raw):
     def _get_instrument_id(self, **kwargs):
         instrument_id = kwargs['instrument_id'] if 'instrument_id' in kwargs else None
         if instrument_id is None:
-            for r in self.exec('SELECT ROWID FROM instrument WHERE name=?', (kwargs['instrument_name'],)):
-                instrument_id = r['ROWID']
+            for r in self.exec('SELECT id FROM instrument WHERE name=?', (kwargs['instrument_name'],)):
+                instrument_id = r['id']
                 break
         return instrument_id
 
@@ -173,7 +173,7 @@ class ImplDao(Raw):
     def get_country_region_lookup(self):
         # get country id => region def
         sql = ('SELECT r.name region, rs.country FROM regions rs '
-                'JOIN region r ON rs.region = r.ROWID JOIN country c ON rs.country = c.ROWID')
+                'JOIN region r ON rs.region = r.id JOIN country c ON rs.country = c.id')
         return {r['country']: r['region'] for r in self.exec(sql)}
 
     def get_region_allocation(self, **kwargs):
@@ -186,8 +186,8 @@ class ImplDao(Raw):
         if instrument_id:
             region_lookup = self.get_country_region_lookup()
 
-            sql = ('SELECT t.ROWID as cid, a.ratio FROM country_allocation a, country t '
-                   'WHERE a.instrument = ? AND a.country=t.rowid')
+            sql = ('SELECT t.id as cid, a.ratio FROM country_allocation a, country t '
+                   'WHERE a.instrument = ? AND a.country=t.id')
             regions = {}
             for r in self.exec(sql, (int(instrument_id),)):
                 country = r['cid']
@@ -201,27 +201,27 @@ class ImplDao(Raw):
                 yield (region, ratio)
 
     def get_asset_types(self):
-        for r in self.exec('SELECT ROWID, type FROM asset'):
-            yield (r['ROWID'], r['type'])
+        for r in self.exec('SELECT id, type FROM asset'):
+            yield (r['id'], r['type'])
 
     def get_countries(self):
-        for r in self.exec('SELECT ROWID, [name] FROM country'):
-            yield (r['ROWID'], r['name'])
+        for r in self.exec('SELECT id, [name] FROM country'):
+            yield (r['id'], r['name'])
 
     def get_brokers(self):
-        for r in self.exec('SELECT ROWID, [name],fullName FROM broker'):
-            yield (r['ROWID'], r['name'], r['fullName'])
+        for r in self.exec('SELECT id, [name],fullName FROM broker'):
+            yield (r['id'], r['name'], r['fullName'])
 
     def get_instrument_types(self):
-        for r in self.exec('SELECT ROWID, type FROM instrument_type'):
-            yield (r['ROWID'], r['type'])
+        for r in self.exec('SELECT id, type FROM instrument_type'):
+            yield (r['id'], r['type'])
 
     def _update_instrument_allocations(self, instrument_name, payload, allocation_name, allocation_col_name):
         kwargs = {'instrument_name': instrument_name}
         instrument_id = self._get_instrument_id(**kwargs)
         if instrument_id:
-            types = {x[allocation_col_name]: x['ROWID'] for x in
-                     self.exec('SELECT ROWID,%s FROM %s' % (allocation_col_name, allocation_name))}
+            types = {x[allocation_col_name]: x['id'] for x in
+                     self.exec('SELECT id,%s FROM %s' % (allocation_col_name, allocation_name))}
             sum_alloc = 0
             allocations = []
             self.exec('DELETE from %s_allocation WHERE instrument = ?' % allocation_name, (instrument_id,))
@@ -258,15 +258,15 @@ class ImplDao(Raw):
         return self._update_instrument_allocations(instrument_name, countries['countries'], 'country', 'name')
 
     def get_instruments(self, instrument_name=None):
-        sql = ('SELECT i.ROWID, i.name, t.type, c.name AS currency, b.name AS broker, i.url, i.expense_ratio '
+        sql = ('SELECT i.id, i.name, t.type, c.name AS currency, b.name AS broker, i.url, i.expense_ratio '
                'FROM instrument i '
-               'JOIN instrument_type t ON i.type = t.ROWID '
-               'JOIN currency c ON i.currency = c.ROWID '
-               'JOIN broker b ON i.broker = b.ROWID')
+               'JOIN instrument_type t ON i.type = t.id '
+               'JOIN currency c ON i.currency = c.id '
+               'JOIN broker b ON i.broker = b.id')
         if instrument_name:
             sql += ' WHERE i.name = ?'
         for r in self.exec(sql, (instrument_name,) if instrument_name else None):
-            yield {'id': r['ROWID'],
+            yield {'id': r['id'],
                    'name': r['name'],
                    'type': r['type'],
                    'currency': r['currency'],
@@ -278,10 +278,10 @@ class ImplDao(Raw):
         return {x[1]: x[0] for x in self.get_instrument_types()}
 
     def get_currency_mapper(self):
-        return {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM currency')}
+        return {x['name']: x['id'] for x in self.exec('SELECT id,[name] FROM currency')}
 
     def get_broker_mapper(self):
-        return {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,[name] FROM broker')}
+        return {x['name']: x['id'] for x in self.exec('SELECT id,[name] FROM broker')}
 
     @_remove_empty_value
     def update_instrument(self, instrument_name, instrument):
@@ -320,7 +320,7 @@ class ImplDao(Raw):
 
         if instrument_id:
             sql = 'UPDATE instrument set '
-            sql += ','.join([x + '=?' for x in cols]) + ' WHERE ROWID = ?'
+            sql += ','.join([x + '=?' for x in cols]) + ' WHERE id = ?'
             params.append(instrument_id)
         else:
             sql = 'INSERT INTO instrument ('

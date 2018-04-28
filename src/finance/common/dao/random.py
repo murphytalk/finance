@@ -28,6 +28,11 @@ class RandomDataDao(ImplDao):
         # run the SQL script to generate tables and views, then populate meta data
         self.conn.executescript(get_sql_scripts())
 
+        # populate fake brokers
+        self.exec("INSERT INTO broker (name, fullName) VALUES ('ABC', 'ABC Asset Management')")
+        self.exec("INSERT INTO broker (name, fullName) VALUES ('XYZ', 'XYZ Securities')")
+        self.exec("INSERT INTO broker (name, fullName) VALUES ('IB', 'IB')")
+
         # read back meta data
         instrument_type = self.get_instrument_types_mapper()
         currencies = self.get_currency_mapper()
@@ -45,10 +50,10 @@ class RandomDataDao(ImplDao):
         self.gen_instruments("ABC", currencies["JPY"], (instrument_type["Funds"],), 5, FUNDS_NUM)
 
         # what stocks/ETFs we have generated ?
-        stocks = [x['ROWID'] for x in self.exec('SELECT ROWID FROM instrument WHERE type = ? OR type = ?',
+        stocks = [x['id'] for x in self.exec('SELECT id FROM instrument WHERE type = ? OR type = ?',
                                                 (instrument_type["Stock"], instrument_type["ETF"]))]
         # what funds we have generated ?
-        funds = [x['ROWID'] for x in self.exec('SELECT ROWID FROM instrument WHERE type = ?',
+        funds = [x['id'] for x in self.exec('SELECT id FROM instrument WHERE type = ?',
                                                (instrument_type["Funds"],))]
         # populate instrument filters
         self.exec_many('INSERT INTO filter (name) VALUES (?)',
@@ -124,7 +129,7 @@ class RandomDataDao(ImplDao):
         :return: None
         """
         # read meta data
-        brokers = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,name FROM broker')}
+        brokers = {x['name']: x['id'] for x in self.exec('SELECT id,name FROM broker')}
 
         instruments = set()
         while len(instruments) < count:
@@ -134,7 +139,7 @@ class RandomDataDao(ImplDao):
 
             instruments.add(symbol)
             # name, instrument type, broker, currency, url, expense ratio
-            self.exec('INSERT INTO instrument VALUES (?,?,?,?,?,?)',
+            self.exec('INSERT INTO instrument ( name , type , broker , currency , "url" , "expense_ratio") VALUES (?,?,?,?,?,?)',
                       (symbol,
                        random.choice(instrument_types),
                        brokers[broker],
@@ -143,7 +148,7 @@ class RandomDataDao(ImplDao):
                        gen_expense_ratio()
                        ))
             # get instrument id
-            instrument_id = self.exec('SELECT rowid FROM instrument WHERE name=?', (symbol,))[0]['ROWID']
+            instrument_id = self.exec('SELECT id FROM instrument WHERE name=?', (symbol,))[0]['id']
 
             # asset allocation
             for k, v in gen_allocation(7).items():

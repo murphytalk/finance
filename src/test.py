@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import unittest
 from datetime import timedelta
-from finance.common.model import Position
+
 from finance.common.dao.random import RandomDataDao
 from finance.common.dao.utils import *
+from finance.common.model import Position
 from finance.common.utils import epoch2date, get_random_dict_value, get_random_dict_key
 
 YYYY_MM_DD = "%Y-%m-%d"
@@ -76,14 +77,35 @@ class TestDao(unittest.TestCase):
     def test_reference_data(self):
         self.assertEqual(
             self.countries,
-            {'S.America', 'Singapore', 'France', 'S.Korea', 'UK', 'E.Europe Other', 'S.Africa', 'Russia', 'China',
-             'India', 'W.Europe Other', 'Australia', 'Germany', 'Other', 'Asia Other', 'Canada', 'Japan',
-             'Africa Other', 'Middle East', 'US'}
+            {'Africa Other',
+             'Asia Other',
+             'Australia',
+             'Canada',
+             'China',
+             'E.Europe Other',
+             'Europe placeholder',
+             'France',
+             'Germany',
+             'Hong Kong',
+             'India',
+             'Japan',
+             'Middle East Other',
+             'NZ',
+             'Other',
+             'S.America Other',
+             'S.Korea',
+             'Singapore',
+             'Switzerland',
+             'Taiwan',
+             'UK',
+             'US',
+             'W.Europe Other',
+             'placeholder'}
         )
         self.assertEqual(self.asset_types, {'Cash', 'Gold', 'REIT', 'Corp Bond', 'Government Bond', 'Other', 'Stock'})
         self.assertEqual(self.brokers, {'ABC': 1, 'IB': 3, 'XYZ': 2})
-        self.assertEqual(self.instrument_types, {'ETF', 'Stock', 'Funds', 'Bond', 'Cash'})
-        self.assertEqual(self.ccy, {'JPY': 1, 'USD': 2, 'EUR': 3, 'CNY': 4, 'AUD': 5, 'NZD': 6})
+        self.assertEqual(self.instrument_types, {'ETF', 'Funds', 'Crypto', 'Stock', 'Bond'})
+        self.assertEqual(self.ccy, {'AUD': 5, 'CNY': 4, 'EUR': 3, 'HKD': 7, 'JPY': 1, 'NZD': 6, 'USD': 2})
         self.assertIn('All-Stocks', self.filters)
         self.assertIn('First-Two-Stocks', self.filters)
         self.assertIn('First-Stock-Reduce-100-Shares', self.filters)
