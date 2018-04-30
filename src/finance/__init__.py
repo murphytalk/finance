@@ -147,6 +147,8 @@ for view, model in (
         (ModelView, models.Currency),
         (ModelView, models.Region),
         (FilterByRegionView, models.CountryByRegion),
-        (ModelView, models.InstrumentType)
+        (ModelView, models.InstrumentType),
+        (ModelView, models.Filter),
+        (ModelView, models.FilterInstrument)
 ):
     admin.add_view(view(model, session))
