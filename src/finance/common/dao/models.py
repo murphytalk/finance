@@ -41,24 +41,49 @@ class Currency(Base):
         return self.name
 
 
+class Region(Base):
+    __tablename__ = "region"
+
+    id = Column('id', Integer, primary_key=True)
+    name = Column('name', String)
+
+    def __repr__(self):
+        return self.name
+
+
+class CountryByRegion(Base):
+    __tablename__ = "regions"
+
+    id = Column('ROWID', Integer, primary_key=True)
+
+    country_id = Column('country', Integer, ForeignKey('country.id'))
+    region_id = Column('region', Integer, ForeignKey('region.id'))
+
+    country = relationship("Country", foreign_keys=[country_id], backref='regions')
+    region = relationship("Region", foreign_keys=[region_id], backref='regions')
+
+    def __repr__(self):
+        return ("%s/%s") % (self.country, self.region)
+
+
 class Asset(Base):
     __tablename__ = "asset"
 
     id = Column('id', Integer, primary_key=True)
-    asset_type = Column('type', String)
+    type = Column('type', String)
 
     def __repr__(self):
-        return self.asset_type
+        return self.type
 
 
 class InstrumentType(Base):
     __tablename__ = "instrument_type"
 
     id = Column('id', Integer, primary_key=True)
-    instrument_type = Column('type', String)
+    type = Column('type', String)
 
     def __repr__(self):
-        return self.instrument_type
+        return self.type
 
 
 class Instrument(Base):
@@ -103,8 +128,8 @@ class CountryAllocation(Base):
     instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
     instrument = relationship("Instrument")
 
-    asset_id = Column('country', Integer, ForeignKey('country.id'))
-    asset = relationship("Country")
+    country_id = Column('country', Integer, ForeignKey('country.id'))
+    country = relationship("Country")
     ratio = Column('ratio', Float)
 
 
@@ -129,7 +154,47 @@ class FundPerformance(Base):
     price = Column(Float)
     value = Column(Float)
     capital = Column(Float)
+    profit = Column(Float)
     date = Column(MyEpochType)
+
+
+class StockTransaction(Base):
+    __tablename__ = "transaction"
+
+    id = Column('ROWID', Integer, primary_key=True)
+    instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
+    instrument = relationship("Instrument")
+
+    type = Column(String)
+
+    price = Column(Float)
+    shares = Column(Float)
+    fee = Column(Float)
+    date = Column(MyEpochType)
+
+
+class Quote(Base):
+    __tablename__ = "quote"
+
+    id = Column('ROWID', Integer, primary_key=True)
+    instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
+    instrument = relationship("Instrument")
+
+    price = Column(Float)
+    date = Column(MyEpochType)
+
+
+class Cash(Base):
+    __tablename__ = "cash"
+
+    id = Column('ROWID', Integer, primary_key=True)
+    currency_id = Column('ccy', Integer, ForeignKey('currency.id'))
+    currency = relationship('Currency')
+
+    broker_id = Column('broker', Integer, ForeignKey('broker.id'))
+    broker = relationship("Broker")
+
+    balance = Column(Float)
 
 
 def map_models():
