@@ -390,6 +390,24 @@ class ImplDao(Raw):
         else:
             return False
 
+    @_remove_empty_value
+    def update_fund_performance(self, fund_name, payload):
+        # todo : update existing
+        kwargs = {'instrument_name': fund_name}
+        instrument_id = self._get_instrument_id(**kwargs)
+        if instrument_id > 0:
+            self.exec("INSERT INTO performance VALUES (?,?,?,?,?,?,?)",
+                      (instrument_id,
+                       payload["amount"],
+                       payload["price"],
+                       payload["value"],
+                       payload["profit"],
+                       payload["capital"],
+                       date_str2epoch(payload['date'])))
+            return True
+        else:
+            return False
+
     def get_xccy_quote(self, ccy_pair=None, max_days=None):
         """
         Get xccy quotes

@@ -110,6 +110,16 @@ stock_quotes = api.model('Stock quotes', {
     'quotes': fields.List(fields.Nested(stock_quote), description='Multiple days quotes of the given instrument')
 })
 
+funds_performance = api.model('Funds performance', {
+    'date':  fields.String(description='Closing date'),
+    'name': fields.String(description='Funds name'),
+    'amount':  fields.Integer(description='Amount'),
+    'price':  fields.Float(description='Price'),
+    'value':  fields.Float(description='Market value'),
+    'capital':  fields.Float(description='Capital'),
+    'profit':  fields.Float(description='Profit')
+})
+
 xccy_quote = api.model('Xccy quotes', {
     'Date':  fields.String(description='Closing date'),
     'From': fields.String(description='Exchange from currency'),

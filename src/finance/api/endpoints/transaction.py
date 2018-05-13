@@ -1,4 +1,4 @@
-from finance.api import api, stock_transaction, stock_quote, stock_quotes, xccy_quote
+from finance.api import api, stock_transaction, stock_quote, stock_quotes, xccy_quote, funds_performance
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
 from flask import request
@@ -89,6 +89,16 @@ class StockQuote(Resource):
     @api.expect(stock_quotes)
     def post(self, stock):
         return run_func_against_dao(lambda dao: 201 if dao.update_stock_quotes(stock, api.payload) else 500)
+
+
+@ns.route('/fund/performance/<string:fund>')
+@api.doc(params={'fund': 'Fund name'})
+class FundPerformance(Resource):
+    @api.response(201, 'Fund performance successfully updated.')
+    @api.response(500, 'Cannot update fund performance.')
+    @api.expect(funds_performance)
+    def post(self, fund):
+        return run_func_against_dao(lambda dao: 201 if dao.update_fund_performance(fund, api.payload) else 500)
 
 
 def _get_xccy_quote(dao, ccy_pair=None, max_days=None):
