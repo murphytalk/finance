@@ -522,27 +522,32 @@ class ImplDao(Raw):
                 rate = 1
             yield x['ccy'], x['broker'], x['balance'], rate
 
-    def update_cash_balance(self, ccy, broker, balance):
+    def update_cash_balance(self, ccy, broker, payload, adjust=False):
         ccy_id = None
         broker_id = None
-        for x in self.exec('SELECT ROWID FROM currency WHERE name=?', (ccy,)):
-            ccy_id = x['ROWID']
+        for x in self.exec('SELECT id FROM currency WHERE name=?', (ccy,)):
+            ccy_id = x['id']
             break
-        for x in self.exec('SELECT ROWID FROM broker WHERE name=?', (broker,)):
-            broker_id = x['ROWID']
+        for x in self.exec('SELECT id FROM broker WHERE name=?', (broker,)):
+            broker_id = x['id']
             break
         if ccy_id is None or broker_id is None:
             return False
         else:
             cash_id = None
+            balance = payload['balance']
             for x in self.exec('SELECT ROWID FROM cash WHERE ccy=? and broker=?', (ccy_id, broker_id)):
                 cash_id = x['ROWID']
                 break
             if cash_id is None:
                 sql = 'INSERT INTO cash (balance,ccy,broker) VALUES (?,?,?)'
             else:
+                if adjust:
+                    for x in self.exec('SELECT balance from cash WHERE ccy=? and broker=?', (ccy_id, broker_id)):
+                        balance = x['balance'] + balance
+                        break
                 sql = 'UPDATE cash SET balance = ? WHERE ccy=? and broker=?'
-            self.exec(sql, (balance['balance'], ccy_id, broker_id))
+            self.exec(sql, (balance, ccy_id, broker_id))
             return True
 
 

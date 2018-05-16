@@ -171,3 +171,14 @@ class Cash(Resource):
         return None, run_func_against_dao(
             lambda dao: 201 if dao.update_cash_balance(ccy, broker, api.payload) else 500)
 
+
+@ns.route('/cash/adjust/<string:ccy>/<string:broker>')
+@api.doc(params={'ccy': 'Currency', 'broker': 'Broker'})
+class Cash(Resource):
+    @api.response(201, 'Cash balance successfully updated.')
+    @api.response(500, 'Cannot update cash balance.')
+    @api.expect(cash)
+    def post(self, ccy, broker):
+        return None, run_func_against_dao(
+            lambda dao: 201 if dao.update_cash_balance(ccy, broker, api.payload, True) else 500)
+
