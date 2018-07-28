@@ -97,7 +97,7 @@ def cmdline_args(argv, db_adapter_clz=None):
          argv : sys.argv[1:]
 
     process the following cmd line arguments:
-  
+
         -d debug mode
         -fxxxxxx  path to sqlite db file xxxxx
                   if -f not spcified then output to stdout

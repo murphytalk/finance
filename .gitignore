@@ -181,4 +181,6 @@ target/
 .vs/
 tmp/
 temp/
+log/
+venv/
 

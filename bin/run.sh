@@ -14,7 +14,7 @@ DEMO_PORT=8081
 CUR=`dirname $0`
 SRC=$CUR/../src
 LOG=$CUR/../log
-LOGF=${LOG}/run.`date +%Y%m%d`.log
+LOGF=${LOG}/run.log
 PIDF=${LOG}/run.pid
 DEMO_LOGF=${LOG}/run.demo.`date +%Y%m%d`.log
 DEMO_PIDF=${LOG}/run.demo.pid
@@ -45,7 +45,7 @@ report_status(){
 	if [ $status -eq 0 ];then
 		echo "Finance portal is NOT running"
 	else
-		echo "Finance portal (PID=${status}) is running"
+		echo "Finance portal (PID=${status}) is running, finance db is $FINANCE_DB"
 	fi
 
 	if [ $demo_status -eq 0 ];then
@@ -53,7 +53,7 @@ report_status(){
 	else
 		echo "Finance demo (PID=${demo_status}) is running"
 	fi
-} 
+}
 
 
 case $cmd in
@@ -61,23 +61,24 @@ start)
 	check_status
 	if [ $status -eq 0 ];then
 		echo "Starting finance portal by using data @ $FINANCE_DB"
-		nohup ${SRC}/runserver.py ${SERVER_PORT} > $LOGF 2>&1 &
+        echo "Starting finance portal by using data @ $FINANCE_DB" > $LOGF
+		nohup ${SRC}/runserver.py ${SERVER_PORT} >> $LOGF 2>&1 &
 		echo $! > $PIDF
 	else
 		echo "Finance portal already started!"
 	fi
-	if [ ! -z "${NO_DEMO}" ];then
-	    echo "Skipping DEMO"
-	else
-            if [ $demo_status -eq 0 ];then
-    	    	echo "Starting finance demo"
-    		unset FINANCE_DB
-                nohup ${SRC}/runserver.py ${DEMO_PORT} > $DEMO_LOGF 2>&1 &
-    	    	echo $! > $DEMO_PIDF
-            else
-	    	echo "Finance demo already started!"
-	    fi
-	fi
+# 	if [ ! -z "${NO_DEMO}" ];then
+# 	    echo "Skipping DEMO"
+# 	else
+#             if [ $demo_status -eq 0 ];then
+#     	    	echo "Starting finance demo"
+#     		unset FINANCE_DB
+#                 nohup ${SRC}/runserver.py ${DEMO_PORT} > $DEMO_LOGF 2>&1 &
+#     	    	echo $! > $DEMO_PIDF
+#             else
+# 	    	echo "Finance demo already started!"
+# 	    fi
+# 	fi
 	;;
 stop)
     check_status
