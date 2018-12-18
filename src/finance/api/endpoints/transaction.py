@@ -1,4 +1,4 @@
-from finance.api import api, stock_transaction, stock_quote, stock_quotes, xccy_quote, funds_performance
+from finance.api import api, stock_transaction, stock_quote, stock_quotes, xccy_quote, xccy_quotes, funds_performance
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
 from flask import request
@@ -118,6 +118,12 @@ class XccyQuoteAll(Resource):
         """
         return run_func_against_dao(lambda dao: _get_xccy_quote(dao, None, _get_int_from_query_param('max_days')))
 
+    @api.response(201, 'Quote successfully updated.')
+    @api.response(500, 'Cannot update quote.')
+    @api.expect(xccy_quotes)
+    def post(self):
+        return run_func_against_dao(lambda dao: 201 if dao.update_xccy_quotes(api.payload) else 500)
+
 
 @ns.route('/xccy/<string:from_ccy>/<string:to_ccy>')
 @api.doc(params={'from_ccy': 'The currency to exchange from', 'to_ccy': 'The currency to exchange to'})
@@ -130,4 +136,3 @@ class XccyQuote(Resource):
         """
         return run_func_against_dao(lambda dao: _get_xccy_quote(dao, (from_ccy, to_ccy),
                                                                 _get_int_from_query_param('max_days')))
-

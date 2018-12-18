@@ -275,6 +275,7 @@ CREATE VIEW cash_balance AS
   FROM currency ccy, broker b, cash c
   WHERE c.ccy=ccy.id AND c.broker=b.id;
 CREATE VIEW fund_performance AS select p.ROWID as id,b.name as broker ,i.name,i.id as instrument_id, i.url ,i.expense_ratio, t.type,c.name currency,p.amount,p.price,p.value,p.profit,p.capital , date(p.date , 'unixepoch') as datestr, p.date from performance p, instrument i, broker b,instrument_type t,currency c where p.instrument = i.id and i.broker = b.id and i.type=t.id and i.currency=c.id;
+-- get the most recent performance for each fund
 CREATE VIEW fund_performance2 as
 select v1.* from fund_performance v1
 join

@@ -433,6 +433,21 @@ class ImplDao(Raw):
                    'To': x['To'],
                    'Rate': x['rate']}
 
+    def update_xccy_quotes(self, xccy_quotes):
+        """
+        Update/Insert xccy quote for one day
+        :param xccy_quotes : [{Date,From,To,Rate}]
+        :return: True/False
+        """
+        xccys = {r['name']: r['id'] for r in self.exec('SELECT id, name from currency')}
+        parameters = [(date_str2epoch(q['Date']), xccys[q['From']], xccys[q['To']], q['Rate']) for q in xccy_quotes['quotes']]
+        # remove existing quotes if there is any
+        self.exec_many('DELETE FROM xccy WHERE date = ? and [from] = ? and [to] = ?', [p[:-1] for p in parameters])
+        # then insert
+        self.exec_many('INSERT INTO xccy (date, [from], [to], rate) '
+                       'VALUES (?,?,?,?)', parameters)
+        return True
+
     def get_stock_quote(self, stock_name=None, max_days=None):
         """
         Get stock quotes

@@ -120,11 +120,15 @@ funds_performance = api.model('Funds performance', {
     'profit':  fields.Float(description='Profit')
 })
 
-xccy_quote = api.model('Xccy quotes', {
+xccy_quote = api.model('Xccy quote', {
     'Date':  fields.String(description='Closing date'),
     'From': fields.String(description='Exchange from currency'),
     'To': fields.String(description='Exchange to currency'),
     'Rate':  fields.Float(description='Exchange rate'),
+})
+
+xccy_quotes = api.model('Xccy quotes', {
+    'quotes': fields.List(fields.Nested(xccy_quote), description='Multiple days quotes of the given xccy')
 })
 
 _simple_instrument = api.model('Simple Instrument', {
