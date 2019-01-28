@@ -23,7 +23,7 @@ DATABASE = models.DATABASE
 
 # deployed behind ngix
 URL_ROOT = ("/finance" if DATABASE is not None else "/finance_demo")
-
+print("URL root at {}".format(URL_ROOT))
 # Flask-Restplus settings
 RESTPLUS_SWAGGER_UI_DOC_EXPANSION = 'list'
 RESTPLUS_VALIDATE = True

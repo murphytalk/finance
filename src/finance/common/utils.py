@@ -1,9 +1,9 @@
 ﻿import random
 import sys
 import time
+import os.path
 from datetime import datetime, date
 from os import environ
-from os.path import isfile
 
 try:
     from finance.common.const import STOCK_START_DATE
@@ -86,7 +86,7 @@ def get_valid_db_from_env(varname, default=None):
     :return: if varname is set and is an existing file return that name, otherwise return default
     """
     db = environ.get(varname)
-    return default if db is None or (not isfile(db)) else db
+    return default if db is None or (not os.path.exists(db)) else db
 
 
 def cmdline_args(argv, db_adapter_clz=None):

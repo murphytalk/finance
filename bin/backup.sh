@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-FINANCE_DB="$HOME/finance.db"
+FINANCE_DB="$HOME/DATA/finance.db"
 BACKUP_DIR="$HOME/Backup2Gdrive/finance"
 
 if [[ -z "$FINANCE_DB" || ! -f $FINANCE_DB ]];then
