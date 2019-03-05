@@ -89,6 +89,7 @@ Instrument = api.model('Instrument', {
     'currency': fields.String(description='Currency', required=False),
     'url': fields.String(description='Instrument URL', required=False),
     'expense': fields.Float(description='Expense ratio', required=False),
+    'active':   fields.Integer(description='Active', required=False),
 })
 
 stock_transaction = api.model('Stock transactions', {

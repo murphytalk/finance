@@ -17,6 +17,7 @@ def _get_instruments(dao, instrument_name=None):
              'currency': x['currency'],
              'broker': x['broker'],
              'url': x['url'],
+             'active': x['active'],
              'expense': x['expense']} for x in dao.get_instruments(instrument_name)]
 
 

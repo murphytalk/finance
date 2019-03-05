@@ -258,7 +258,7 @@ class ImplDao(Raw):
         return self._update_instrument_allocations(instrument_name, countries['countries'], 'country', 'name')
 
     def get_instruments(self, instrument_name=None):
-        sql = ('SELECT i.id, i.name, t.type, c.name AS currency, b.name AS broker, i.url, i.expense_ratio '
+        sql = ('SELECT i.id, i.name, t.type, c.name AS currency, b.name AS broker, i.url, i.expense_ratio, i.active '
                'FROM instrument i '
                'JOIN instrument_type t ON i.type = t.id '
                'JOIN currency c ON i.currency = c.id '
@@ -272,6 +272,7 @@ class ImplDao(Raw):
                    'currency': r['currency'],
                    'broker': r['broker'],
                    'url': r['url'],
+                   'active': r['active'],
                    'expense': r['expense_ratio']}
 
     def get_instrument_types_mapper(self):
