@@ -1,5 +1,7 @@
 Personal finance and investment portal.
 
+[![Build Status](https://travis-ci.org/murphytalk/finance.svg?branch=master)](https://travis-ci.org/murphytalk/finance)
+
 # The Web Application
 
 [Live demo](http://murphytalk.vicp.net/finance_demo/) with randomly generated instruments and positions.
