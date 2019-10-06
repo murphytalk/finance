@@ -3,20 +3,18 @@
 This script runs the finance application using a development server.
 """
 from sys import argv
-from os import environ
-import os
+from os import environ, path
 from werkzeug.serving import run_simple
+from finance import app, DEBUG
 
 import logging.config
 
-log_conf_file = os.path.dirname(os.path.realpath(__file__)) + "/../logging.conf"
-logging.config.fileConfig(log_conf_file )
+log_conf_file = path.dirname(path.realpath(__file__)) + "/../logging.conf"
+logging.config.fileConfig(log_conf_file)
 
 logger = logging.getLogger(__name__)
-logger.info("logger configuration : %s",log_conf_file)
+logger.info("logger configuration : %s", log_conf_file)
 
-
-from finance import app, DEBUG
 
 if __name__ == '__main__':
     if len(argv) != 2:
