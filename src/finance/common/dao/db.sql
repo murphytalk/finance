@@ -226,6 +226,20 @@ INSERT INTO regions (region, country) VALUES (
    WHERE name = 'Other')
 );
 CREATE TABLE IF NOT EXISTS "country_allocation" ("instrument" int NOT NULL ,"country" int NOT NULL ,"ratio" real NOT NULL  DEFAULT (null),FOREIGN KEY(instrument) REFERENCES instrument(id),FOREIGN KEY (country) REFERENCES country(id) );
+
+CREATE TABLE portfolio(
+  id INTEGER PRIMARY KEY,
+  name  TEXT NOT NULL
+);
+CREATE TABLE portfolio_allocation(
+  id INTEGER PRIMARY KEY,
+  portfolio   INT  NOT NULL,
+  instrument  INT  NOT NULL,
+  percentage  REAL NOT NULL,
+  FOREIGN KEY (portfolio) REFERENCES portfolio(id),
+  FOREIGN KEY (instrument) REFERENCES instrument(id)
+);
+
 CREATE TABLE filter(
   id INTEGER PRIMARY KEY,
   name  TEXT NOT NULL,
