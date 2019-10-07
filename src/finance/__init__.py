@@ -80,6 +80,7 @@ class InstrumentView(ModelView):
         #F(models.Instrument.currency, 'Currency', options=(('USD', 'USD'), ('JPY', 'JPY'))),
         'broker', 'expense'
     ]
+    inline_models = (models.AssetAllocation, models.CountryAllocation)
 
 
 class FundsPerformanceView(ModelViewWithDate):
@@ -122,12 +123,12 @@ class FilterByRegionView(ModelView):
     column_filters = ['region']
 
 
-class AssetAllocView(ModelView):
-    column_filters = ['instrument', 'asset']
+class FilterView(ModelView):
+    inline_models = (models.FilterInstrument,)
 
 
-class CountryAllocView(ModelView):
-    column_filters = ['instrument', 'country']
+class PortfolioView(ModelView):
+    inline_models = (models.PortfolioAllocation,)
 
 
 session = models.map_models()
@@ -139,8 +140,6 @@ for view, model in (
         (FundsPerformanceView, models.FundPerformance),
         (QuoteView, models.Quote),
         (ModelView, models.Cash),
-        (AssetAllocView, models.AssetAllocation),
-        (CountryAllocView, models.CountryAllocation),
         (ModelView, models.Broker),
         (ModelView, models.Asset),
         (ModelView, models.Country),
@@ -148,7 +147,7 @@ for view, model in (
         (ModelView, models.Region),
         (FilterByRegionView, models.CountryByRegion),
         (ModelView, models.InstrumentType),
-        (ModelView, models.Filter),
-        (ModelView, models.FilterInstrument)
+        (FilterView, models.Filter),
+        (PortfolioView, models.Portfolio),
 ):
     admin.add_view(view(model, session))

@@ -114,7 +114,7 @@ class AssetAllocation(Base):
 
     id = Column('ROWID', Integer, primary_key=True)
     instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
-    instrument = relationship("Instrument")
+    instrument = relationship("Instrument", backref='asset_allocation')
 
     asset_id = Column('asset', Integer, ForeignKey('asset.id'))
     asset = relationship("Asset")
@@ -126,7 +126,7 @@ class CountryAllocation(Base):
 
     id = Column('ROWID', Integer, primary_key=True)
     instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
-    instrument = relationship("Instrument")
+    instrument = relationship("Instrument", backref='country_allocation')
 
     country_id = Column('country', Integer, ForeignKey('country.id'))
     country = relationship("Country")
@@ -214,13 +214,40 @@ class FilterInstrument(Base):
     id = Column('ROWID', Integer, primary_key=True)
 
     filter_id = Column('filter', Integer, ForeignKey('filter.id'))
-    filter = relationship("Filter")
+    filter = relationship("Filter", backref='instruments')
 
     instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
     instrument = relationship('Instrument')
 
     def __repr__(self):
         return "%s-%s" % (self.filter.name, self.instrument.name)
+
+
+class Portfolio(Base):
+    __tablename__ = "portfolio"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+    def __repr__(self):
+        return self.name
+
+
+class PortfolioAllocation(Base):
+    __tablename__ = "portfolio_allocation"
+
+    id = Column(Integer, primary_key=True)
+
+    portfolio_id = Column('portfolio', Integer, ForeignKey('portfolio.id'))
+    portfolio = relationship("Portfolio", backref='allocations')
+
+    instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
+    instrument = relationship('Instrument')
+
+    percentage = Column('percentage', Float)
+
+    def __repr__(self):
+        return "%s-%s" % (self.portfolio.name, self.instrument.name)
 
 
 def map_models():
