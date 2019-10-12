@@ -4,9 +4,9 @@ Routes and views for the flask application.
 
 from datetime import datetime
 from flask import render_template, g, current_app, Response
-from finance import finance_page
+from finance import finance_page, app
 from finance.common.report import *
-
+import finance.common.dao.models as models
 import logging.config
 logger = logging.getLogger(__name__)
 
@@ -108,3 +108,7 @@ def instrument_filter(name):
 @finance_page.route('/sum.json')
 def sum_json():
     return instrument_filter(None)
+
+@app.teardown_request
+def remove_session(ex=None):
+    models.session.remove()

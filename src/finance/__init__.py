@@ -131,8 +131,6 @@ class PortfolioView(ModelView):
     inline_models = (models.PortfolioAllocation,)
 
 
-session = models.map_models()
-
 # Add views
 for view, model in (
         (InstrumentView, models.Instrument),
@@ -150,4 +148,4 @@ for view, model in (
         (FilterView, models.Filter),
         (PortfolioView, models.Portfolio),
 ):
-    admin.add_view(view(model, session))
+    admin.add_view(view(model, models.session))

@@ -2,7 +2,7 @@ import sqlalchemy.types as types
 from sqlalchemy import create_engine, Column, String, Float, Integer, ForeignKey
 from sqlalchemy.ext.automap import relationship
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 from finance.common.utils import get_valid_db_from_env, epoch2date, date2epoch
 
@@ -250,8 +250,6 @@ class PortfolioAllocation(Base):
         return "%s-%s" % (self.portfolio.name, self.instrument.name)
 
 
-def map_models():
-    engine = create_engine("sqlite:///%s" % DATABASE if DATABASE else "sqlite://")
-    session = sessionmaker()
-    session.configure(bind=engine)
-    return session()
+engine = create_engine("sqlite:///%s" % DATABASE if DATABASE else "sqlite://")
+session_factory = sessionmaker(bind=engine)
+session = scoped_session(session_factory)
