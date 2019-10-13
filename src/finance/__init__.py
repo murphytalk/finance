@@ -123,10 +123,6 @@ class FilterByRegionView(ModelView):
     column_filters = ['region']
 
 
-class FilterView(ModelView):
-    inline_models = (models.FilterInstrument,)
-
-
 class PortfolioView(ModelView):
     inline_models = (models.PortfolioAllocation,)
 
@@ -145,7 +141,6 @@ for view, model in (
         (ModelView, models.Region),
         (FilterByRegionView, models.CountryByRegion),
         (ModelView, models.InstrumentType),
-        (FilterView, models.Filter),
         (PortfolioView, models.Portfolio),
 ):
     admin.add_view(view(model, models.session))

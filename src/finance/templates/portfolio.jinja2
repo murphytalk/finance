@@ -1,0 +1,30 @@
+{% extends "datatable.jinja2" %}
+
+{% block content %}
+     <div class="row">
+        <div class="col-md-12 top5 bottom5">
+            <div class="btn-toolbar" role="toolbar" aria-label="Instrument portfolio toolbar">
+                <div id="portfolios" class="btn-group" role="group">
+                    <button type="button" class="btn btn-success" id="portfolio-All">All</button>
+                </div>
+                <!--
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-warning" id="x">Customize Filter</button>
+                </div>
+                -->
+            </div>
+        </div>
+    </div>
+     <div id="portfolio-bars" class="row">
+        <div class="col-md-12">
+            <div id="barPortfolio"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript" src="/static/finance/scripts/portfolio.js"></script>
+{% endblock %}
+
+

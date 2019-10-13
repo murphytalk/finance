@@ -1,4 +1,4 @@
-{% extends "filter.jinja2" %}
+{% extends "portfolio.jinja2" %}
 
 {% block content %}
     <div class="row">
@@ -86,7 +86,7 @@
     <script type="text/javascript">
         var the_sum_data;
         const instrument_types = ['ETF', 'Stock', 'Funds'];
-        var the_filters = {};
+        var the_portfolios = {};
 
         function to_chart_data_array(chart_data){
             var ret = [];
@@ -97,12 +97,12 @@
         }
 
         /*
-        see /finance_demo/api/report/positions for position structure
+        see /finance/api/report/positions for position structure
          */
-        function filter_by_allocation(chart_data, filter, positions, allocation_name){
+        function filter_by_allocation(chart_data, portfolio, positions, allocation_name){
             var allocation_collection = allocation_name + '_allocation';
             $.each(positions, function(idx,position){
-                var shares = apply_filter(filter, position)['shares'];
+                var shares = apply_portfolio(portfolio, position)['shares'];
                 if(shares>0){
                     $.each(position[allocation_collection],function(idx,allocation){
                         var ratio = allocation['ratio']/100.0;
@@ -118,12 +118,12 @@
             });
         }
 
-        function calc_overview(filter, instrument_type, positions) {
+        function calc_overview(portfolio, instrument_type, positions) {
             //see /finance_demo/api/report/positions
             var sum = {};
             var rows = [];
             $.each(positions, function(idx,position){
-                const new_pos = apply_filter(filter, position);
+                const new_pos = apply_portfolio(portfolio, position);
                 const shares  = new_pos['shares'];
                 const capital = new_pos['capital'];
                 if(shares>0) {
@@ -149,13 +149,13 @@
             return rows;
         }
 
-        function filter_btn_clicked() {
-            on_filter_btn_clicked(this);
+        function portfolio_btn_clicked() {
+            on_portfolio_btn_clicked(this);
             refresh(the_sum_data);
         }
 
         function refresh(data) {
-            var filter = the_filters[get_active_filter()];
+            var portfolio = the_portfolios[get_active_portfolio()];
 
             var country_allocation = {};
             var region_allocation = {};
@@ -166,12 +166,12 @@
             var overview_data = [];
 
             $.each(instrument_types, function(idx, t){
-                filter_by_allocation(country_allocation,filter,data[t],'country');
-                filter_by_allocation(region_allocation,filter,data[t],'region');
-                filter_by_allocation(asset_allocation,filter,data[t],'asset');
+                filter_by_allocation(country_allocation,portfolio,data[t],'country');
+                filter_by_allocation(region_allocation,portfolio,data[t],'region');
+                filter_by_allocation(asset_allocation,portfolio,data[t],'asset');
 
                 $.each(data[t], function(idx,position) {
-                    var shares = apply_filter(filter, position)['shares'];
+                    var shares = apply_portfolio(portfolio, position)['shares'];
                     if(shares>0){
                         var value = shares*position['price']*position['xccy'];
                         var chart_data = {'y': value, 'name': position['instrument']['name']};
@@ -185,7 +185,7 @@
                     }
                 });
 
-                overview_data = overview_data.concat(calc_overview(filter,t, data[t]));
+                overview_data = overview_data.concat(calc_overview(portfolio,t, data[t]));
             });
 
             //Cash balance
@@ -209,6 +209,58 @@
 
             $('#pieStock').highcharts(pieChartOptions(null, 'Market Value', stocks, false));
             $('#pieFund').highcharts(pieChartOptions(null, 'Market Value', funds, false));
+
+            if (portfolio==null){
+                $("#portfolio-bars").hide();
+            }
+            else{
+                $("#portfolio-bars").show();
+                var instruments = [];
+                var chart_data = [
+                    {name: "Current", data: []}, // percentage for each instrument
+                    {name: "Target", data: []}
+                ]; 
+                $.each(portfolio, function(instrument, alloc){
+                    instruments.push(instrument);
+                    chart_data[0]['data'].push(alloc['current_allocation']);
+                    chart_data[1]['data'].push(alloc['target_allocation']);
+                });
+                //console.log(instruments);
+                //console.log(chart_data);
+                $('#barPortfolio').highcharts({
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        text: 'Portfolio Allocation: Current vs Target'
+                    },
+                    xAxis: {
+                        categories: instruments,
+                        crosshair: true
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: 'Allocation (%)'
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                                     '<td style="padding:0"><b>{point.y:.1f} %</b></td></tr>',
+                        footerFormat: '</table>',
+                        shared: true,
+                        useHTML: true
+                    },
+                    plotOptions: {
+                        column: {
+                            pointPadding: 0.2,
+                            borderWidth: 0
+                        }
+                    },
+                    series: chart_data  
+                });
+            }
 
             if ($.fn.dataTable.isDataTable('#overview')) {
                 table = $('#overview').DataTable();
@@ -283,9 +335,10 @@
                             chart.reflow();
                         });
 
-                        $("#filter-All").click(filter_btn_clicked);
-                        the_filters = populate_filters("{{ url_for('api.instrument_instrument_filters') }}",function(f){
-                            the_filters = f;
+                        $("#portfolio-All").click(portfolio_btn_clicked);
+                        populate_portfolios("{{ url_for('api.report_portfolios') }}",function(portfolios){
+                            // {portfolio name: {instrument: allocation}}, transformed from finance/api/report/portfolios
+                            the_portfolios = portfolios; 
                             refresh(data);
                             //if any of the 2 show below is missing, the chart won't flow
                             $('.nav-tabs').tab("show");

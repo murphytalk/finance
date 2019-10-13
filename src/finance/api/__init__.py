@@ -138,12 +138,6 @@ _simple_instrument = api.model('Simple Instrument', {
     'name': fields.String(description='Instrument name', required=True),
 })
 
-instrument_filter = api.model('Instrument filter', {
-    'name':  fields.String(description='Filter name'),
-    'extra': fields.String(description='Extra filter'),
-    'instruments': fields.List(fields.Nested(_simple_instrument), description='Instruments'),
-})
-
 instrument_position = api.model('Position of one instrument', {
     'instrument': fields.Nested(_simple_instrument, description='Instrument'),
     # 'broker': fields.String(description='The broker that keeps the position'),
