@@ -1,7 +1,8 @@
 from datetime import date
-from finance.api import api, fund_performance, positions
+from finance.api import api, fund_performance, positions, portfolio
 from flask_restplus import Resource
 from finance.common.report import FundReport, StockReport2
+from finance.common.calculate import get_portfolios
 from finance.api.endpoints import run_func_against_dao
 
 ns = api.namespace('report', description='Financial reports')
@@ -68,3 +69,10 @@ class Positions(Resource):
                              for x in dao.get_cash_balance()]}
 
         return run_func_against_dao(lambda dao: _get_all(dao))
+
+@ns.route('/portfolios')
+class Portfolios(Resource):
+    @api.marshal_list_with(portfolio)
+    def get(self):
+        portfolios = run_func_against_dao(lambda dao: get_portfolios(dao, date.today()))
+        return [{'name': name, 'allocations': portfolio.to_dict('records')} for name, portfolio in portfolios]

@@ -2,7 +2,7 @@
 from collections import deque
 from functools import reduce
 from json import dumps
-
+import pandas as pd
 from finance.common.utils import epoch2date
 
 
@@ -79,6 +79,11 @@ class Position(Model):
         return "Name=%4s,Shares=%4d,Fee=%6.2f,Liquidated=%10.2f" % (self.name, self.shares, self.fee, self.liquidated)
 
 
+def rebalance(positions, closing, target, new_fund=0):
+    pass
+
+
+# ================== to be deprecated ========================================================
 class Quote(Model):
     def __init__(self, instrument, name, price, quote_date):
         self.instrument = instrument

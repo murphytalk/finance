@@ -78,16 +78,30 @@ class ImplDao(Raw):
         return {x['id']: c(x['id'], x['name'], x['type_id'], x['type'], x['url'], x['expense_ratio'])
                 for x in self.exec(sql)}
 
-    def get_stock_latest_quotes(self, quote_date):
+    def get_stock_latest_quotes(self, quote_date, instrument_name=None, instrument_id=None):
         """
         get the latest quotes of all stocks before the given date
         :param quote_date: quote date
         :return: dict {instrument id : Quote}
         """
+        def get_instruments(name, iid):
+            if name and iid:
+                yield {'id': iid, 'name': name}
+            elif iid is None and name:
+                yield from self.exec('SELECT id, name from instrument where name=?', (name,))
+            else:
+                yield from self.exec('SELECT id, name from instrument')
+
+        def get_quote(iid, when=None):
+            if when:
+                epoch = int(timegm(when.timetuple()))
+                yield from self.exec('SELECT  price, date FROM quote WHERE instrument = ? and date <= ? ORDER BY date DESC LIMIT 1', (i, epoch))
+            else:
+                yield from self.exec('SELECT  price, date FROM quote WHERE instrument = ? ORDER BY date DESC LIMIT 1', (i,))
+
         quotes = {}
-        for i, n in [(r['id'], r['name']) for r in self.exec('SELECT id, name from instrument')]:
-            for r in self.exec('SELECT  price, date FROM quote WHERE instrument = ? ORDER BY date DESC LIMIT 1',
-                               (i,)):
+        for i, n in [(r['id'], r['name']) for r in get_instruments(instrument_name, instrument_id)]:
+            for r in get_quote(i, quote_date):
                 quotes[i] = Quote(i, n, r['price'], r['date'])
 
         return quotes
@@ -566,4 +580,13 @@ class ImplDao(Raw):
             self.exec(sql, (balance, ccy_id, broker_id))
             return True
 
-
+    def get_portfolios(self, name=None):
+        portfolios = {}
+        for x in self.exec('SELECT * from portfolio_v where name=?', (name,)) if name else self.exec('SELECT * from portfolio_v'):
+            allocation = (x['instrument_id'], x['instrument_name'], x['percentage'])
+            n = x['name']
+            if n not in portfolios:
+                portfolios[n] = [allocation]
+            else:
+                portfolios[n].append(allocation)
+        return portfolios

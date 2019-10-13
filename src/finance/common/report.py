@@ -85,6 +85,8 @@ class StockReport2(Report):
 
     def stock_positions(self, positions=None):
         def calc_stock(instrument, position):
+            if instrument not in self.q:
+                return
             v = position.shares * self.q[instrument].price
             rpt = {
                 'instrument': instrument,

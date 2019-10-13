@@ -14,6 +14,7 @@ def default_error_handler(e):
     log.exception(message)
     return {'message': message}, 500
 
+
 fund_performance = api.model('Fund performance', {
     'broker': fields.String(description='Broker name'),
     'name': fields.String(description='Instrument name'),
@@ -170,3 +171,16 @@ positions = api.model('Summary of all positions', {
     'Cash': fields.List(fields.Nested(cash), description='Cash balance')
 })
 
+portfolio_alloc = api.model('PortfolioAllocation', {
+    'instrument': fields.String(description='Instrument name'),
+    'shares': fields.Integer(description='Shares'),
+    'price': fields.Float(description='Closing price'),
+    'target_allocation': fields.Float(description='Taget allocation in percentage'),
+    'market_value': fields.Integer(description='Current market value'),
+    'current_allocation': fields.Float(description='Current allocation in percentage')
+})
+
+portfolio = api.model('Portfolio', {
+    'name': fields.String(description='Portfolio name', required=True),
+    'allocations': fields.List(fields.Nested(portfolio_alloc), description='Portfolio allocations'),
+})

@@ -240,6 +240,10 @@ CREATE TABLE portfolio_allocation(
   FOREIGN KEY (instrument) REFERENCES instrument(id)
 );
 
+create VIEW portfolio_v as
+  SELECT p.name, i.id as instrument_id, i.name as instrument_name, a.percentage from portfolio_allocation a, portfolio p, instrument i
+  WHERE p.id = a.portfolio and a.instrument = i.id;
+
 CREATE TABLE filter(
   id INTEGER PRIMARY KEY,
   name  TEXT NOT NULL,
