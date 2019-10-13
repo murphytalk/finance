@@ -1,6 +1,6 @@
 from finance.api import api
-from finance.api import instrument_asset_allocation, instrument_country_allocation, instrument_region_allocation,cash
-from finance.api import Instrument, instrument_filter
+from finance.api import instrument_asset_allocation, instrument_country_allocation, instrument_region_allocation, cash
+from finance.api import Instrument
 from flask_restplus import Resource
 from finance.api.endpoints import run_func_against_dao
 
@@ -113,45 +113,6 @@ class InstrumentRegionAllocation(Resource):
         """
         return run_func_against_dao(lambda dao: [
             {'regions': [{'Region': x[0], 'ratio': x[1]} for x in dao.get_region_allocation(instrument_name=instrument)]}])
-
-
-@ns.route('/filter')
-class InstrumentFilters(Resource):
-    @api.marshal_list_with(instrument_filter)
-    def get(self):
-        """
-        Return list of instrument filters
-        """
-        def _gen(filters):
-            return [{'name': x, 'extra': filters[x]['extra'], 'instruments': filters[x]['instruments']} for x in filters.keys()]
-        return run_func_against_dao(lambda dao: _gen(dao.get_filters()))
-
-
-@ns.route('/filter/<string:name>')
-@api.doc(params={'name': 'Filter name'})
-class InstrumentFilter(Resource):
-    @api.marshal_with(instrument_filter)
-    def get(self, name):
-        """
-        Returns the instruments in the given filter
-        :param name: filter name
-        """
-        def _gen(dao):
-            for n, f in dao.get_filters(name).items():
-                return {'name': n, 'instruments': f['instruments'], 'extra': f['extra']}
-
-        return run_func_against_dao(lambda dao: _gen(dao))
-
-    @api.response(201, 'Instrument filter successfully updated.')
-    @api.response(500, 'Cannot update instrument filter.')
-    @api.expect(instrument_filter)
-    def post(self, name):
-        """
-        Create/Update given instrument filter.
-        :param name filter name
-        """
-        return None, run_func_against_dao(
-            lambda dao: 201 if dao.update_filter(name, api.payload) else 500)
 
 
 @ns.route('/cash')

@@ -197,32 +197,6 @@ class Cash(Base):
     balance = Column(Float)
 
 
-class Filter(Base):
-    __tablename__ = "filter"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    extra = Column(String)
-
-    def __repr__(self):
-        return self.name
-
-
-class FilterInstrument(Base):
-    __tablename__ = "instrument_filter"
-
-    id = Column('ROWID', Integer, primary_key=True)
-
-    filter_id = Column('filter', Integer, ForeignKey('filter.id'))
-    filter = relationship("Filter", backref='instruments')
-
-    instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
-    instrument = relationship('Instrument')
-
-    def __repr__(self):
-        return "%s-%s" % (self.filter.name, self.instrument.name)
-
-
 class Portfolio(Base):
     __tablename__ = "portfolio"
 

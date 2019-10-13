@@ -37,10 +37,7 @@ def summary():
         'index.jinja2',
         head_title=get_head_title(),
         title='Home Page',
-        year=datetime.now().year,
-        filters=g.dao.get_filter_names()
-    )
-
+        year=datetime.now().year)
 
 @finance_page.route('/stock.json')
 def stock_json():
@@ -97,12 +94,6 @@ def country_allocation_json(instrument):
 @finance_page.route('/region.allocation/<instrument>')
 def region_allocation_json(instrument):
     return Response(region_allocation(g.dao, instrument), mimetype='application/json')
-
-
-@finance_page.route('/filter/<name>')
-def instrument_filter(name):
-    rpt = SummaryReport(g.dao, date.today(), name)
-    return Response(rpt.to_json_packed(rpt.report(g.dao)), mimetype='application/json')
 
 
 @finance_page.route('/sum.json')

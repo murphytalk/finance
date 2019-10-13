@@ -74,5 +74,8 @@ class Positions(Resource):
 class Portfolios(Resource):
     @api.marshal_list_with(portfolio)
     def get(self):
+        """
+        Return a list of portfolios
+        """
         portfolios = run_func_against_dao(lambda dao: get_portfolios(dao, date.today()))
         return [{'name': name, 'allocations': portfolio.to_dict('records')} for name, portfolio in portfolios]

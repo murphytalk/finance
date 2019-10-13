@@ -498,49 +498,6 @@ class ImplDao(Raw):
         for x in self.exec(sql, params if len(params) > 0 else None):
             yield {'date': str(epoch2date(x['date'])), 'symbol': x['name'], 'price': x['price']}
 
-    def get_filter_names(self):
-        return [x['name'] for x in self.exec('SELECT name FROM filter')]
-
-    def get_filters(self, name=None):
-        filters = {}
-
-        sql = 'SELECT * from instrument_filters '
-        if name is None:
-            param = None
-        else:
-            sql += 'WHERE filter_name=?'
-            param = (name,)
-
-        for x in self.exec(sql, param):
-            f = {'id': x['instrument_id'], 'name': x['instrument_name']}
-            if x['filter_name'] in filters:
-                filters[x['filter_name']]['instruments'].append(f)
-            else:
-                filters[x['filter_name']] = {'extra': x['extra'], 'instruments': [f] if f['id'] else None}
-        return filters
-
-    @_remove_empty_value
-    def update_filter(self, name, filters):
-        def _get_id():
-            for r in self.exec('SELECT ROWID FROM filter WHERE name=?', [name, ]):
-                return r['ROWID']
-            return None
-
-        extra = filters['extra'] if 'extra' in filters else None
-
-        filter_id = _get_id()
-        if filter_id is None:
-            self.exec('INSERT INTO filter VALUES (?,?)', (name, extra))
-            filter_id = _get_id()
-        else:
-            self.exec('UPDATE filter SET extra = ? WHERE ROWID = ?', (extra, filter_id))
-
-        self.exec('DELETE FROM instrument_filter WHERE filter = ?', (filter_id, ))
-
-        all_instruments = {x['name']: x['ROWID'] for x in self.exec('SELECT ROWID,name FROM instrument')}
-        params = [(filter_id, all_instruments[i['name']]) for i in filters['instruments']]
-        self.exec_many('INSERT INTO instrument_filter VALUES (?,?)', params)
-
     def get_cash_balance(self):
         for x in self.exec('SELECT * from cash_balance'):
             if x['ccy'] != 'JPY':
