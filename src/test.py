@@ -76,8 +76,6 @@ class TestDao(unittest.TestCase):
         )
         self.brokers = self.dao.get_broker_mapper()
         self.ccy = self.dao.get_currency_mapper()
-        self.filters = self.dao.get_filters()
-
         self.instruments = self.dao.populate_from_instruments(None, None)
 
     def test_reference_data(self):
@@ -122,12 +120,6 @@ class TestDao(unittest.TestCase):
             self.ccy,
             {"AUD": 5, "CNY": 4, "EUR": 3, "HKD": 7, "JPY": 1, "NZD": 6, "USD": 2},
         )
-        self.assertIn("All-Stocks", self.filters)
-        self.assertIn("First-Two-Stocks", self.filters)
-        self.assertIn("First-Stock-Reduce-100-Shares", self.filters)
-        for n, f in self.filters.items():
-            self.assertIn("extra", f)
-            self.assertIn("instruments", f)
 
         regions = self.dao.get_country_region_lookup()
         self.assertEqual(regions[self.country_name_to_id["US"]], "N.America")

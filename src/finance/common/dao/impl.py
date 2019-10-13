@@ -94,7 +94,7 @@ class ImplDao(Raw):
 
         def get_quote(iid, when=None):
             if when:
-                epoch = int(timegm(when.timetuple()))
+                epoch = when if isinstance(when, int) else int(timegm(when.timetuple()))
                 yield from self.exec('SELECT  price, date FROM quote WHERE instrument = ? and date <= ? ORDER BY date DESC LIMIT 1', (i, epoch))
             else:
                 yield from self.exec('SELECT  price, date FROM quote WHERE instrument = ? ORDER BY date DESC LIMIT 1', (i,))
