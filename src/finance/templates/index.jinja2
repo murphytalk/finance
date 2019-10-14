@@ -285,14 +285,17 @@
                                     return ""
                                 }
                                 else return format_num(data);
-                            }, "targets": cols
+                            }, 
+                            "targets": cols
                         },
                         {"className": "text-right", "targets": cols},
                     ],
                     null,
                     {
+                        bLengthChange: false,
+                        paging: false,
                         searching: false,
-                        paging: false
+                        info: false
                     }
             );
 
@@ -345,7 +348,6 @@
                             $('#tab1 a[href="#asset"]').tab("show");
                             $('#tab2 a[href="#stock"]').tab("show");
                          });
-
                   });
         });
     </script>

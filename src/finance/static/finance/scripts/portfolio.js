@@ -5,6 +5,9 @@ function get_active_portfolio() {
     return name;
 }
 
+function get_active_portfolio_name() {
+    return  $('#portfolios').find('.btn-success').text();
+}
 /* Input is portfolio and position
  * If returned value <0 means this instrument is portfolioed by the portfolio
  * */
@@ -53,3 +56,67 @@ function populate_portfolios(portfolio_url, after_portfolios_loaded) {
     });
 }
 
+function rebalance(){
+    $(document).ready(function () {
+        function populate_plan_data(table_id, plan_data){
+            clear_table(table_id);
+            const cols = ['instrument', 'delta_shares', 'current_allocation', 'target_allocation', 'deviation'];
+            const num_cols = [1, 2, 3, 4];
+            populate_data(
+                table_id,
+                function (d, callback, s){
+                    callback({'data': obj_to_array(plan_data, cols)});
+                },
+                null,
+                100,
+                null,
+                [
+                    {
+                        "render": function (data, type, row) {
+                            //format_num(data);
+                            return data.toFixed(2);
+                        },
+                        "targets": num_cols
+                    },
+                    {"className": "text-right", "targets": num_cols},
+                ],
+                null,
+                {
+                    bLengthChange: false,
+                    paging: false,
+                    searching: false,
+                    info: false
+                } 
+            );
+        }
+        const portfolio_name = get_active_portfolio_name();
+        const new_fund = 1000;
+        var url = '/finance/api/report/rebalance_portfolio/'.concat(portfolio_name , '/', new_fund )
+        $.getJSON(url,
+            function (data) {
+                const plans = data['plans'];
+                const plan_ids = ['#plan1', '#plan2'];
+
+                if(plans!=null){
+                    $.each(plans, function (i,v){
+                        if(v!=null){
+                            populate_plan_data(plan_ids[i].concat('_tbl'), v);
+                        }
+                    });
+                }
+                else{
+                    $.each(plans, function (i,v){ $(plan_ids[i]).hide();});
+                }
+
+                const merged = data['merged'];
+                if(merged!=null){
+                    populate_plan_data('#merged_plan_tbl', merged);
+                    $('#merged_plan').show();
+                }
+                else{
+                    $('#merged_plan').hide();
+                }
+                $("#rebalancing_popup").modal();
+        });
+    });
+}
