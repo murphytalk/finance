@@ -58,7 +58,12 @@ function populate_portfolios(portfolio_url, after_portfolios_loaded) {
 
 function rebalance(){
     $(document).ready(function () {
-        function populate_plan_data(table_id, plan_data){
+        function populate_plan_data(id, new_fund, plan_data){
+            $(id).show();
+
+            $(id.concat('_new_funds')).text("New funds: ".concat(format_num(new_fund)));
+
+            table_id = id.concat('_tbl');
             clear_table(table_id);
             const cols = ['instrument', 'delta_shares', 'current_allocation', 'target_allocation', 'deviation'];
             const num_cols = [1, 2, 3, 4];
@@ -97,21 +102,17 @@ function rebalance(){
                 const plans = data['plans'];
                 const plan_ids = ['#plan1', '#plan2'];
 
-                if(plans!=null){
-                    $.each(plans, function (i,v){
-                        if(v!=null){
-                            populate_plan_data(plan_ids[i].concat('_tbl'), v);
-                        }
-                    });
-                }
-                else{
-                    $.each(plans, function (i,v){ $(plan_ids[i]).hide();});
-                }
+                $.each(plan_ids, function (i,v){ $(v).hide();});
+
+                $.each(plans, function (i,v){
+                    if(v['allocations']!=null){
+                         populate_plan_data(plan_ids[i], v['new_funds'], v['allocations']);
+                    }
+                });
 
                 const merged = data['merged'];
-                if(merged!=null){
-                    populate_plan_data('#merged_plan_tbl', merged);
-                    $('#merged_plan').show();
+                if(merged['allocations']!=null){
+                    populate_plan_data('#merged_plan', merged['new_funds'], merged['allocations']);
                 }
                 else{
                     $('#merged_plan').hide();

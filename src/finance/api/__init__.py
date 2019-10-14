@@ -182,12 +182,17 @@ portfolio = api.model('Portfolio', {
 portfolio_rebalancing_alloc = api.model('PortfolioRebalancingAllocation', {
     'instrument': fields.String(description='Instrument name'),
     'delta_shares': fields.Integer(description='Shares to buy or sell'),
-    'target_allocation': fields.Float(description='Taget allocation in percentage'),
+    'target_allocation': fields.Float(description='Target allocation in percentage'),
     'current_allocation': fields.Float(description='Current allocation in percentage'),
     'deviation': fields.Float(description='Deviatin between current and target allocation')
 })
 
+portfolio_rebalancing_plan = api.model('PortfolioRebalancingPlan', {
+    'new_funds': fields.Float(description='Total new funds for this plan'),
+    'allocations': fields.List(fields.Nested(portfolio_rebalancing_alloc), description='Portfolio rebalancing allocations'),
+})
+
 portfolio_rebalancing = api.model('PortfolioRebalancing', {
-    'plans': fields.List(fields.List(fields.Nested(portfolio_rebalancing_alloc)), description='Portfolio rebalancing plans'),
-    'merged': fields.List(fields.Nested(portfolio_rebalancing_alloc))
+    'plans': fields.List(fields.Nested(portfolio_rebalancing_plan)),
+    'merged': fields.Nested(portfolio_rebalancing_plan)
 })

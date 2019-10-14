@@ -81,7 +81,6 @@ class Portfolios(Resource):
         portfolios = run_func_against_dao(lambda dao: get_portfolios(dao, date.today()))
         return [{'name': name, 'allocations': portfolio.to_dict('records')} for name, portfolio in portfolios]
 
-
 @ns.route('/rebalance_portfolio/<string:name>/<int:new_fund>')
 @api.doc(params={'name': 'Portfolio name'})
 @api.doc(params={'new_fund': 'Amount of new fund to invest'})
@@ -100,7 +99,7 @@ class RebalancePortfolio(Resource):
         merged = r['merged']
 
         rebalancing = {
-            'plans': [p.to_dict('records') for p in plans],
-            'merged': {} if merged is None else merged.to_dict('records')
+            'plans': [{"new_funds": p.delta_funds.sum(), "allocations": p.to_dict('records')} for p in plans],
+            'merged': {} if merged is None else {"new_funds": merged.delta_funds.sum(), "allocations": merged.to_dict('records')}
         }
         return rebalancing

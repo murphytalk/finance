@@ -87,10 +87,11 @@ def rebalance_portfolio(dao, at_which_day, name, new_fund):
     portfolio["deviation"] = abs(portfolio["target_allocation"] - portfolio["current_allocation"])
     if portfolio.deviation.max() >= REBALANCING_THRESHOLD:
         total = portfolio.market_value.sum()
-        portfolio["target_market_value"] = total * portfolio["target_allocation"]/100
+        portfolio["target_market_value"] = total * portfolio["target_allocation"] / 100
         portfolio["fund_to_transfer"] = portfolio["target_market_value"] - portfolio["market_value"]
         portfolio["delta_shares"] = round(portfolio["fund_to_transfer"] / portfolio["price"])
-        portfolio["shares"] = portfolio["shares"] + portfolio["delta_shares"] 
+        portfolio["delta_funds"] = portfolio["delta_shares"] * portfolio["price"]
+        portfolio["shares"] = portfolio["shares"] + portfolio["delta_shares"]
 
         calc_cur_allocation(portfolio)
         rebalancing_plans.append(portfolio.copy())
@@ -98,12 +99,14 @@ def rebalance_portfolio(dao, at_which_day, name, new_fund):
     if new_fund > 0:
         portfolio["fund_allocation"] = new_fund * portfolio["target_allocation"] / 100
         portfolio["delta_shares"] = round(portfolio["fund_allocation"] / portfolio["price"])
+        portfolio["delta_funds"] = portfolio["delta_shares"] * portfolio["price"]
         portfolio["shares"] += portfolio["delta_shares"]
 
         calc_cur_allocation(portfolio)
         rebalancing_plans.append(portfolio.copy())
 
     if len(rebalancing_plans) > 1:
-        portfolio["delta_shares"] += rebalancing_plans[0]["delta_shares"] 
+        portfolio["delta_shares"] += rebalancing_plans[0]["delta_shares"]
+        portfolio["delta_funds"] = portfolio["delta_shares"] * portfolio["price"]
 
     return {'plans': rebalancing_plans, 'merged': portfolio if len(rebalancing_plans) > 1 else None}
