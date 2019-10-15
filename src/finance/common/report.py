@@ -199,7 +199,6 @@ class SummaryReport(Report):
         }
 
 
-
 def get_pie_chart_data(generator):
     """
     return an array to be fed to HighCharts to plot pie chart

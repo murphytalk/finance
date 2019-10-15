@@ -65,8 +65,8 @@ function rebalance(){
 
             table_id = id.concat('_tbl');
             clear_table(table_id);
-            const cols = ['instrument', 'delta_shares', 'current_allocation', 'target_allocation', 'deviation'];
-            const num_cols = [1, 2, 3, 4];
+            const cols = ['instrument', 'delta_shares', 'price', 'current_allocation', 'target_allocation', 'deviation'];
+            const num_cols = [1, 2, 3, 4, 5];
             populate_data(
                 table_id,
                 function (d, callback, s){

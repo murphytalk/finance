@@ -184,7 +184,8 @@ portfolio_rebalancing_alloc = api.model('PortfolioRebalancingAllocation', {
     'delta_shares': fields.Integer(description='Shares to buy or sell'),
     'target_allocation': fields.Float(description='Target allocation in percentage'),
     'current_allocation': fields.Float(description='Current allocation in percentage'),
-    'deviation': fields.Float(description='Deviatin between current and target allocation')
+    'deviation': fields.Float(description='Deviatin between current and target allocation'),
+    'price': fields.Float(description='closing price')
 })
 
 portfolio_rebalancing_plan = api.model('PortfolioRebalancingPlan', {
