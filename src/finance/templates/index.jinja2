@@ -1,8 +1,8 @@
 {% extends "portfolio.jinja2" %}
 
 {% block content %}
-    <div class="row">
-        <h2 class="text-center">Overview</h2>
+    <div class="row top5 ">
+        <h2 class="mx-auto top5">Overview</h2>
     </div>
     <div class="row top5 bottom5">
         <div class="col-md-12">
@@ -42,20 +42,20 @@
     <div class="row">
         <div class="col-md-6">
             <h2 class="text-center">Wealth Allocations</h2>
-            <ul id="tab1" class="nav nav-tabs">
-                <li class="active"><a data-toggle="tab" href="#asset">Asset</a></li>
-                <li><a data-toggle="tab" href="#region">Region</a></li>
-                <li><a data-toggle="tab" href="#country">Country</a></li>
+            <ul id="tab1" class="nav nav-tabs" role="tablist">
+                <li class="nav-item"><a class="nav-link active" id="asset-tab" data-toggle="tab" href="#asset" role="tab" aria-controls="asset" aria-selected="true">Asset</a></li>
+                <li class="nav-item"><a class="nav-link" id="region-tab" data-toggle="tab" href="#region" role="tab" aria-controls="region" aria-selected="false">Region</a></li>
+                <li class="nav-item"><a class="nav-link" id="country-tab" data-toggle="tab" href="#country" role="tab" aria-controls="country" aria-selected="false">Country</a></li>
             </ul>
-            <div class="tab-content">
-                <div id="asset" class="tab-pane fade">
+            <div class="tab-content" id="tab0Content">
+                <div id="asset" class="tab-pane fade show active" role="tabpanel" aria-labelledby="asset-tab">
                     <div id="pieAsset" class="text-center"></div>
                 </div>
-                <div id="region" class="tab-pane fade">
-                    <div id="pieRegion">></div>
+                <div id="region" class="tab-pane fade" role="tabpanel" aria-labelledby="region-tab">
+                    <div id="pieRegion"></div>
                 </div>
-                <div id="country" class="tab-pane fade">
-                    <div id="pieCountry">></div>
+                <div id="country" class="tab-pane fade" role="tabpanel" aria-labelledby="country-tab">
+                    <div id="pieCountry"></div>
                 </div>
             </div>
         </div>
@@ -151,25 +151,92 @@
 
         function portfolio_btn_clicked() {
             on_portfolio_btn_clicked(this);
-            refresh(the_sum_data);
+            const portfolio = the_portfolios[get_active_portfolio()];
+            refresh(the_sum_data, portfolio);
+            populate_portfolio_adjustment_inputs(portfolio);
         }
 
-        function refresh(data) {
-            var portfolio = the_portfolios[get_active_portfolio()];
+        function portfolio_alloc_changed(instrument_name, shares){
+            console.log(instrument_name);
+            console.log(shares);
+        }
 
+        function populate_portfolio_adjustment_inputs(portfolio){
+            // inputs to adjust portfolio allocations 
+            /// remove the old ones
+             $("#rebalance_inputs").children('label').remove();
+             $("#rebalance_inputs").children('input').remove();
+            /// populate the new ones
+            $.each(portfolio, function(instrument_name, alloc){
+                const instrument_share = '<label class="mb-2 mr-sm-2">'.concat(instrument_name).concat('</label>')
+                                 .concat('<input type="number" min="1" class="form-control mb-2 mr-sm-2" id="').concat(instrument_name).concat('" placeholder="').concat(alloc['shares']).concat('">');
+                $(instrument_share).insertBefore(rebalance_btn);
+                $('#'.concat(instrument_name)).change(function (){portfolio_alloc_changed(this.id, this.value);});
+            });
+        }
+
+        function draw_portfolio_bars(portfolio){
+            var instruments = [];
+            var chart_data = [
+                {name: "Current", data: []}, // percentage for each instrument
+                {name: "Target", data: []}
+            ]; 
+            $.each(portfolio, function(instrument, alloc){
+                instruments.push(instrument);
+                chart_data[0]['data'].push(alloc['current_allocation']);
+                chart_data[1]['data'].push(alloc['target_allocation']);
+            });
+            //console.log(instruments);
+            //console.log(chart_data);
+            $('#barPortfolio').highcharts({
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: 'Portfolio Allocation: Current vs Target'
+                },
+                xAxis: {
+                    categories: instruments,
+                    crosshair: true
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Allocation (%)'
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                    pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                                 '<td style="padding:0"><b>{point.y:.1f} %</b></td></tr>',
+                    footerFormat: '</table>',
+                    shared: true,
+                    useHTML: true
+                },
+                plotOptions: {
+                    column: {
+                        pointPadding: 0.2,
+                        borderWidth: 0
+                    }
+                },
+                series: chart_data  
+            });
+        }
+
+        function refresh(data, portfolio) {
             var country_allocation = {};
             var region_allocation = {};
             var asset_allocation = {};
-
+    
             var stocks = [];
             var funds = [];
             var overview_data = [];
-
+    
             $.each(instrument_types, function(idx, t){
                 filter_by_allocation(country_allocation,portfolio,data[t],'country');
                 filter_by_allocation(region_allocation,portfolio,data[t],'region');
                 filter_by_allocation(asset_allocation,portfolio,data[t],'asset');
-
+    
                 $.each(data[t], function(idx,position) {
                     var shares = apply_portfolio(portfolio, position)['shares'];
                     if(shares>0){
@@ -184,10 +251,10 @@
                         }
                     }
                 });
-
+    
                 overview_data = overview_data.concat(calc_overview(portfolio,t, data[t]));
             });
-
+    
             //Cash balance
             var cash = {}
             $.each(data['Cash'],function(idx,balance){
@@ -202,66 +269,22 @@
             $.each(cash,function(ccy,balance){
                 overview_data.push(['Cash',ccy,balance[0],balance[1],0,0]);
             });
-
+    
             $('#pieCountry').highcharts(pieChartOptions(null, 'Market Value', to_chart_data_array(country_allocation), false));
             $('#pieRegion').highcharts(pieChartOptions(null, 'Market Value', to_chart_data_array(region_allocation), false));
             $('#pieAsset').highcharts(pieChartOptions(null, 'Market Value', to_chart_data_array(asset_allocation), false));
-
+    
             $('#pieStock').highcharts(pieChartOptions(null, 'Market Value', stocks, false));
             $('#pieFund').highcharts(pieChartOptions(null, 'Market Value', funds, false));
-
+    
             if (portfolio==null){
                 $("#portfolio-bars").hide();
             }
             else{
                 $("#portfolio-bars").show();
-                var instruments = [];
-                var chart_data = [
-                    {name: "Current", data: []}, // percentage for each instrument
-                    {name: "Target", data: []}
-                ]; 
-                $.each(portfolio, function(instrument, alloc){
-                    instruments.push(instrument);
-                    chart_data[0]['data'].push(alloc['current_allocation']);
-                    chart_data[1]['data'].push(alloc['target_allocation']);
-                });
-                //console.log(instruments);
-                //console.log(chart_data);
-                $('#barPortfolio').highcharts({
-                    chart: {
-                        type: 'column'
-                    },
-                    title: {
-                        text: 'Portfolio Allocation: Current vs Target'
-                    },
-                    xAxis: {
-                        categories: instruments,
-                        crosshair: true
-                    },
-                    yAxis: {
-                        min: 0,
-                        title: {
-                            text: 'Allocation (%)'
-                        }
-                    },
-                    tooltip: {
-                        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                                     '<td style="padding:0"><b>{point.y:.1f} %</b></td></tr>',
-                        footerFormat: '</table>',
-                        shared: true,
-                        useHTML: true
-                    },
-                    plotOptions: {
-                        column: {
-                            pointPadding: 0.2,
-                            borderWidth: 0
-                        }
-                    },
-                    series: chart_data  
-                });
-            }
-
+                draw_portfolio_bars(portfolio);
+           }
+    
             if ($.fn.dataTable.isDataTable('#overview')) {
                 table = $('#overview').DataTable();
                 table.destroy();
@@ -298,23 +321,24 @@
                         info: false
                     }
             );
-
+    
             var total_value  = 0;
             var total_profit = 0;
             $.each(overview_data, function(i,v){
                 total_value += v[3];
                 total_profit+= v[5];
             });
-
+    
             update_sum(overview_table, '¥', 3, total_value, '#value_jpy');
             update_sum(overview_table, '¥', 5, total_profit, '#profit_jpy');
-        }
-
+    
+       }
+    
         $(document).ready(function () {
             $.getJSON("{{ url_for('api.report_positions')}}",
                     function (data) {
                         the_sum_data = data;
-
+    
                         //reflow chart when its host tab is shown, otherwise the chart won't position itself at center
                         $('.nav-tabs a').on('shown.bs.tab', function (event) {
                             var x = $(event.target).text();         // active tab
@@ -337,12 +361,12 @@
                             var chart = $(chart_selector).highcharts();
                             chart.reflow();
                         });
-
+    
                         $("#portfolio-All").click(portfolio_btn_clicked);
                         populate_portfolios("{{ url_for('api.report_portfolios') }}",function(portfolios){
                             // {portfolio name: {instrument: allocation}}, transformed from finance/api/report/portfolios
                             the_portfolios = portfolios; 
-                            refresh(data);
+                            refresh(data,the_portfolios[get_active_portfolio()]);
                             //if any of the 2 show below is missing, the chart won't flow
                             $('.nav-tabs').tab("show");
                             $('#tab1 a[href="#asset"]').tab("show");

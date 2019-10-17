@@ -4,9 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} - My Finance</title>
-    <link rel="stylesheet" type="text/css" href="/static/finance/content/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="/static/finance/content/site.css" />
-    <script src="/static/finance/scripts/modernizr-2.6.2.js"></script>
     <style>
         .container-fluid {
             padding-right:50px;
@@ -29,28 +28,23 @@
 </head>
 
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a href="{{ url_for('finance_page.summary') }}" class="navbar-brand">{{head_title}}</a>
+    <header>
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+            <a href="{{ url_for('finance_page.summary') }}" class="navbar-brand">{{head_title}}</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <div class="navbar-nav mr-auto">
+                    <a class="nav-item nav-link" href="{{ url_for('finance_page.stock') }}">Stock 	&amp; ETF</a>
+                    <a class="nav-item nav-link" href="{{ url_for('finance_page.fund') }}">Mutual Funds</a>
+                    <a class="nav-item nav-link" href="{{ url_for('finance_page.db') }}">Raw Data Viewer</a>
+                    <a class="nav-item nav-link" href="{{ url_for('admin.index') }}">Admin</a>
+                    <a class="nav-item nav-link" href="{{ url_for('api.doc') }}">API</a>
+                </div>
             </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li><a href="{{ url_for('finance_page.stock') }}">Stock 	&amp; ETF</a></li>
-                    <li><a href="{{ url_for('finance_page.fund') }}">Mutual Funds</a></li>
-                    <li><a href="{{ url_for('finance_page.db') }}">Raw Data Viewer</a></li>
-                    <li><a href="{{ url_for('admin.index') }}">Admin</a></li>
-                    <li><a href="{{ url_for('api.doc') }}">API</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
+        </nav>
+    </header>
 
     <div class="container-fluid">
         {% block content %}{% endblock %}
@@ -60,9 +54,9 @@
         </footer>
     </div>
 
-    <script type="text/javascript" src="/static/finance/scripts/jquery-1.10.2.min.js"></script>
-    <script type="text/javascript" src="/static/finance/scripts/bootstrap.js"></script>
-    <script type="text/javascript" src="/static/finance/scripts/respond.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
     <script type="text/javascript" src="https://code.highcharts.com/modules/exporting.js"></script>
     {% block scripts %}{% endblock %}
