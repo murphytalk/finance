@@ -62,7 +62,7 @@ def get_portfolios(dao, at_which_day, name=None):
         portfolio = reduce(lambda left, right: pd.merge(left, right, on='instrument'), [positions, closings, targets])
         portfolio['market_value'] = portfolio['shares'] * portfolio['price']
         total_value = portfolio.market_value.sum()
-        portfolio['current_allocation'] = 100 * portfolio['market_value']/total_value
+        portfolio['current_allocation'] = 100 * portfolio['market_value'] / total_value
         return portfolio
 
     return [(name, get_portfolio(name, p)) for name, p in dao.get_portfolios(name).items()]
@@ -70,7 +70,7 @@ def get_portfolios(dao, at_which_day, name=None):
 
 def rebalance_portfolio(dao, at_which_day, name, new_fund):
     def calc_cur_allocation(port):
-        port['market_value'] = port['shares']*port['price']
+        port['market_value'] = port['shares'] * port['price']
         total_value = port.market_value.sum()
         port['current_allocation'] = 100 * port['market_value'] / total_value
         port["deviation"] = port["target_allocation"] - port["current_allocation"]
