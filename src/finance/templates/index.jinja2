@@ -156,12 +156,7 @@
             populate_portfolio_adjustment_inputs(portfolio);
         }
 
-        function portfolio_alloc_changed(instrument_name, shares){
-            console.log(instrument_name);
-            console.log(shares);
-        }
-
-        function populate_portfolio_adjustment_inputs(portfolio){
+       function populate_portfolio_adjustment_inputs(portfolio){
             // inputs to adjust portfolio allocations 
             /// remove the old ones
              $("#rebalance_inputs").children('label').remove();
@@ -223,7 +218,27 @@
             });
         }
 
-        function refresh(data, portfolio) {
+        function portfolio_alloc_changed(instrument_name, shares){
+            const portfolio = the_portfolios[get_active_portfolio()];
+            // make a deep copy and apply changes to it
+            // it will be discarded after the allocation bars are drawn
+            // TODO: how to apply the change to overview
+            var portfolio_copy = $.extend(true, {}, portfolio) ; 
+            portfolio_copy[instrument_name]['shares']  = shares;
+
+            var total_value = 0;
+            $.each(portfolio_copy, function(name, alloc){
+                var value = alloc['shares'] * alloc['price'];
+                alloc['market_value'] = value;
+                total_value += value;
+            }); 
+            $.each(portfolio_copy, function(name, alloc){
+                alloc['current_allocation'] = 100 * alloc['market_value'] / total_value; 
+            }); 
+            draw_portfolio_bars(portfolio_copy);
+        }
+
+         function refresh(data, portfolio) {
             var country_allocation = {};
             var region_allocation = {};
             var asset_allocation = {};
