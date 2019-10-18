@@ -151,7 +151,13 @@
 
         function portfolio_btn_clicked() {
             on_portfolio_btn_clicked(this);
-            const portfolio = the_portfolios[get_active_portfolio()];
+            var portfolio = the_portfolios[get_active_portfolio()];
+            $.each(portfolio, function (name, alloc){
+                // shares might have been adjusted, restore the original value
+                alloc['shares'] = alloc['original_shares'];
+                alloc['market_value'] = alloc['original_market_value'];
+                alloc['current_allocation'] = alloc['original_current_allocation'];
+            });
             refresh(the_sum_data, portfolio);
             populate_portfolio_adjustment_inputs(portfolio);
         }
@@ -163,11 +169,14 @@
              $("#rebalance_inputs").children('input').remove();
             /// populate the new ones
             $.each(portfolio, function(instrument_name, alloc){
-                const instrument_share = '<label class="mb-2 mr-sm-2">'.concat(instrument_name).concat('</label>')
-                                 .concat('<input type="number" min="1" class="form-control mb-2 mr-sm-2" id="').concat(instrument_name).concat('" placeholder="').concat(alloc['shares']).concat('">');
+                const instrument_share = 
+                format('<label class="mb-2 mr-sm-2">%%</label><label id="delta_%%" class="mb-2 mr-sm-2"></label><input type="number" min="1" class="form-control mb-2 mr-sm-2" id="%%" placeholder="%%">',
+                    instrument_name, instrument_name, instrument_name, alloc['shares']
+                );
                 $(instrument_share).insertBefore(rebalance_btn);
                 $('#'.concat(instrument_name)).change(function (){portfolio_alloc_changed(this.id, this.value);});
             });
+            $('<label id="rebalance_adjust_total" class="mb-2 mr-sm-2"></label>').insertBefore(rebalance_btn);
         }
 
         function draw_portfolio_bars(portfolio){
@@ -219,23 +228,44 @@
         }
 
         function portfolio_alloc_changed(instrument_name, shares){
-            const portfolio = the_portfolios[get_active_portfolio()];
-            // make a deep copy and apply changes to it
-            // it will be discarded after the allocation bars are drawn
-            // TODO: how to apply the change to overview
-            var portfolio_copy = $.extend(true, {}, portfolio) ; 
-            portfolio_copy[instrument_name]['shares']  = shares;
+            function format_buy_sell(value, formatter){
+                return value == 0 ? '' : format("%% %%", value < 0 ? "Sell" : "Buy", formatter(Math.abs(value)));
+            }
+
+            function toggle_share_value(label_id, value){
+                if (value < 0){
+                    $(label_id).addClass('text-danger');
+                    $(label_id).removeClass('text-success');
+                }
+                else{
+                    $(label_id).removeClass('text-danger');
+                    $(label_id).addClass('text-success');
+                }
+            }
+            var portfolio = the_portfolios[get_active_portfolio()];
+            const delta_shares = shares - portfolio[instrument_name]['original_shares'];
+            portfolio[instrument_name]['shares']  = shares;
 
             var total_value = 0;
-            $.each(portfolio_copy, function(name, alloc){
+            var adjust_value = 0;
+            $.each(portfolio, function(name, alloc){
                 var value = alloc['shares'] * alloc['price'];
                 alloc['market_value'] = value;
                 total_value += value;
+                if (name.localeCompare(instrument_name) == 0){
+                    const delta_id = '#delta_'.concat(instrument_name);
+                    const new_shares = delta_shares == 0 ? '' : format("(%%)", format_buy_sell(delta_shares, function (value) {return value.toFixed(0);}));
+                    $(delta_id).text(new_shares);
+                    toggle_share_value(delta_id, delta_shares);
+               }
+                adjust_value += (alloc["shares"] - alloc["original_shares"]) * alloc['price'];
             }); 
-            $.each(portfolio_copy, function(name, alloc){
+            $.each(portfolio, function(name, alloc){
                 alloc['current_allocation'] = 100 * alloc['market_value'] / total_value; 
             }); 
-            draw_portfolio_bars(portfolio_copy);
+            $('#rebalance_adjust_total').text(format_buy_sell(adjust_value, function (value) {return format_num(value);}));
+            toggle_share_value('#rebalance_adjust_total', adjust_value);
+            draw_portfolio_bars(portfolio);
         }
 
          function refresh(data, portfolio) {

@@ -141,3 +141,12 @@ function update_sum(table, ccy_sign, col_idx, total_value, footer_id){
 function update_avg(table, ccy_sign, col_idx, total_value, footer_id){
     update_footer(table,ccy_sign,col_idx,total_value,footer_id,function(t,v,n){return v/n;});
 }
+
+// need ES6
+// https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
+function format(fmt, ...args){
+    return fmt
+        .split("%%")
+        .reduce((aggregate, chunk, i) =>
+            aggregate + chunk + (args[i] || ""), "");
+}
