@@ -47,7 +47,7 @@
                 <li class="nav-item"><a class="nav-link" id="region-tab" data-toggle="tab" href="#region" role="tab" aria-controls="region" aria-selected="false">Region</a></li>
                 <li class="nav-item"><a class="nav-link" id="country-tab" data-toggle="tab" href="#country" role="tab" aria-controls="country" aria-selected="false">Country</a></li>
             </ul>
-            <div class="tab-content" id="tab0Content">
+            <div class="tab-content" id="tab1Content">
                 <div id="asset" class="tab-pane fade show active" role="tabpanel" aria-labelledby="asset-tab">
                     <div id="pieAsset" class="text-center"></div>
                 </div>
@@ -61,15 +61,15 @@
         </div>
         <div class="col-md-6">
             <h2 class="text-center">Instrument Allocations</h2>
-            <ul id="tab2" class="nav nav-tabs">
-                <li class="active"><a data-toggle="tab" href="#stock">Stock/ETF</a></li>
-                <li><a data-toggle="tab" href="#fund">Mutual Funds</a></li>
+            <ul id="tab2" class="nav nav-tabs" role="tablist">
+                <li class="nav-item"><a class="nav-link active" id="stock-tab" data-toggle="tab" href="#stock" role="tab" aria-controls="stock" aria-selected="true">Stock/ETF</a></li>
+                <li class="nav-item"><a class="nav-link" id="fund-tab" data-toggle="tab" href="#fund" role="tab" aria-controls="fund" aria-selected="false">Mutual Funds</a></li>
             </ul>
-            <div class="tab-content">
-                <div id="stock" class="tab-pane fade">
-                    <div id="pieStock"></div>
+            <div class="tab-content" id="tab2Content">
+                <div id="stock" class="tab-pane fade show active" role="tabpanel" aria-labelledby="stock-tab">
+                    <div id="pieStock" class="text-center"></div>
                 </div>
-                <div id="fund" class="tab-pane fade">
+                <div id="fund" class="tab-pane fade" role="tabpanel" aria-labelledby="fund-tab">
                     <div id="pieFund"></div>
                 </div>
             </div>

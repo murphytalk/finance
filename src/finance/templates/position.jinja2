@@ -8,28 +8,27 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">
                     <a id="detail_link" target="_blank">link</a>
                 </h4>
             </div>
             <div class="modal-body">
-                <ul class="nav nav-tabs">
-                    <li class="active"><a data-toggle="tab" href="#asset">Asset</a></li>
-                    <li><a data-toggle="tab" href="#region">Region</a></li>
-                    <li><a data-toggle="tab" href="#country">Country</a></li>
-                </ul>
-                <div class="tab-content">
-                    <div id="asset" class="tab-pane fade in active">
-                        <div id="pieAsset"></div>
-                    </div>
-                    <div id="region" class="tab-pane fade">
-                        <div id="pieRegion"></div>
-                    </div>
-                    <div id="country" class="tab-pane fade">
-                        <div id="pieCountry"></div>
-                    </div>
+            <ul id="tab1" class="nav nav-tabs" role="tablist">
+                <li class="nav-item"><a class="nav-link active" id="asset-tab" data-toggle="tab" href="#asset" role="tab" aria-controls="asset" aria-selected="true">Asset</a></li>
+                <li class="nav-item"><a class="nav-link" id="region-tab" data-toggle="tab" href="#region" role="tab" aria-controls="region" aria-selected="false">Region</a></li>
+                <li class="nav-item"><a class="nav-link" id="country-tab" data-toggle="tab" href="#country" role="tab" aria-controls="country" aria-selected="false">Country</a></li>
+            </ul>
+            <div class="tab-content" id="tab1Content">
+                <div id="asset" class="tab-pane fade show active" role="tabpanel" aria-labelledby="asset-tab">
+                    <div id="pieAsset" class="text-center"></div>
                 </div>
+                <div id="region" class="tab-pane fade" role="tabpanel" aria-labelledby="region-tab">
+                    <div id="pieRegion"></div>
+                </div>
+                <div id="country" class="tab-pane fade" role="tabpanel" aria-labelledby="country-tab">
+                    <div id="pieCountry"></div>
+                </div>
+            </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
