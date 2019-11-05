@@ -114,7 +114,7 @@
                 var rows = [];
                 $.each(data, function (instrument_type, v) {
                     $.each(v, function (idx, d) {
-                        var row = [instrument_type];
+                        var row ={'type': instrument_type};
                         var value = d["value"];
                         var liquidated = d["liquidated"];
                         var vwap = d["vwap"];
@@ -123,25 +123,24 @@
                         sum["value_jpy"] += value["JPY"];
                         update_sum_by_ccy("liquidated", liquidated["ccy"], liquidated[liquidated["ccy"]]);
                         sum["liquidated_jpy"] += liquidated["JPY"];
-                        row.push(
-                            d["symbol"],
-                            d["price"],
-                            d["shares"],
-                            value["ccy"],
-                            vwap[vwap["ccy"]],
-                            vwap["JPY"],
-                            value[value["ccy"]],
-                            value["JPY"],
-                            market_profit[market_profit["ccy"]],
-                            market_profit["JPY"],
-                            liquidated[liquidated["ccy"]],
-                            liquidated["JPY"],
-                            value[value["ccy"]] + liquidated[liquidated["ccy"]], //profit
-                            value["JPY"] + liquidated["JPY"],
-                            liquidated["rate_date"],
-                            d["instrument"],
-                            d["url"]
-                        );
+
+                        row["name"] = d["symbol"],
+                        row["price"] = d["price"],
+                        row["shares"] = d["shares"],
+                        row["ccy"] = value["ccy"],
+                        row["vwap_ccy"] = vwap[vwap["ccy"]],
+                        row["vwap_jpy"] = vwap["JPY"],
+                        row["value_ccy"] = value[value["ccy"]],
+                        row["value_jpy"] = value["JPY"],
+                        row["mkt_profit_ccy"] = market_profit[market_profit["ccy"]],
+                        row["mkt_profit_jpy"] = market_profit["JPY"],
+                        row["liq_ccy"] = liquidated[liquidated["ccy"]],
+                        row["liq_jpy"] = liquidated["JPY"],
+                        row["profit_ccy"] = value[value["ccy"]] + liquidated[liquidated["ccy"]], //profit
+                        row["profit_jpy"] = value["JPY"] + liquidated["JPY"],
+                        row["rate_date"] = liquidated["rate_date"],
+                        row["instrument_id"] = d["instrument"],
+                        row["url"] = d["url"]
                         rows.push(row);
                     });
                 });
@@ -158,9 +157,7 @@
                     [
                         {
                             "render": function (data, type, row) {
-                                //row[16] => instrument id =>index 16 in the json array assigned to this row
-                                //see view.stock
-                                return '<a href="#" onclick="showInstrumentDetail(' + row[16] + ');return false;">' + data + '</a>'
+                                return '<a href="#" onclick="showInstrumentDetail(' + row['instrument_id'] + ');return false;">' + data + '</a>'
                             }, "targets": 1
                         },
                         {
@@ -174,24 +171,41 @@
                     null,
                     {
                         'rowCallback': function (row, data, index) {
-                            if (data[5] == 0) {
+                            if (data["shares"] == 0) {
                                 //closed position
                                 for (i = 5; i < 11; i++) {
                                     $(row).find('td:eq(' + i + ')').html('');
                                 }
                             }
-                            else if (data[2] != data[5]) {
+                            else if (data["price"] != data["vwap_ccy"]) { //market price is different than vwap
                                 var cell_vwap = $(row).find('td:eq(5)');
                                 var cell_vwap_jpy = $(row).find('td:eq(6)');
                                 var cell_market_profit = $(row).find('td:eq(9)');
                                 var cell_market_profit_jpy = $(row).find('td:eq(10)');
-                                var color = data[2] < data[5] ? 'red' : 'green';
+                                var color = data["price"] < data["vwap_ccy"] ? 'red' : 'green';
                                 cell_vwap.css('color', color);
                                 cell_vwap_jpy.css('color', color);
                                 cell_market_profit.css('color', color);
                                 cell_market_profit_jpy.css('color', color);
                             }
-                        }
+                        },
+                        'columns': [
+                            {"data": "type"},
+                            {"data": "name"},
+                            {"data": "price"},
+                            {"data": "shares"},
+                            {"data": "ccy"},
+                            {"data": "vwap_ccy"},
+                            {"data": "vwap_jpy"},
+                            {"data": "value_ccy"},
+                            {"data": "value_jpy"},
+                            {"data": "mkt_profit_ccy"},
+                            {"data": "mkt_profit_jpy"},
+                            {"data": "liq_ccy"},
+                            {"data": "liq_jpy"},
+                            {"data": "profit_ccy"},
+                            {"data": "profit_jpy"}
+                        ]
                     }
                 );
                 $('#xccy_date').html(rows[0][15]);
