@@ -67,9 +67,7 @@ def stock():
         "stock.jinja2",
         head_title=get_head_title(),
         title="Stock & ETF",
-        year=datetime.now().year,
-        instrument_id_idx=16,
-        url_idx=17,
+        year=datetime.now().year
     )
 
 
@@ -80,9 +78,7 @@ def fund():
         "fund.jinja2",
         head_title=get_head_title(),
         title="Mutual Funds",
-        year=datetime.now().year,
-        instrument_id_idx=9,
-        url_idx=10,
+        year=datetime.now().year
     )
 
 

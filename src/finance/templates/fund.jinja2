@@ -2,7 +2,7 @@
 
 {% block content %}
 {{ super() }}
-<div class="row top5 bottom5">
+<div class="row top10 bottom5">
     <div class="col-md-12">
         <table class="table table-hover" id="funds">
             <thead>
@@ -15,6 +15,7 @@
                 <th class="text-right">Capital</th> <!-- idx 5 -->
                 <th class="text-right">Value</th>
                 <th class="text-right">Profit</th>
+                <th class="text-right">ROI</th>
                 <th>Date</th>
             </tr>
             </thead>
@@ -59,16 +60,13 @@
                         sum["capital"] += d['capital'];
                         sum["value"] += d['value'];
                         sum["profit"] += d['profit'];
+                        d['roi'] = 100 * d['profit'] / d['capital']
                     });
-                   const num_cols = [2, 3, 4, 5, 6, 7];
+                   const num_cols = [2, 3, 4, 5, 6, 7, 8];
                    table = populate_data(
                            '#funds',
                            function(d,callback,s){
-                                callback({'data':
-                                obj_to_array(
-                                        data,
-                                        ["broker", "name", 'expense_ratio', 'price', 'amount',
-                                         'capital', 'value','profit','date','instrument_id','url'])});
+                                callback({'data':data});
                             },
                             [[0, 'asc'], [1, 'asc']],
                             20,
@@ -76,9 +74,7 @@
                             [
                                 {
                                     "render": function (data, type, row) {
-                                        //row[9] => instrument id =>index 9 in the json array assigned to this row
-                                        //see FundReport
-                                        return '<a href="#" onclick="showInstrumentDetail(' + row[9] + ');return false;">' + data + '</a>'
+                                        return '<a href="#" onclick="showInstrumentDetail(' + row['instrument_id'] + ');return false;">' + data + '</a>'
                                     }, "targets": 1
                                 },
                                 {
@@ -88,7 +84,19 @@
                                 },
                                 {"className": "text-right", "targets": num_cols},
                             ],
-                            null
+                            null,
+                            {"columns": [
+                                { "data": "broker" },
+                                { "data": "name" },
+                                { "data": "expense_ratio" },
+                                { "data": "price" },
+                                { "data": "amount" },
+                                { "data": "capital" },
+                                { "data": "value" },
+                                { "data": "profit" },
+                                { "data": "roi" },
+                                { "data": "date" },
+                            ]} 
                     );
         });
 

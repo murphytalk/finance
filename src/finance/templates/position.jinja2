@@ -56,8 +56,7 @@
         var data = table.rows({page: 'current'}).data();
         var row_idx = -1;
         $.each(data, function (idx, r) {
-            //instrument_id_idx is passed to template from views
-            if (instrument_id == r[{{instrument_id_idx}}]) {
+            if (instrument_id == r['instrument_id']) {
                 row_idx = idx;
                 return false;
             }
@@ -68,9 +67,9 @@
         else {
             var row_data = data[row_idx];
             var a = $('#detail_link');
-            instrument_name = row_data[1].replace(/（.*）/i,"");
+            instrument_name = row_data['name'].replace(/（.*）/i,"");
             a.text(instrument_name);
-            a.attr("href", row_data[{{url_idx}}]);
+            a.attr("href", row_data['url']);
             //We are putting highcharts inside the modal window.
             //The problem is the chart does not know when to reflow itself to fit the container.
             //So we defer the chart building until modal is shown, we remember the instrument id here
