@@ -41,7 +41,7 @@ INSERT INTO country (name) VALUES('China');
 INSERT INTO country (name) VALUES('Japan');
 INSERT INTO country (name) VALUES('Asia Other');
 INSERT INTO country (name) VALUES('S.America Other');
-INSERT INTO country (name) VALUES('placeholder');
+INSERT INTO country (name) VALUES('Brazil');
 INSERT INTO country (name) VALUES('E.Europe Other');
 INSERT INTO country (name) VALUES('Australia');
 INSERT INTO country (name) VALUES('Taiwan');
