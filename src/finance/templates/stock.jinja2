@@ -146,13 +146,15 @@
                 });
                 const num_cols = [2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
                 const txt_cols = [0, 1, 4];
+                var items = window.localStorage.getItem('stock_items_per_page');
+                items =items == null ? 15 : parseInt(items);
                 table = populate_data(
                     '#stocks',
                     function (d, callback, s) {
                         callback({'data': rows});
                     },
                     [[0, 'asc'], [1, 'asc']],
-                    15,
+                    items,
                     null,
                     [
                         {
@@ -221,6 +223,9 @@
                 update_sum(table,'¥',12 ,sum["liquidated_jpy"],'#liq-jpy');
                 //update_sum(table,'$',13 ,sum["value"]+sum["liquidated"],'#profit');
                 //update_sum(table,'¥',14,sum["value_jpy"]+sum["liquidated_jpy"],'#profit-jpy');
+            });
+            $('#stocks').on('length.dt',function(e,settings, len){
+                window.localStorage.setItem('stock_items_per_page', len.toString());
             });
         });
 </script>
