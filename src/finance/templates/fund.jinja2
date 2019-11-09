@@ -63,13 +63,15 @@
                         d['roi'] = 100 * d['profit'] / d['capital']
                     });
                    const num_cols = [2, 3, 4, 5, 6, 7, 8];
+                   var items = window.localStorage.getItem('fund_items_per_page');
+                   items =items == null ? 20 : parseInt(items);
                    table = populate_data(
                            '#funds',
                            function(d,callback,s){
                                 callback({'data':data});
                             },
                             [[0, 'asc'], [1, 'asc']],
-                            20,
+                            items,
                             [10, 20, 50, 100],
                             [
                                 {
@@ -110,6 +112,9 @@
             update_avg(table, '', 2, sum["expense"], '#expense');
         });
 
+        $('#funds').on('length.dt',function(e,settings, len){
+            window.localStorage.setItem('fund_items_per_page', len.toString());
+        });
     });
 
 </script>
