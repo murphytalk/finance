@@ -1,6 +1,6 @@
 from finance.api import api
 from finance.api import asset_type, country, broker, instrument_type
-from flask_restplus import Resource
+from flask_restx import Resource
 from finance.api.endpoints import run_func_against_dao
 
 import logging.config

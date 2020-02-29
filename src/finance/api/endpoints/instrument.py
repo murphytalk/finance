@@ -1,7 +1,7 @@
 from finance.api import api
 from finance.api import instrument_asset_allocation, instrument_country_allocation, instrument_region_allocation, cash
 from finance.api import Instrument
-from flask_restplus import Resource
+from flask_restx import Resource
 from finance.api.endpoints import run_func_against_dao
 
 import logging.config

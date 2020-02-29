@@ -1,6 +1,6 @@
 import logging
-from flask_restplus import fields
-from flask_restplus import Api
+from flask_restx import fields
+from flask_restx import Api
 
 log = logging.getLogger(__name__)
 

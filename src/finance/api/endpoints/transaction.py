@@ -1,5 +1,5 @@
 from finance.api import api, stock_transaction, stock_quote, stock_quotes, xccy_quote, xccy_quotes, funds_performance
-from flask_restplus import Resource
+from flask_restx import Resource
 from finance.api.endpoints import run_func_against_dao
 from flask import request
 

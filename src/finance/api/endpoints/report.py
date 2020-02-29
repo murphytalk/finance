@@ -1,6 +1,6 @@
 from datetime import date
 from finance.api import api, fund_performance, positions, portfolio, portfolio_rebalancing
-from flask_restplus import Resource
+from flask_restx import Resource
 from finance.common.report import FundReport, StockReport2
 from finance.common.calculate import get_portfolios, rebalance_portfolio
 from finance.api.endpoints import run_func_against_dao
