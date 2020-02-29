@@ -1,0 +1,15 @@
+#https://linuxconfig.org/how-to-create-systemd-service-unit-in-linux
+[Unit]
+Description=My Finance Portal
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+RemainAfterExit=yes
+User=mu
+ExecStart=/home/mu/work/finance/bin/run-on-deepwater.sh start
+ExecStop=/home/mu/work/finance/bin/run-on-deepwater.sh stop
+
+[Install]
+WantedBy=multi-user.target
