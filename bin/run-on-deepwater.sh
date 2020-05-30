@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#
-. /mnt/extra/run/finance-venv/bin/activate
-export FINANCE_DB=/home/mu/Dropbox/data/finance.db
+export FINANCE_DB=${HOME}/Dropbox/data/finance.db
+export VENV=${HOME}/work/finance/v
 `dirname $0`/run.sh "$@"

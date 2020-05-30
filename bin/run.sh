@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
 
-[ -z "$FINANCE_DB" ] &&  FINANCE_DB=`find $HOME -type f -name finance.db`
+[ -z "$FINANCE_DB" ] &&  echo "FINANCE_DB not defined !" && exit 1
+
+if [ ! -z "$VENV" ];then
+	if [ ! -d "$VENV" ];then
+		echo "$VENV" is not a directory
+		exit 1
+	fi
+
+	if [ ! -f "${VENV}/bin/activate" ];then
+		echo "$VENV" is not a valid python venv
+		exit 1
+	fi
+
+	source "${VENV}/bin/activate"
+fi
 
 if [[ -z "$FINANCE_DB" || ! -f $FINANCE_DB ]];then
 	echo Cannot find finance.db !
@@ -22,7 +36,7 @@ cmd=$1
 CMDSTR="python.*runserver.*${SERVER_PORT}"
 
 check_status(){
-	finance_pid=$(ps x | grep $CMDSTR | grep -v grep | awk '{print $1}')
+	finance_pid=$(pgrep -f "python.*runserver.*${SERVER_PORT}" -P 1 -U $(id -u))
 }
 
 report_status(){
@@ -51,7 +65,7 @@ stop)
 	if [ -z "$finance_pid" ];then
 		echo "Finance portal already stopped"
 	else
-		kill -9 $finance_pid
+		kill -TERM $finance_pid
 	fi
 	;;
 status)
