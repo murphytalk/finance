@@ -8,17 +8,18 @@
   flex-flow: row nowrap;
   justify-content: center;
   align-items: stretch;
-  overflow: auto;
+//  overflow: auto;
 
+/*
   > *:not(router-outlet) {
     padding: 0 24px;
   }
-
+*/  
   p {
     margin: 15px;
   }
 }
-
+/*
 @media only screen and (max-width: 1024px) {
   .content {
     justify-content: flex-start;
@@ -27,4 +28,10 @@
       padding: 0 15px;
     }
   }
+}
+*/
+
+.flex-item{
+  flex-grow: 1;
+  padding: 5px 5px 5px 5px;
 }

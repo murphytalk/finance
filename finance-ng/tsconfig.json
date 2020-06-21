@@ -17,7 +17,12 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "igniteui-angular": ["./node_modules/@infragistics/igniteui-angular"],
+      "igniteui-dockmanager": ["./node_modules/@infragistics/igniteui-dockmanager"],
+      "igniteui-dockmanager/*": ["./node_modules/@infragistics/igniteui-dockmanager/*"],
+    }    
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

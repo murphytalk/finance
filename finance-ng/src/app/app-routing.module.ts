@@ -11,7 +11,7 @@ export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent, data: { text: 'Home' } },
   { path: 'error', component: UncaughtErrorComponent },
-  { path: 'stocksgrid', component: StocksGridComponent, data: { text: 'stocksGrid' } },
+  { path: 'stocksgrid', component: StocksGridComponent, data: { text: 'Stocks' } },
   { path: '**', component: PageNotFoundComponent } // must always be last
 ];
 
