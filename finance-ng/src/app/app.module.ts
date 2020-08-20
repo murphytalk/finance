@@ -1,34 +1,22 @@
+import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { AppRoutingModule } from './app-routing.module';
-import { BrowserModule, HammerModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { IgxNavigationDrawerModule, IgxNavbarModule, IgxLayoutModule, IgxRippleModule, IgxGridModule } from '@infragistics/igniteui-angular';
 
+import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { HomeComponent } from './home/home.component';
-import { StocksGridComponent } from './stocksgrid/stocksgrid.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { SideNavComponent } from './components/side-nav/side-nav.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent,
-    StocksGridComponent
+    SideNavComponent
   ],
   imports: [
-    FormsModule,
     BrowserModule,
-    HammerModule,
-    BrowserAnimationsModule,
     AppRoutingModule,
-    IgxNavigationDrawerModule,
-    IgxNavbarModule,
-    IgxLayoutModule,
-    IgxRippleModule,
-    IgxGridModule
+    BrowserAnimationsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule {
-}
+export class AppModule { }
