@@ -1,8 +1,11 @@
-import { SideNavComponent } from './components/side-nav/side-nav.component';
 import { NgModule, Component } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import { FinOverviewComponent } from './components/fin-overview/fin-overview.component';
 
-const routes: Routes = [{ path: '', component: SideNavComponent }];
+export const routes: Routes = [
+  { path: 'overview', component: FinOverviewComponent , data: { text: 'Overview' }},
+  { path: '', redirectTo: '/overview', pathMatch: 'full' }
+];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

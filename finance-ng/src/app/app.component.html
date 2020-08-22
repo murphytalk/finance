@@ -1,1 +1,25 @@
-<router-outlet></router-outlet>
+<mat-sidenav-container class="app-sidenav-container" autosize>
+    <mat-sidenav #drawer class="app-sidenav  mat-elevation-z10" mode="push">
+        <mat-selection-list #navLink [multiple]="false">
+            <mat-list-option *ngFor="let page of topNavLinks" [value]="activePage">
+              {{page.name}}
+            </mat-list-option>
+        </mat-selection-list>
+    </mat-sidenav>
+    <mat-toolbar color="primary">
+        <button mat-icon-button (click)="drawer.toggle()">
+            <mat-icon>menu</mat-icon>
+        </button>
+        <span>Finance - {{activePage}}</span>
+        <span class="app-spacer"></span>
+        <button mat-icon-button class="app-icon favorite-icon" aria-label="Example icon-button with heart icon">
+           <mat-icon>favorite</mat-icon>
+        </button>
+    </mat-toolbar>
+ 
+    <div class="app-sidenav-content">
+        <div class="wrapper">
+            <router-outlet></router-outlet>
+        </div>
+    </div>
+</mat-sidenav-container>
