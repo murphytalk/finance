@@ -50,7 +50,10 @@ static_dir = '{}/finance-ng/dist/finance-ng'.format(Path(os.path.abspath(__file_
 ng = Blueprint('ng', __name__, url_prefix='/ng')
 @ng.route('/<path:filename>')
 def ng_static(filename):
-    print('serving static file from {}/{}'.format(static_dir, filename))
+    req = filename
+    if '.' not in filename:
+        filename = 'index.html'
+    print('{} => {}/{}'.format(req, static_dir, filename))
     return send_from_directory(static_dir,
                                filename, as_attachment=False)
 
