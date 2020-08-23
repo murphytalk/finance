@@ -5,30 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Finance",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Python: Flask",
-            "type": "python",
-            "request": "launch",
-            "module": "flask",
+            "program": "src/runserver.py",
+            "console": "integratedTerminal",
             "env": {
                 "FLASK_APP": "finance",
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "0",
                 "PYTHONPATH": "src",
-                "FINANCE_DB": "finance.db"
+                "FINANCE_DB": "/home/mu/Dropbox/data/finance.db"
             },
             "args": [
-                "run",
-                "--no-debugger",
-                "--no-reload"
+                "8080",
             ],
-            "jinja": true
-        }
+        },
     ]
 }
