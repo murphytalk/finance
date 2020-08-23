@@ -4,15 +4,15 @@
   "newProjectRoot": "projects",
   "projects": {
     "finance-ng": {
-    "projectType": "application",
-    "schematics": {
-      "@schematics/angular:component": {
-      "style": "scss"
-      }
-    },
-    "root": "",
-    "sourceRoot": "src",
-    "prefix": "app",
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
@@ -33,16 +33,12 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss",
-			  "node_modules/@infragistics/igniteui-angular/styles/igniteui-angular.css"
+              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+              "src/styles.scss"
             ],
-            "scripts": ["./node_modules/hammerjs/hammer.min.js"],
-            "es5BrowserSupport": true
+            "scripts": []
           },
           "configurations": {
-            "es5": {
-                "tsConfig": "tsconfig-es5.app.json"
-            },
             "production": {
               "fileReplacements": [
                 {
@@ -61,8 +57,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "5mb",
-                  "maximumError": "10mb"
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -81,9 +77,6 @@
           "configurations": {
             "production": {
               "browserTarget": "finance-ng:build:production"
-            },
-            "es5": {
-                "browserTarget": "finance-ng:build:es5"
             }
           }
         },
@@ -100,14 +93,15 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
-            "styles": [
-              "src/styles.scss"
-            ],
-            "scripts": ["./node_modules/hammerjs/hammer.min.js"],
             "assets": [
               "src/favicon.ico",
               "src/assets"
-            ]
+            ],
+            "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
+              "src/styles.scss"
+            ],
+            "scripts": []
           }
         },
         "lint": {

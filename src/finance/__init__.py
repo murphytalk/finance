@@ -4,7 +4,7 @@ The flask application package.
 from platform import node
 
 import flask_admin as admin
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, send_from_directory
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.contrib.sqla.filters import DateTimeBetweenFilter
 from wtforms.fields import DateTimeField, SelectField
@@ -14,6 +14,10 @@ from finance.api.endpoints.instrument import ns as api_instrument
 from finance.api.endpoints.reference import ns as api_reference
 from finance.api.endpoints.report import ns as api_reports
 from finance.api.endpoints.transaction import ns as api_transaction
+
+import os
+import os.path
+from pathlib import Path
 
 # check hostname to determine if it is a production deployment
 deployed_in_production = node() == "anchor"
@@ -40,6 +44,26 @@ app.debug = DEBUG
 app.secret_key = "I don't call this secret"
 app.config['SESSION_TYPE'] = 'filesystem'
 
+# next generation, the SPA
+p = Path(os.path.abspath(__file__))
+static_dir = '{}/finance-ng/dist/finance-ng'.format(Path(os.path.abspath(__file__)).parent.parent.parent)
+ng = Blueprint('ng', __name__, url_prefix='/ng')
+@ng.route('/<path:filename>')
+def ng_static(filename):
+    req = filename
+    if '.' not in filename:
+        filename = 'index.html'
+    print('{} => {}/{}'.format(req, static_dir, filename))
+    return send_from_directory(static_dir,
+                               filename, as_attachment=False)
+
+@ng.route('/')
+def ng_static_root():
+    return ng_static('index.html')
+
+app.register_blueprint(ng)
+
+# legacy finance page
 finance_page = Blueprint('finance_page', __name__, url_prefix=URL_ROOT)
 from finance import views
 # need to register after all URLS are defined in views

@@ -1,21 +1,16 @@
 import { AppPage } from './app.po';
 import { browser, logging } from 'protractor';
 
-describe('finance-ng App', () => {
+describe('workspace-project App', () => {
   let page: AppPage;
 
   beforeEach(() => {
     page = new AppPage();
   });
 
-  it('should display project name in navigation', () => {
-    page.navigateTo();
-    expect(page.getNavText()).toEqual('finance-ng');
-  });
-
   it('should display welcome message', () => {
     page.navigateTo();
-    expect(page.getWelcomeText()).toEqual('Welcome to Ignite UI for Angular!');
+    expect(page.getTitleText()).toEqual('finance-ng app is running!');
   });
 
   afterEach(async () => {

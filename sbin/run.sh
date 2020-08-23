@@ -36,7 +36,7 @@ cmd=$1
 CMDSTR="python.*runserver.*${SERVER_PORT}"
 
 check_status(){
-	finance_pid=$(pgrep -f "python.*runserver.*${SERVER_PORT}" -P 1 -U $(id -u))
+	finance_pid=$(pgrep -f "python.*runserver.*${SERVER_PORT}" -U $(id -u) |sort|head -1)
 }
 
 report_status(){

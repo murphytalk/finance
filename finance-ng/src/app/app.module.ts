@@ -1,35 +1,33 @@
+import { FinOverviewComponent } from './components/fin-overview/fin-overview.component';
+import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
-import { BrowserModule, HammerModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-// tslint:disable-next-line: max-line-length
-import { IgxNavigationDrawerModule, IgxNavbarModule, IgxLayoutModule, IgxRippleModule, IgxGridModule } from '@infragistics/igniteui-angular';
-
 import { AppComponent } from './app.component';
-import { HomeComponent } from './home/home.component';
-import { StocksGridComponent } from './stocksgrid/stocksgrid.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatListModule} from '@angular/material/list';
+import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
+
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent,
-    StocksGridComponent
+    FinOverviewComponent
   ],
   imports: [
-    FormsModule,
     BrowserModule,
-    HammerModule,
-    BrowserAnimationsModule,
     AppRoutingModule,
-    IgxNavigationDrawerModule,
-    IgxNavbarModule,
-    IgxLayoutModule,
-    IgxRippleModule,
-    IgxGridModule
+    BrowserAnimationsModule,
+    MatSidenavModule,
+    MatToolbarModule,
+    MatListModule,
+    MatIconModule,
+    MatButtonModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule {
-}
+export class AppModule { }

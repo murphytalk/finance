@@ -1,24 +1,4 @@
 /* You can add global styles to this file, and also import other style files */
-// Standard CSS normalize, comment out if not required or using a different module
-@import "~minireset.css/minireset";
 
-@import 'igniteui-angular/lib/core/styles/themes/index';
-@include igx-core();
-$custom-palette: igx-palette(
-    $primary: #007bff,
-    $secondary: #6c757d,
-    $surface: #f8f9fa,
-    $error: #dc3545,
-    $success: #28a745,
-    $warn: #ffc107,
-    $info: #17a2b8,
-    $grays: #000
-);
-@include igx-theme($palette: $custom-palette, $schema: $light-bootstrap-schema, $roundness: null, $elevation: null);
-@include igx-typography($font-family: "Titillium Web", $type-scale: $bootstrap-type-scale);
-
-
-
-html, body {
-  height: 100%;
-}
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
