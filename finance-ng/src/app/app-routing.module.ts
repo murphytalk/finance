@@ -4,8 +4,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { FinOverviewComponent } from './components/fin-overview/fin-overview.component';
 
 export const routes: Routes = [
-  { path: 'overview', component: FinOverviewComponent , data: { text: 'Overview' }},
-  { path: 'stock', component: StocksPositionComponent, data: { text: 'Stocks Position' }},
+  { path: 'overview', component: FinOverviewComponent , data: { text: 'Overview', icon: 'calculate' }},
+  { path: 'stock', component: StocksPositionComponent, data: { text: 'Stocks Position', icon: 'dynamic_feed' }},
   { path: '', redirectTo: '/overview', pathMatch: 'full' }
 ];
 

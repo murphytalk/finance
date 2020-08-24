@@ -10,7 +10,8 @@ import { routes } from './app-routing.module';
 export class AppComponent implements OnInit{
   topNavLinks: Array<{
     path: string,
-    name: string
+    name: string,
+    icon: string
   }> = [];
 
   activePage: string;
@@ -20,6 +21,7 @@ export class AppComponent implements OnInit{
       if (route.path && route.data && route.path.indexOf('*') === -1) {
         this.topNavLinks.push({
           name: route.data.text,
+          icon: route.data.icon,
           path: '/' + route.path
         });
       }
