@@ -1,10 +1,12 @@
 <mat-sidenav-container class="app-sidenav-container" autosize>
     <mat-sidenav #drawer class="app-sidenav  mat-elevation-z10" mode="push">
-        <mat-list-item  *ngFor="let link of topNavLinks">
-            <a matLine [routerLink]="link.path">
-                <mat-icon>{{link.icon}}</mat-icon> {{ link.name }}
-            </a>
-        </mat-list-item>
+        <ul ngbNav #nav="ngbNav" class="nav flex-column">
+           <li ngbNavItem *ngFor="let link of topNavLinks">
+                <a ngbNavLink  [routerLink]="link.path">
+                    <mat-icon>{{link.icon}}</mat-icon> {{ link.name }}
+                </a>
+           </li>
+        </ul>
     </mat-sidenav>
     <mat-toolbar color="primary">
         <button mat-icon-button (click)="drawer.toggle()">

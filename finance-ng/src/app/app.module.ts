@@ -10,6 +10,9 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatListModule} from '@angular/material/list';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
+
+import {NgbModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { StocksPositionComponent } from './components/stocks-position/stocks-position.component';
 
 
@@ -28,6 +31,7 @@ import { StocksPositionComponent } from './components/stocks-position/stocks-pos
     MatListModule,
     MatIconModule,
     MatButtonModule,
+    NgbModule
   ],
   providers: [],
   bootstrap: [AppComponent]
