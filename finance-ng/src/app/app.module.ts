@@ -1,6 +1,7 @@
 import { FinOverviewComponent } from './components/fin-overview/fin-overview.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -12,7 +13,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 
 import {NgbModule } from '@ng-bootstrap/ng-bootstrap';
-
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { StocksPositionComponent } from './components/stocks-position/stocks-position.component';
 
 
@@ -24,8 +25,15 @@ import { StocksPositionComponent } from './components/stocks-position/stocks-pos
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    LoggerModule.forRoot({
+      //serverLoggingUrl: '/api/logs',
+      level: NgxLoggerLevel.DEBUG,
+      serverLogLevel: NgxLoggerLevel.OFF,
+      disableConsoleLogging: false
+    }),
     MatSidenavModule,
     MatToolbarModule,
     MatListModule,
