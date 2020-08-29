@@ -38,7 +38,7 @@ class ImplDao(Raw):
     def iterate_transaction(self, start_date, end_date, callback):
         """
         iterate stock transactions, callback signature:
-        callback(instrument id,instrument name,transaction type,price, shares,fee, date)
+        callback(instrument rowid,instrument name,transaction type,price, shares,fee, date)
         """
         sql = ('SELECT i.name,t.instrument,t.type,t.price,t.shares,t.fee,t.date FROM [transaction] t, instrument i '
                'WHERE t.instrument = i.rowid AND date >=? AND date<=? ORDER BY date')
@@ -50,15 +50,15 @@ class ImplDao(Raw):
 
     def populate_from_instruments(self, instrument_filter, create_new_obj_func=None):
         """
-        Populate a dict {instrument id : user defined data type} by
+        Populate a dict {instrument rowid : user defined data type} by
         querying from table instrument , filter should be a valid SQL where clause
 
         create_new_obj_func signature:
         parameter:
-          row id
-          instrument id
+          row rowid
+          instrument rowid
           instrument name
-          type id
+          type rowid
           type name
           url
           expense ration
@@ -75,7 +75,7 @@ class ImplDao(Raw):
                'instrument i,instrument_type it WHERE i.type = it.rowid')
         if instrument_filter is not None:
             sql = sql + ' and ' + instrument_filter
-        return {x['id']: c(x['id'], x['name'], x['type_id'], x['type'], x['url'], x['expense_ratio'])
+        return {x['rowid']: c(x['rowid'], x['name'], x['type_id'], x['type'], x['url'], x['expense_ratio'])
                 for x in self.exec(sql)}
 
     def get_stock_latest_quotes(self, quote_date, instrument_name=None, instrument_id=None):
@@ -86,11 +86,11 @@ class ImplDao(Raw):
         """
         def get_instruments(name, iid):
             if name and iid:
-                yield {'id': iid, 'name': name}
+                yield {'rowid': iid, 'name': name}
             elif iid is None and name:
-                yield from self.exec('SELECT id, name from instrument where name=?', (name,))
+                yield from self.exec('SELECT rowid, name from instrument where name=?', (name,))
             else:
-                yield from self.exec('SELECT id, name from instrument')
+                yield from self.exec('SELECT rowid, name from instrument')
 
         def get_quote(iid, when=None):
             if when:
@@ -100,7 +100,7 @@ class ImplDao(Raw):
                 yield from self.exec('SELECT  price, date FROM quote WHERE instrument = ? ORDER BY date DESC LIMIT 1', (i,))
 
         quotes = {}
-        for i, n in [(r['id'], r['name']) for r in get_instruments(instrument_name, instrument_id)]:
+        for i, n in [(r['rowid'], r['name']) for r in get_instruments(instrument_name, instrument_id)]:
             for r in get_quote(i, quote_date):
                 quotes[i] = Quote(i, n, r['price'], r['date'])
 
@@ -153,8 +153,8 @@ class ImplDao(Raw):
     def _get_instrument_id(self, **kwargs):
         instrument_id = kwargs['instrument_id'] if 'instrument_id' in kwargs else None
         if instrument_id is None:
-            for r in self.exec('SELECT id FROM instrument WHERE name=?', (kwargs['instrument_name'],)):
-                instrument_id = r['id']
+            for r in self.exec('SELECT rowid FROM instrument WHERE name=?', (kwargs['instrument_name'],)):
+                instrument_id = r['rowid']
                 break
         return instrument_id
 
@@ -187,7 +187,7 @@ class ImplDao(Raw):
     def get_country_region_lookup(self):
         # get country id => region def
         sql = ('SELECT r.name region, rs.country FROM regions rs '
-                'JOIN region r ON rs.region = r.id JOIN country c ON rs.country = c.id')
+                'JOIN region r ON rs.region = r.rowid JOIN country c ON rs.country = c.rowid')
         return {r['country']: r['region'] for r in self.exec(sql)}
 
     def get_region_allocation(self, **kwargs):
@@ -200,8 +200,8 @@ class ImplDao(Raw):
         if instrument_id:
             region_lookup = self.get_country_region_lookup()
 
-            sql = ('SELECT t.id as cid, a.ratio FROM country_allocation a, country t '
-                   'WHERE a.instrument = ? AND a.country=t.id')
+            sql = ('SELECT t.rowid as cid, a.ratio FROM country_allocation a, country t '
+                   'WHERE a.instrument = ? AND a.country=t.rowid')
             regions = {}
             for r in self.exec(sql, (int(instrument_id),)):
                 country = r['cid']
@@ -215,27 +215,27 @@ class ImplDao(Raw):
                 yield (region, ratio)
 
     def get_asset_types(self):
-        for r in self.exec('SELECT id, type FROM asset'):
-            yield (r['id'], r['type'])
+        for r in self.exec('SELECT rowid, type FROM asset'):
+            yield (r['rowid'], r['type'])
 
     def get_countries(self):
-        for r in self.exec('SELECT id, [name] FROM country'):
-            yield (r['id'], r['name'])
+        for r in self.exec('SELECT rowid, [name] FROM country'):
+            yield (r['rowid'], r['name'])
 
     def get_brokers(self):
-        for r in self.exec('SELECT id, [name],fullName FROM broker'):
-            yield (r['id'], r['name'], r['fullName'])
+        for r in self.exec('SELECT rowid, [name],fullName FROM broker'):
+            yield (r['rowid'], r['name'], r['fullName'])
 
     def get_instrument_types(self):
-        for r in self.exec('SELECT id, type FROM instrument_type'):
-            yield (r['id'], r['type'])
+        for r in self.exec('SELECT rowid, type FROM instrument_type'):
+            yield (r['rowid'], r['type'])
 
     def _update_instrument_allocations(self, instrument_name, payload, allocation_name, allocation_col_name):
         kwargs = {'instrument_name': instrument_name}
         instrument_id = self._get_instrument_id(**kwargs)
         if instrument_id:
-            types = {x[allocation_col_name]: x['id'] for x in
-                     self.exec('SELECT id,%s FROM %s' % (allocation_col_name, allocation_name))}
+            types = {x[allocation_col_name]: x['rowid'] for x in
+                     self.exec('SELECT rowid,%s FROM %s' % (allocation_col_name, allocation_name))}
             sum_alloc = 0
             allocations = []
             self.exec('DELETE from %s_allocation WHERE instrument = ?' % allocation_name, (instrument_id,))
@@ -272,15 +272,15 @@ class ImplDao(Raw):
         return self._update_instrument_allocations(instrument_name, countries['countries'], 'country', 'name')
 
     def get_instruments(self, instrument_name=None):
-        sql = ('SELECT i.id, i.name, t.type, c.name AS currency, b.name AS broker, i.url, i.expense_ratio, i.active '
+        sql = ('SELECT i.rowid, i.name, t.type, c.name AS currency, b.name AS broker, i.url, i.expense_ratio, i.active '
                'FROM instrument i '
-               'JOIN instrument_type t ON i.type = t.id '
-               'JOIN currency c ON i.currency = c.id '
-               'JOIN broker b ON i.broker = b.id')
+               'JOIN instrument_type t ON i.type = t.rowid '
+               'JOIN currency c ON i.currency = c.rowid '
+               'JOIN broker b ON i.broker = b.rowid')
         if instrument_name:
             sql += ' WHERE i.name = ?'
         for r in self.exec(sql, (instrument_name,) if instrument_name else None):
-            yield {'id': r['id'],
+            yield {'id': r['rowid'],
                    'name': r['name'],
                    'type': r['type'],
                    'currency': r['currency'],
@@ -293,10 +293,10 @@ class ImplDao(Raw):
         return {x[1]: x[0] for x in self.get_instrument_types()}
 
     def get_currency_mapper(self):
-        return {x['name']: x['id'] for x in self.exec('SELECT id,[name] FROM currency')}
+        return {x['name']: x['rowid'] for x in self.exec('SELECT rowid,[name] FROM currency')}
 
     def get_broker_mapper(self):
-        return {x['name']: x['id'] for x in self.exec('SELECT id,[name] FROM broker')}
+        return {x['name']: x['rowid'] for x in self.exec('SELECT rowid,[name] FROM broker')}
 
     @_remove_empty_value
     def update_instrument(self, instrument_name, instrument):
@@ -335,7 +335,7 @@ class ImplDao(Raw):
 
         if instrument_id:
             sql = 'UPDATE instrument set '
-            sql += ','.join([x + '=?' for x in cols]) + ' WHERE id = ?'
+            sql += ','.join([x + '=?' for x in cols]) + ' WHERE rowid = ?'
             params.append(instrument_id)
         else:
             sql = 'INSERT INTO instrument ('
@@ -454,7 +454,7 @@ class ImplDao(Raw):
         :param xccy_quotes : [{Date,From,To,Rate}]
         :return: True/False
         """
-        xccys = {r['name']: r['id'] for r in self.exec('SELECT id, name from currency')}
+        xccys = {r['name']: r['rowid'] for r in self.exec('SELECT rowid, name from currency')}
         parameters = [(date_str2epoch(q['Date']), xccys[q['From']], xccys[q['To']], q['Rate']) for q in xccy_quotes['quotes']]
         # remove existing quotes if there is any
         self.exec_many('DELETE FROM xccy WHERE date = ? and [from] = ? and [to] = ?', [p[:-1] for p in parameters])
@@ -512,11 +512,11 @@ class ImplDao(Raw):
     def update_cash_balance(self, ccy, broker, payload, adjust=False):
         ccy_id = None
         broker_id = None
-        for x in self.exec('SELECT id FROM currency WHERE name=?', (ccy,)):
-            ccy_id = x['id']
+        for x in self.exec('SELECT rowid FROM currency WHERE name=?', (ccy,)):
+            ccy_id = x['rowid']
             break
-        for x in self.exec('SELECT id FROM broker WHERE name=?', (broker,)):
-            broker_id = x['id']
+        for x in self.exec('SELECT rowid FROM broker WHERE name=?', (broker,)):
+            broker_id = x['rowid']
             break
         if ccy_id is None or broker_id is None:
             return False
