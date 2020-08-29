@@ -16,7 +16,7 @@ export class AppComponent implements OnInit {
         icon: string;
     }> = [];
 
-    @ViewChild(MatSidenav, {static: true})
+    @ViewChild(MatSidenav, { static: true })
     private nav: MatSidenav;
 
     activePage: string;
@@ -33,10 +33,13 @@ export class AppComponent implements OnInit {
 
             this.router.events
                 .pipe(filter((e) => e instanceof NavigationStart))
-                .subscribe((e: NavigationStart) => {
-                    logger.log(e);
-                    this.nav.close();
-                });
+                .subscribe(
+                    e => {
+                        logger.log(e);
+                        this.nav.close();
+                    },
+                    err => this.logger.error(err),
+                    () => this.logger.info('nav sub done'));
         }
         this.activePage = this.topNavLinks[0].name;
     }

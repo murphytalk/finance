@@ -9,6 +9,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
+  "proxy": "http://localhost:8080",
   "private": true,
   "dependencies": {
     "@angular/animations": "~9.1.12",
@@ -23,6 +24,8 @@
     "@angular/platform-browser-dynamic": "~9.1.12",
     "@angular/router": "~9.1.12",
     "@ng-bootstrap/ng-bootstrap": "^7.0.0",
+    "ag-grid-angular": "^23.2.1",
+    "ag-grid-community": "^23.2.1",
     "bootstrap": "^4.5.2",
     "ngx-logger": "^4.1.9",
     "rxjs": "~6.5.4",

@@ -1,3 +1,5 @@
+import { AgGridModule } from 'ag-grid-angular';
+import { environment } from './../environments/environment';
 import { FinOverviewComponent } from './components/fin-overview/fin-overview.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
@@ -29,8 +31,8 @@ import { StocksPositionComponent } from './components/stocks-position/stocks-pos
     AppRoutingModule,
     BrowserAnimationsModule,
     LoggerModule.forRoot({
-      //serverLoggingUrl: '/api/logs',
-      level: NgxLoggerLevel.DEBUG,
+      serverLoggingUrl: '/api/logs',
+      level: environment.logLevel,
       serverLogLevel: NgxLoggerLevel.OFF,
       disableConsoleLogging: false
     }),
@@ -39,6 +41,7 @@ import { StocksPositionComponent } from './components/stocks-position/stocks-pos
     MatListModule,
     MatIconModule,
     MatButtonModule,
+    AgGridModule.withComponents([]),
     NgbModule
   ],
   providers: [],
