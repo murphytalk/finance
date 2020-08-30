@@ -21,13 +21,15 @@ import { HighchartsChartModule } from 'highcharts-angular';
 import {NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { StocksPositionComponent } from './components/stocks-position/stocks-position.component';
+import { FlaskAdminComponent } from './components/flask-admin/flask-admin.component';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     FinOverviewComponent,
-    StocksPositionComponent
+    StocksPositionComponent,
+    FlaskAdminComponent
   ],
   imports: [
     BrowserModule,
