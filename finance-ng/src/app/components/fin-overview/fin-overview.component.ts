@@ -1,7 +1,8 @@
 import { NGXLogger } from 'ngx-logger';
-import { DataService, Positions, ValuePair, Portfolio } from './../../shared/data.service';
+import { DataService, Positions, ValuePair, RawPortfolio, PortfolioAllocation, FinPosition } from './../../shared/data.service';
 import { Component, OnInit } from '@angular/core';
 import { first } from 'rxjs/operators';
+import { fromEntries } from './../../shared/calc';
 
 interface OverviewItem{
   asset: string;
@@ -12,10 +13,28 @@ interface OverviewItem{
   profitJPY: number;
 }
 
-interface PositionResult{
+interface PositionAppliedWithPortfolio{
   shares: number;
   capital?: number;
 }
+
+interface PortAllocItem{
+  alloc: PortfolioAllocation;
+  orgAlloc: PortfolioAllocation;
+}
+
+interface PortAlloc{
+  // key is instrument name
+  [key: string]: PortAllocItem;
+}
+
+interface Portfolio{
+  // key is portfolio name
+  [key: string]: PortAlloc;
+}
+
+const ALL_PORTFOLIOS = 'All';
+const INSTRUMENT_TYPES = ['ETF', 'Stock', 'Funds'];
 
 @Component({
   selector: 'app-fin-overview',
@@ -24,13 +43,12 @@ interface PositionResult{
 })
 export class FinOverviewComponent implements OnInit {
   private positions: Positions;
-  private portfolios: Portfolio[];
+  private portfolios: Portfolio;
 
   get portfolioNames(){
-    const names = ['All'];
-    return this.portfolios ? names.concat(this.portfolios.map( x => x.name)) : name;
+    return this.portfolios ? Object.keys(this.portfolios) : [];
   }
-  selectedPortfolio = 'All';
+  selectedPortfolio = ALL_PORTFOLIOS;
   overviewData: OverviewItem[];
 
   columnDefs = [
@@ -53,7 +71,19 @@ export class FinOverviewComponent implements OnInit {
         this.logger.debug('positions', data);
         this.positions = data;
         this.data.getPortfolios().pipe(first()).subscribe(
-          portfolios => this.calculate(portfolios)
+          rawPortfolios => {
+            this.portfolios = {}; this.portfolios[ALL_PORTFOLIOS] = null ;
+            rawPortfolios.forEach( rawPortfolio =>
+              this.portfolios[rawPortfolio.name] =  fromEntries( rawPortfolio.allocations.map ( allocation =>
+                // a key and value pair
+                [ allocation.instrument,
+                  { alloc: allocation,
+                    // tslint:disable-next-line: max-line-length
+                    orgAlloc: {shares: allocation.shares, market_value: allocation.market_value, current_allocation: allocation.current_allocation}
+                }])
+            ));
+            this.refresh();
+          }
         );
       },
       err => this.logger.error('Failed to get positions', err),
@@ -61,12 +91,17 @@ export class FinOverviewComponent implements OnInit {
     );
   }
 
-  //private applyPortfolio()
+  private applyPortfolio(portfolio: PortAlloc, position: FinPosition): PositionAppliedWithPortfolio{
+    const instrument = position.instrument.name;
 
-  private calculate(portfolios: Portfolios){
-    this.portfolios = portfolios;
-    this.overviewData = [
-    ] ;
+    if (position != null && !(instrument in portfolio)){
+      return { shares: -1 };
+    }
+    return {shares: position.shares, capital: position.capital};
+  }
+
+  private refresh(){
+    this.logger.debug('converted portfolios', this.portfolios);
   }
 
   selectPortfolio(portfolio: string){

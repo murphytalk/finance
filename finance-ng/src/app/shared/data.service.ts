@@ -16,7 +16,7 @@ export class DataService {
     }
 
     getPortfolios(){
-      return this.httpClient.get<Portfolios>(this.url('report/portfolios'));
+      return this.httpClient.get<RawPortfolio[]>(this.url('report/portfolios'));
     }
 }
 
@@ -40,8 +40,8 @@ export interface RegionAllocation {
     ratio: number;
 }
 
-export interface Position {
-    Instrument: Instrument;
+export interface FinPosition {
+    instrument: Instrument;
     asset_allocation: AssetAllocation;
     country_allocation: CountryAllocation;
     region_allocation: RegionAllocation;
@@ -60,9 +60,9 @@ export interface CashBalance {
 }
 
 export interface Positions {
-    ETF: Position;
-    Stoc: Position;
-    Funds: Position;
+    ETF: FinPosition;
+    Stoc: FinPosition;
+    Funds: FinPosition;
     Cash: CashBalance;
 }
 
@@ -72,15 +72,15 @@ export interface ValuePair{
 }
 
 export interface PortfolioAllocation{
-    instrument: string;
+    instrument?: string;
+    price?: number;
+    target_allocation?: number;
     shares: number;
-    price: number;
     market_value: number;
-    target_allocation: number;
     current_allocation: number;
 }
 
-export interface Portfolio{
+export interface RawPortfolio{
     name: string;
     allocations: PortfolioAllocation[];
 }
