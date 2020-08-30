@@ -15,7 +15,9 @@ import {MatListModule} from '@angular/material/list';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatRadioModule} from '@angular/material/radio';
+import {MatTabsModule} from '@angular/material/tabs';
 
+import { HighchartsChartModule } from 'highcharts-angular';
 import {NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { StocksPositionComponent } from './components/stocks-position/stocks-position.component';
@@ -45,8 +47,10 @@ import { StocksPositionComponent } from './components/stocks-position/stocks-pos
     MatIconModule,
     MatButtonModule,
     MatRadioModule,
+    MatTabsModule,
     AgGridModule.withComponents([]),
-    NgbModule
+    NgbModule,
+    HighchartsChartModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
