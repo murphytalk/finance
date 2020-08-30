@@ -146,19 +146,21 @@ export class FinOverviewComponent implements OnInit {
     });
 
     // cash positions
-    overview = overview.concat(this.calcOverview('Cash', (assetType, sum) => {
-      const cashBalances = this.positions.Cash;
-      cashBalances.forEach( balance => {
-         if (balance.ccy in sum){
-          sum[balance.ccy].marketValue += balance.balance;
-          sum[balance.ccy].marketValueBaseCcy += balance.balance * balance.xccy;
-        }
-        else{
-          // tslint:disable-next-line: max-line-length
-          sum[balance.ccy] = {marketValue: balance.balance, marketValueBaseCcy: balance.balance * balance.xccy, profit: null, profitBaseCcy: null};
-        }
-      });
-    }));
+    if (this.selectedPortfolio === ALL_PORTFOLIOS){
+      overview = overview.concat(this.calcOverview('Cash', (assetType, sum) => {
+        const cashBalances = this.positions.Cash;
+        cashBalances.forEach( balance => {
+           if (balance.ccy in sum){
+            sum[balance.ccy].marketValue += balance.balance;
+            sum[balance.ccy].marketValueBaseCcy += balance.balance * balance.xccy;
+          }
+          else{
+            // tslint:disable-next-line: max-line-length
+            sum[balance.ccy] = {marketValue: balance.balance, marketValueBaseCcy: balance.balance * balance.xccy, profit: null, profitBaseCcy: null};
+          }
+        });
+      }));
+    }
 
     this.overviewData = overview;
     this.logger.debug('overview', this.overviewData);
