@@ -1,22 +1,42 @@
+import { logging } from 'protractor';
+import { NGXLogger } from 'ngx-logger';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { shareReplay } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
 })
 export class DataService {
-    constructor(private httpClient: HttpClient) {}
+    private positionCache$: Observable<Positions>;
+    private portfolioCache$: Observable<RawPortfolio[]>;
+ 
+    constructor(
+        private logger: NGXLogger,
+        private httpClient: HttpClient
+    ) {}
 
     private url(path: string){
         return `/finance/api/${path}`;
     }
 
     getPositions(){
-      return this.httpClient.get<Positions>(this.url('report/positions'));
+        this.logger.debug('Requesting positions');
+        if (!this.positionCache$){
+            this.logger.debug('HTTP get positions');
+            this.positionCache$ = this.httpClient.get<Positions>(this.url('report/positions'));
+        }
+        return this.positionCache$;
     }
 
     getPortfolios(){
-      return this.httpClient.get<RawPortfolio[]>(this.url('report/portfolios'));
+        this.logger.debug('Requesting portfolio');
+        if (!this.portfolioCache$){
+            this.logger.debug('HTTP get portfolio');
+            this.portfolioCache$ = this.httpClient.get<RawPortfolio[]>(this.url('report/portfolios')).pipe(shareReplay(1));
+        }
+        return this.portfolioCache$;
     }
 }
 

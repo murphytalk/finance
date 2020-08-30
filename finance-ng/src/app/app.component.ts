@@ -35,7 +35,7 @@ export class AppComponent implements OnInit {
                 .pipe(filter((e) => e instanceof NavigationStart))
                 .subscribe(
                     e => {
-                        logger.debug(e);
+                        // logger.debug(e);
                         this.nav.close();
                         const nav = this.topNavLinks.find( x => x.path === (e as NavigationStart).url);
                         if (nav){
