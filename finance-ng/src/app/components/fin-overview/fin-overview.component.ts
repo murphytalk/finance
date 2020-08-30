@@ -1,8 +1,8 @@
 import { NGXLogger } from 'ngx-logger';
-import { DataService, Positions, ValuePair, RawPortfolio, PortfolioAllocation, FinPosition, CashBalance } from './../../shared/data.service';
+import { DataService, Positions, PortfolioAllocation, FinPosition } from './../../shared/data.service';
 import { Component, OnInit } from '@angular/core';
 import { first } from 'rxjs/operators';
-import { fromEntries, currencyFormatter } from './../../shared/calc';
+import { fromEntries, formatNumber, currencySign } from './../../shared/calc';
 import { MatRadioChange } from '@angular/material/radio';
 
 interface OverviewItem{
@@ -36,6 +36,15 @@ interface Portfolio{
 
 const ALL_PORTFOLIOS = 'All';
 
+// for ag-grid
+function currencyFormatter(params) {
+  // console.log('overview num field param %o', params);
+  const overview = params.data as OverviewItem;
+  // tslint:disable-next-line: max-line-length
+  return params.value == null ? '' :  `${params.colDef.headerName === 'JPY' ? '\u00a5' : currencySign(overview.ccy)} ${formatNumber(params.value)}`;
+}
+
+
 @Component({
   selector: 'app-fin-overview',
   templateUrl: './fin-overview.component.html',
@@ -56,7 +65,7 @@ export class FinOverviewComponent implements OnInit {
     { headerName: 'Currency', field: 'ccy', flex: 1 },
     { headerName: 'Market Value' ,  children: [
       { headerName: 'CCY', field: 'marketValue', valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 },
-      { headerName: 'JPY', field: 'marketValueBaseCcy',valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 }
+      { headerName: 'JPY', field: 'marketValueBaseCcy', valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 }
     ]},
     { headerName: 'Profit' ,  children: [
      { headerName: 'CCY', field: 'profit',valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 },
@@ -76,10 +85,11 @@ export class FinOverviewComponent implements OnInit {
         this.positions = positions;
         this.data.getPortfolios().pipe(first()).subscribe(
           rawPortfolios => {
+            // transform the shape of position objects
             this.portfolios = {}; this.portfolios[ALL_PORTFOLIOS] = null ;
             rawPortfolios.forEach( rawPortfolio =>
               this.portfolios[rawPortfolio.name] =  fromEntries( rawPortfolio.allocations.map ( allocation =>
-                // a key and value pair
+                // a key(instrument) and value(position of that instrument) pair
                 [ allocation.instrument,
                   { alloc: allocation,
                     // tslint:disable-next-line: max-line-length
@@ -106,10 +116,10 @@ export class FinOverviewComponent implements OnInit {
   }
 
   private calcOverview(assetType: string,
-                       calc: (assetType: string, sum: {[key: string]: OverviewItem}) => void): OverviewItem[] {
+                       sumByCcy: (assetType: string, sum: {[key: string]: OverviewItem}) => void): OverviewItem[] {
       // see /finance_demo/api/report/positions
       const sum: {[key: string]: OverviewItem} = {};
-      calc(assetType, sum);
+      sumByCcy(assetType, sum);
       return Object.keys(sum).map( ccy => ({
         asset: assetType,
         ccy,

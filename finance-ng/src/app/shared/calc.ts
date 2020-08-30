@@ -6,16 +6,26 @@ export function fromEntries<V>(iterable: Iterable<[string, V]>) {
     }, {} as {[k: string]: V});
 }
 
-// for ag-grid
-export function currencyFormatter(params) {
-    return  formatNumber(params.value);
-}
-
 export function formatNumber(num) {
-    return num == null ? '' : num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     /*
     return Math.floor(num)
       .toString()
       .replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
     */
+}
+
+export function currencySign(ccy: string){
+  switch (ccy.toUpperCase()){
+    case 'USD':
+      return '$';
+    case 'JPY':
+      return '\u00a5';
+    case 'CNY':
+      return 'C\u00a5';
+    case 'HKD':
+      return 'HK$';
+    default:
+      return '';
+  }
 }
