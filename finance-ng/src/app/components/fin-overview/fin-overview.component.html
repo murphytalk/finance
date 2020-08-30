@@ -11,8 +11,10 @@
         <label class="portfolio-label">Portfolios</label>
         <mat-radio-group
             class="portfolio-radio-group"
+            (change)="onPortfolioChanged($event)"
             [(ngModel)]="selectedPortfolio">
-            <mat-radio-button class="portfolio-radio-button" *ngFor="let portfolio of portfolioNames" [value]="portfolio">
+            <mat-radio-button class="portfolio-radio-button" *ngFor="let portfolio of portfolioNames"
+             [value]="portfolio">
                 {{portfolio}}
             </mat-radio-button>
         </mat-radio-group>

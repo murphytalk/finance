@@ -60,10 +60,10 @@ export interface CashBalance {
 }
 
 export interface Positions {
-    ETF: FinPosition;
-    Stoc: FinPosition;
-    Funds: FinPosition;
-    Cash: CashBalance;
+    ETF: FinPosition[];
+    Stoc: FinPosition[];
+    Funds: FinPosition[];
+    Cash: CashBalance[];
 }
 
 export interface ValuePair{
