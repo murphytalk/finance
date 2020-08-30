@@ -35,14 +35,22 @@ export class AppComponent implements OnInit {
                 .pipe(filter((e) => e instanceof NavigationStart))
                 .subscribe(
                     e => {
-                        logger.log(e);
+                        logger.debug(e);
                         this.nav.close();
+                        const nav = this.topNavLinks.find( x => x.path === (e as NavigationStart).url);
+                        if (nav){
+                            this.activePage = nav.name;
+                        }
                     },
                     err => this.logger.error(err),
-                    () => this.logger.info('nav sub done'));
+                    () => this.logger.debug('nav sub done'));
         }
         this.activePage = this.topNavLinks[0].name;
     }
 
     ngOnInit(): void {}
+
+    onActivate(event: any){
+        this.logger.debug('router outlet activated', event);
+    }
 }

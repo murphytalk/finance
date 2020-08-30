@@ -14,6 +14,10 @@ export class DataService {
     getPositions(){
       return this.httpClient.get<Positions>(this.url('report/positions'));
     }
+
+    getPortfolios(){
+      return this.httpClient.get<Portfolios>(this.url('report/portfolios'));
+    }
 }
 
 export interface Instrument {
@@ -65,4 +69,18 @@ export interface Positions {
 export interface ValuePair{
     ccy: number;
     jpy: number;
+}
+
+export interface PortfolioAllocation{
+    instrument: string;
+    shares: number;
+    price: number;
+    market_value: number;
+    target_allocation: number;
+    current_allocation: number;
+}
+
+export interface Portfolio{
+    name: string;
+    allocations: PortfolioAllocation[];
 }

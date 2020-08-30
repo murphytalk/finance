@@ -1,13 +1,7 @@
 import { NGXLogger } from 'ngx-logger';
-import { DataService, Positions, ValuePair } from './../../shared/data.service';
+import { DataService, Positions, ValuePair, Portfolios, Portfolio } from './../../shared/data.service';
 import { Component, OnInit } from '@angular/core';
 import { first } from 'rxjs/operators';
-
-interface OverviewItem2{
-  asset: string;
-  marketValue: ValuePair;
-  profit: ValuePair;
-}
 
 interface OverviewItem{
   asset: string;
@@ -18,6 +12,10 @@ interface OverviewItem{
   profitJPY: number;
 }
 
+interface PositionResult{
+  shares: number;
+  capital?: number;
+}
 
 @Component({
   selector: 'app-fin-overview',
@@ -26,7 +24,12 @@ interface OverviewItem{
 })
 export class FinOverviewComponent implements OnInit {
   private positions: Positions;
+  private portfolios: Portfolio[];
 
+  get portfolioNames(){
+    const names = ['All'];
+    return this.portfolios ? names.concat(this.portfolios.map( x => x.name)) : name;
+  }
   overviewData: OverviewItem[];
 
   columnDefs = [
@@ -48,15 +51,24 @@ export class FinOverviewComponent implements OnInit {
       data => {
         this.logger.debug('positions', data);
         this.positions = data;
-
-        this.overviewData = [
-          {asset: 'Stock',ccy:'JPY',marketValue:1234,marketValueJPY:1234,profit:12,profitJPY:123}
-        ];
-
+        this.data.getPortfolios().pipe(first()).subscribe(
+          portfolios => this.calculate(portfolios)
+        );
       },
       err => this.logger.error('Failed to get positions', err),
       () => this.logger.debug('position get done')
     );
   }
 
+  //private applyPortfolio()
+
+  private calculate(portfolios: Portfolios){
+    this.portfolios = portfolios;
+    this.overviewData = [
+    ] ;
+  }
+
+  selectPortfolio(portfolio: string){
+    this.logger.debug('portfolio selected', portfolio);
+  }
 }
