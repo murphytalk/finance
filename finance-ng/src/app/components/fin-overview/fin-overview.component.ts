@@ -1,5 +1,5 @@
 import { NGXLogger } from 'ngx-logger';
-import { DataService, Positions, ValuePair, Portfolios, Portfolio } from './../../shared/data.service';
+import { DataService, Positions, ValuePair, Portfolio } from './../../shared/data.service';
 import { Component, OnInit } from '@angular/core';
 import { first } from 'rxjs/operators';
 
@@ -30,6 +30,7 @@ export class FinOverviewComponent implements OnInit {
     const names = ['All'];
     return this.portfolios ? names.concat(this.portfolios.map( x => x.name)) : name;
   }
+  selectedPortfolio = 'All';
   overviewData: OverviewItem[];
 
   columnDefs = [

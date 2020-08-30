@@ -3,6 +3,7 @@ import { environment } from './../environments/environment';
 import { FinOverviewComponent } from './components/fin-overview/fin-overview.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -13,6 +14,7 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatListModule} from '@angular/material/list';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
+import {MatRadioModule} from '@angular/material/radio';
 
 import {NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
@@ -30,6 +32,7 @@ import { StocksPositionComponent } from './components/stocks-position/stocks-pos
     HttpClientModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    FormsModule,
     LoggerModule.forRoot({
       serverLoggingUrl: '/api/logs',
       level: environment.logLevel,
@@ -41,6 +44,7 @@ import { StocksPositionComponent } from './components/stocks-position/stocks-pos
     MatListModule,
     MatIconModule,
     MatButtonModule,
+    MatRadioModule,
     AgGridModule.withComponents([]),
     NgbModule
   ],
