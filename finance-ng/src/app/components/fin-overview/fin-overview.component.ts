@@ -54,10 +54,14 @@ export class FinOverviewComponent implements OnInit {
   columnDefs = [
     { headerName: 'Asset', field: 'asset', flex: 1 },
     { headerName: 'Currency', field: 'ccy', flex: 1 },
-    { headerName: 'Market Value', field: 'marketValue', valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 },
-    { headerName: 'Market Value(JPY)', field: 'marketValueBaseCcy',valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 },
-    { headerName: 'Profit', field: 'profit',valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 },
-    { headerName: 'Profit(JPY)', field: 'profitBaseCcy',valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 },
+    { headerName: 'Market Value' ,  children: [
+      { headerName: 'CCY', field: 'marketValue', valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 },
+      { headerName: 'JPY', field: 'marketValueBaseCcy',valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 }
+    ]},
+    { headerName: 'Profit' ,  children: [
+     { headerName: 'CCY', field: 'profit',valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 },
+     { headerName: 'JPY', field: 'profitBaseCcy', valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 }
+    ]}
   ];
 
   constructor(
