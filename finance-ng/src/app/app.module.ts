@@ -22,6 +22,7 @@ import {NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { StocksPositionComponent } from './components/stocks-position/stocks-position.component';
 import { FlaskAdminComponent } from './components/flask-admin/flask-admin.component';
+import { FlaskApiComponent } from './components/flask-api/flask-api.component';
 
 
 @NgModule({
@@ -29,7 +30,8 @@ import { FlaskAdminComponent } from './components/flask-admin/flask-admin.compon
     AppComponent,
     FinOverviewComponent,
     StocksPositionComponent,
-    FlaskAdminComponent
+    FlaskAdminComponent,
+    FlaskApiComponent
   ],
   imports: [
     BrowserModule,
