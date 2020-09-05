@@ -85,6 +85,7 @@ export function pieChartOptions(
         },
         series: [
             {
+                type: 'pie',
                 name,
                 colorByPoint: true,
                 data,

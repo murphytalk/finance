@@ -2,8 +2,9 @@ import { NGXLogger } from 'ngx-logger';
 import { DataService, Positions, PortfolioAllocation, FinPosition } from './../../shared/data.service';
 import { Component, OnInit } from '@angular/core';
 import { first } from 'rxjs/operators';
-import { fromEntries, formatNumber, currencySign } from './../../shared/calc';
+import { fromEntries, formatNumber, currencySign, pieChartOptions } from './../../shared/calc';
 import { MatRadioChange } from '@angular/material/radio';
+import * as Highcharts from 'highcharts';
 
 interface OverviewItem{
   asset?: string;
@@ -34,6 +35,15 @@ interface Portfolio{
   [key: string]: PortAlloc;
 }
 
+interface PieChartData{
+  name?: string;
+  y?: number;
+}
+
+interface PieChartDataCollect{
+  [key: string]: number;
+}
+
 const ALL_PORTFOLIOS = 'All';
 
 // for ag-grid
@@ -53,12 +63,24 @@ function currencyFormatter(params) {
 export class FinOverviewComponent implements OnInit {
   private positions: Positions;
   private portfolios: Portfolio;
+  private countryAlloc: PieChartDataCollect = {};
+  private regionAlloc: PieChartDataCollect = {};
+  private assetAlloc: PieChartDataCollect = {};
+
+  Highcharts: typeof Highcharts = Highcharts;
 
   get portfolioNames(){
     return this.portfolios ? Object.keys(this.portfolios) : [];
   }
   selectedPortfolio = ALL_PORTFOLIOS;
   overviewData: OverviewItem[];
+
+  get assetAllocPieOption(){
+    const opt = this.allocPieOption(this.assetAlloc);
+    //this.logger.debug('Alloc pie chart option', opt);
+    return opt;
+  }
+  assetAllocChanged = false;
 
   columnDefs = [
     { headerName: 'Asset', field: 'asset', flex: 1 },
@@ -68,7 +90,7 @@ export class FinOverviewComponent implements OnInit {
       { headerName: 'JPY', field: 'marketValueBaseCcy', valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 }
     ]},
     { headerName: 'Profit' ,  children: [
-     { headerName: 'CCY', field: 'profit',valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 },
+     { headerName: 'CCY', field: 'profit', valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 },
      { headerName: 'JPY', field: 'profitBaseCcy', valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 }
     ]}
   ];
@@ -106,6 +128,10 @@ export class FinOverviewComponent implements OnInit {
     );
   }
 
+  private allocPieOption(data: PieChartDataCollect){
+    return pieChartOptions(null, 'Market Value', Object.keys(data).map ( key =>  ({name: key, y: data[key]})), false);
+  }
+
   private applyPortfolio(portfolio: PortAlloc, position: FinPosition): PositionAppliedWithPortfolio{
     const instrument = position.instrument.name;
 
@@ -130,9 +156,29 @@ export class FinOverviewComponent implements OnInit {
   }
 
   private refresh(){
+    function filter_by_allocation(chartData: PieChartDataCollect, shares: number, position: FinPosition, allocationName: string){
+      const allocationCollection = allocationName + '_allocation';
+      position[allocationCollection].forEach( allocation => {
+        const ratio = allocation.ratio / 100.0;
+        const value = shares * position.price * ratio * position.xccy;
+        const alloc = allocation[allocationName];
+        if ( alloc in chartData ){
+          chartData[alloc] += value;
+        }
+        else{
+          chartData[alloc] = value;
+        }
+      });
+    }
+
+    this.countryAlloc = {};
+    this.regionAlloc = {};
+    this.assetAlloc = {};
+
     const portfolio = this.portfolios[this.selectedPortfolio];
     let overview: OverviewItem[] = [];
     const assetTypes = ['ETF', 'Stock', 'Funds'];
+    const allocTypes = ['country', 'region', 'asset'];
     assetTypes.forEach( asset => {
       overview = overview.concat(this.calcOverview(asset, (assetType, sum) => {
         this.positions[assetType].forEach( (position: FinPosition) => {
@@ -140,6 +186,11 @@ export class FinOverviewComponent implements OnInit {
           const shares  = newPos.shares;
           const capital = newPos.capital;
           if (shares > 0) {
+
+              filter_by_allocation(this.countryAlloc, shares, position, 'country');
+              filter_by_allocation(this.regionAlloc, shares, position, 'region');
+              filter_by_allocation(this.assetAlloc, shares, position, 'asset');
+
               const marketValue = shares * position.price;
               const marketValueBaseCcy = marketValue * position.xccy;
               const profit = marketValue - capital;
@@ -158,6 +209,8 @@ export class FinOverviewComponent implements OnInit {
         });
       }));
     });
+
+    this.assetAllocChanged = true;
 
     // cash positions
     if (this.selectedPortfolio === ALL_PORTFOLIOS){
