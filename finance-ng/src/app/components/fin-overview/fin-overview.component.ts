@@ -2,9 +2,8 @@ import { NGXLogger } from 'ngx-logger';
 import { DataService, Positions, PortfolioAllocation, FinPosition } from './../../shared/data.service';
 import { Component, OnInit } from '@angular/core';
 import { first } from 'rxjs/operators';
-import { fromEntries, formatNumber, currencySign, pieChartOptions } from './../../shared/calc';
+import { fromEntries, formatNumber, currencySign, pieChartOption, ChartData } from './../../shared/calc';
 import { MatRadioChange } from '@angular/material/radio';
-import * as Highcharts from 'highcharts';
 
 interface OverviewItem{
   asset?: string;
@@ -67,20 +66,22 @@ export class FinOverviewComponent implements OnInit {
   private regionAlloc: PieChartDataCollect = {};
   private assetAlloc: PieChartDataCollect = {};
 
-  Highcharts: typeof Highcharts = Highcharts;
+  get assetAllocPieOption(){
+    return this.pieChartOpt(this.assetAlloc);
+  }
+  get countryAllocPieOption(){
+    return this.pieChartOpt(this.countryAlloc);
+  }
+  get regionAllocPieOption(){
+    return this.pieChartOpt(this.regionAlloc);
+  }
+
 
   get portfolioNames(){
     return this.portfolios ? Object.keys(this.portfolios) : [];
   }
   selectedPortfolio = ALL_PORTFOLIOS;
   overviewData: OverviewItem[];
-
-  get assetAllocPieOption(){
-    const opt = this.allocPieOption(this.assetAlloc);
-    //this.logger.debug('Alloc pie chart option', opt);
-    return opt;
-  }
-  assetAllocChanged = false;
 
   columnDefs = [
     { headerName: 'Asset', field: 'asset', flex: 1 },
@@ -128,8 +129,9 @@ export class FinOverviewComponent implements OnInit {
     );
   }
 
-  private allocPieOption(data: PieChartDataCollect){
-    return pieChartOptions(null, 'Market Value', Object.keys(data).map ( key =>  ({name: key, y: data[key]})), false);
+  private pieChartOpt(data: PieChartDataCollect){
+    return pieChartOption(null, null,
+      Object.keys(data).map( key => ({name: key, value: data[key]})));
   }
 
   private applyPortfolio(portfolio: PortAlloc, position: FinPosition): PositionAppliedWithPortfolio{
@@ -210,8 +212,8 @@ export class FinOverviewComponent implements OnInit {
       }));
     });
 
-    this.assetAllocChanged = true;
-
+    this.logger.debug('country alloc', this.countryAlloc);
+    this.logger.debug('region alloc', this.regionAlloc);
     // cash positions
     if (this.selectedPortfolio === ALL_PORTFOLIOS){
       overview = overview.concat(this.calcOverview('Cash', (assetType, sum) => {

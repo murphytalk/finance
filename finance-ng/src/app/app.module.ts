@@ -17,7 +17,8 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatTabsModule} from '@angular/material/tabs';
 
-import { HighchartsChartModule } from 'highcharts-angular';
+import { NgxEchartsModule } from 'ngx-echarts';
+
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { StocksPositionComponent } from './components/stocks-position/stocks-position.component';
@@ -45,6 +46,14 @@ import { FlaskApiComponent } from './components/flask-api/flask-api.component';
       serverLogLevel: NgxLoggerLevel.OFF,
       disableConsoleLogging: false
     }),
+    NgxEchartsModule.forRoot({
+      /**
+       * This will import all modules from echarts.
+       * If you only need custom modules,
+       * please refer to [Custom Build] section.
+       */
+      echarts: () => import('echarts'), // or import('./path-to-my-custom-echarts')
+    }),
     MatSidenavModule,
     MatToolbarModule,
     MatListModule,
@@ -54,7 +63,6 @@ import { FlaskApiComponent } from './components/flask-api/flask-api.component';
     MatTabsModule,
     AgGridModule.withComponents([]),
     NgbModule,
-    HighchartsChartModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

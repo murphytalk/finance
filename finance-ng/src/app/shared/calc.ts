@@ -1,5 +1,3 @@
-import * as Highcharts from 'highcharts/highstock';
-
 // https://stackoverflow.com/questions/57446821/accumulating-a-map-from-an-array-in-typescript
 export function fromEntries<V>(iterable: Iterable<[string, V]>) {
     return [...iterable].reduce((obj, [key, val]) => {
@@ -32,64 +30,57 @@ export function currencySign(ccy: string) {
     }
 }
 
-export function pieChartOptions(
-    title: string,
-    name: string,
-    data,
-    tooltipShowPercent: boolean
-) {
-    let fmt;
-    if (tooltipShowPercent) {
-        fmt = '{point.percentage:.1f}%';
-    } else {
-        fmt = '{point.y:,.1f}';
-    }
+// https://echarts.apache.org/en/option.html#legend.data
+export interface ChartLegend {
+    name: string;
+    icon?: string;
+    textStyle?: any;
+}
+export interface ChartData {
+    name: string;
+    value: number;
+}
 
-    let chartTitle;
-    if (name != null && title != null) {
-        chartTitle = name + '<br>' + title;
-    } else {
-        chartTitle = '';
+export function pieChartOption(
+                    title: any, // https://echarts.apache.org/en/option.html#title
+                    legend: ChartLegend,
+                    data: ChartData[]){
+    const sum = data.map ( x => x.value).reduce( (acc, cur) => acc + cur, 0);
+    function tooltipFormatter(params: any, ticket: string, callback: (ticket: string, html: string) => string){
+        // console.log('chart param', params);
+        return `Market Value : \u00a5${formatNumber(params.data.value)} (${(params.data.value * 100 / sum).toFixed(2)}%)`;
     }
-
     return {
-        chart: {
-            plotBackgroundColor: null,
-            plotBorderWidth: null,
-            plotShadow: false,
-            type: 'pie',
-        },
+        title,
         tooltip: {
-            pointFormat: '{series.name}: <b>' + fmt + '</b>',
+            trigger: 'item',
+            // https://echarts.apache.org/en/option.html#tooltip.formatter
+            formatter: tooltipFormatter,
         },
-        title: {
-            text: chartTitle,
-        },
-        plotOptions: {
-            pie: {
-                allowPointSelect: true,
-                cursor: 'pointer',
-                dataLabels: {
-                    enabled: true,
-                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-                    /*
-                    style: {
-                        color:
-                            (Highcharts.theme &&
-                                Highcharts.theme.contrastTextColor) ||
-                            'black',
-                    },
-                    */
-                },
-            },
+        legend: {
+            type: 'scroll',
+            orient: 'vertical',
+            right: 10,
+            top: 20,
+            bottom: 20,
+            data: legend
+            //selected: data.selected
         },
         series: [
             {
+                // name: '姓名',
                 type: 'pie',
-                name,
-                colorByPoint: true,
+                radius: '55%',
+                center: ['40%', '50%'],
                 data,
-            },
-        ],
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        ]
     };
 }
