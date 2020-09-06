@@ -215,14 +215,6 @@ INSERT INTO regions (region, country) VALUES (
    WHERE name = 'Other'),
   (SELECT ROWID
    FROM country
-   WHERE name = 'placeholder')
-);
-INSERT INTO regions (region, country) VALUES (
-  (SELECT ROWID
-   FROM region
-   WHERE name = 'Other'),
-  (SELECT ROWID
-   FROM country
    WHERE name = 'Other')
 );
 CREATE TABLE IF NOT EXISTS "country_allocation" ("instrument" int NOT NULL ,"country" int NOT NULL ,"ratio" real NOT NULL  DEFAULT (null),FOREIGN KEY(instrument) REFERENCES instrument(id),FOREIGN KEY (country) REFERENCES country(id) );

@@ -21,5 +21,12 @@
                 "8080",
             ],
         },
+        {
+            "name": "Current file",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        }
     ]
 }

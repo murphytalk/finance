@@ -105,7 +105,7 @@ class TestDao(unittest.TestCase):
                 "UK",
                 "US",
                 "W.Europe Other",
-                "placeholder",
+                "Brazil"
             },
         )
         self.assertEqual(
