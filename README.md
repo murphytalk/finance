@@ -1,4 +1,4 @@
-Personal finance and investment portal.
+'Personal finance and investment portal.
 
 [![Build Status](https://travis-ci.org/murphytalk/finance.svg?branch=master)](https://travis-ci.org/murphytalk/finance)
 
