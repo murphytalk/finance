@@ -212,8 +212,6 @@ export class FinOverviewComponent implements OnInit {
       }));
     });
 
-    this.logger.debug('country alloc', this.countryAlloc);
-    this.logger.debug('region alloc', this.regionAlloc);
     // cash positions
     if (this.selectedPortfolio === ALL_PORTFOLIOS){
       overview = overview.concat(this.calcOverview('Cash', (assetType, sum) => {
