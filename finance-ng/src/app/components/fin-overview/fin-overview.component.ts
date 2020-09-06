@@ -34,13 +34,17 @@ interface Portfolio{
   [key: string]: PortAlloc;
 }
 
-interface PieChartData{
-  name?: string;
-  y?: number;
-}
-
 interface PieChartDataCollect{
   [key: string]: number;
+}
+
+enum PieChartType{
+  AssetAlloc,
+  CountryAlloc,
+  RegionAlloc,
+  Stock,
+  ETF,
+  Funds
 }
 
 const ALL_PORTFOLIOS = 'All';
@@ -62,18 +66,33 @@ function currencyFormatter(params) {
 export class FinOverviewComponent implements OnInit {
   private positions: Positions;
   private portfolios: Portfolio;
-  private countryAlloc: PieChartDataCollect = {};
-  private regionAlloc: PieChartDataCollect = {};
-  private assetAlloc: PieChartDataCollect = {};
+
+  private pieChartData: {-readonly [key in keyof typeof PieChartType]: PieChartDataCollect} = {
+    AssetAlloc: {},
+    CountryAlloc: {},
+    RegionAlloc: {},
+    Stock: {},
+    ETF: {},
+    Funds: {},
+  };
 
   get assetAllocPieOption(){
-    return this.pieChartOpt(this.assetAlloc);
+    return this.pieChartOpt(this.pieChartData.AssetAlloc);
   }
   get countryAllocPieOption(){
-    return this.pieChartOpt(this.countryAlloc);
+    return this.pieChartOpt(this.pieChartData.CountryAlloc);
   }
   get regionAllocPieOption(){
-    return this.pieChartOpt(this.regionAlloc);
+    return this.pieChartOpt(this.pieChartData.RegionAlloc);
+  }
+  get stockPieOption(){
+    return this.pieChartOpt(this.pieChartData.Stock);
+  }
+  get etfPieOption(){
+    return this.pieChartOpt(this.pieChartData.ETF);
+  }
+  get fundsPieOption(){
+    return this.pieChartOpt(this.pieChartData.Funds);
   }
 
 
@@ -173,32 +192,49 @@ export class FinOverviewComponent implements OnInit {
       });
     }
 
-    this.countryAlloc = {};
-    this.regionAlloc = {};
-    this.assetAlloc = {};
+    this.pieChartData.CountryAlloc = {};
+    this.pieChartData.RegionAlloc = {};
+    this.pieChartData.AssetAlloc = {};
+    this.pieChartData.ETF = {};
+    this.pieChartData.Stock = {};
+    this.pieChartData.Funds = {};
 
     const portfolio = this.portfolios[this.selectedPortfolio];
     let overview: OverviewItem[] = [];
-    const assetTypes = ['ETF', 'Stock', 'Funds'];
-    const allocTypes = ['country', 'region', 'asset'];
+    const assetTypes = [PieChartType.ETF, PieChartType.Stock, PieChartType.Funds];
     assetTypes.forEach( asset => {
-      overview = overview.concat(this.calcOverview(asset, (assetType, sum) => {
+      overview = overview.concat(this.calcOverview(PieChartType[asset], (assetType, sum) => {
         this.positions[assetType].forEach( (position: FinPosition) => {
           const newPos = this.applyPortfolio(portfolio, position);
           const shares  = newPos.shares;
           const capital = newPos.capital;
           if (shares > 0) {
 
-              filter_by_allocation(this.countryAlloc, shares, position, 'country');
-              filter_by_allocation(this.regionAlloc, shares, position, 'region');
-              filter_by_allocation(this.assetAlloc, shares, position, 'asset');
+              filter_by_allocation(this.pieChartData.CountryAlloc, shares, position, 'country');
+              filter_by_allocation(this.pieChartData.RegionAlloc, shares, position, 'region');
+              filter_by_allocation(this.pieChartData.AssetAlloc, shares, position, 'asset');
 
               const marketValue = shares * position.price;
               const marketValueBaseCcy = marketValue * position.xccy;
               const profit = marketValue - capital;
               const profitBaseCcy = profit * position.xccy;
               const ccy = position.ccy;
-              if ( ccy in sum){
+/*
+              if (asset === PieChartType.ETF ||
+                  asset === PieChartType.Stock ||
+                  asset === PieChartType.Funds){
+
+                const pieData = this.pieChartData[asset];
+                const name = position.instrument.name;
+                if (name in pieData){
+                  pieData[name] += marketValueBaseCcy;
+                }
+                else{
+                  pieData[name] = marketValueBaseCcy;
+                }
+              }
+*/
+              if (ccy in sum){
                 sum[ccy].marketValue += marketValue;
                 sum[ccy].marketValueBaseCcy += marketValueBaseCcy;
                 sum[ccy].profit += profit;
@@ -214,7 +250,7 @@ export class FinOverviewComponent implements OnInit {
 
     // cash positions
     if (this.selectedPortfolio === ALL_PORTFOLIOS){
-      overview = overview.concat(this.calcOverview('Cash', (assetType, sum) => {
+      overview = overview.concat(this.calcOverview('Cash', (_, sum) => {
         const cashBalances = this.positions.Cash;
         cashBalances.forEach( balance => {
            if (balance.ccy in sum){
