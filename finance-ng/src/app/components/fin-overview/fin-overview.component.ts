@@ -203,7 +203,8 @@ export class FinOverviewComponent implements OnInit {
     let overview: OverviewItem[] = [];
     const assetTypes = [PieChartType.ETF, PieChartType.Stock, PieChartType.Funds];
     assetTypes.forEach( asset => {
-      overview = overview.concat(this.calcOverview(PieChartType[asset], (assetType, sum) => {
+      const assetName = PieChartType[asset];
+      overview = overview.concat(this.calcOverview(assetName, (assetType, sum) => {
         this.positions[assetType].forEach( (position: FinPosition) => {
           const newPos = this.applyPortfolio(portfolio, position);
           const shares  = newPos.shares;
@@ -219,12 +220,12 @@ export class FinOverviewComponent implements OnInit {
               const profit = marketValue - capital;
               const profitBaseCcy = profit * position.xccy;
               const ccy = position.ccy;
-/*
+
               if (asset === PieChartType.ETF ||
                   asset === PieChartType.Stock ||
                   asset === PieChartType.Funds){
 
-                const pieData = this.pieChartData[asset];
+                const pieData = this.pieChartData[assetName];
                 const name = position.instrument.name;
                 if (name in pieData){
                   pieData[name] += marketValueBaseCcy;
@@ -233,7 +234,7 @@ export class FinOverviewComponent implements OnInit {
                   pieData[name] = marketValueBaseCcy;
                 }
               }
-*/
+
               if (ccy in sum){
                 sum[ccy].marketValue += marketValue;
                 sum[ccy].marketValueBaseCcy += marketValueBaseCcy;
@@ -267,6 +268,7 @@ export class FinOverviewComponent implements OnInit {
 
     this.overviewData = overview;
     this.logger.debug('overview', this.overviewData);
+    this.logger.debug('asset alloc', this.pieChartData.AssetAlloc);
   }
 
   onPortfolioChanged(e: MatRadioChange){
