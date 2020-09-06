@@ -91,6 +91,11 @@ export class FinOverviewComponent implements OnInit {
   get etfPieOption(){
     return this.pieChartOpt(this.pieChartData.ETF);
   }
+  get stockAndEtfPieOption(){
+    let stockAndEtf = Object.assign({}, this.pieChartData.ETF);
+    stockAndEtf = Object.assign(stockAndEtf, this.pieChartData.Stock);
+    return this.pieChartOpt(stockAndEtf);
+  }
   get fundsPieOption(){
     return this.pieChartOpt(this.pieChartData.Funds);
   }

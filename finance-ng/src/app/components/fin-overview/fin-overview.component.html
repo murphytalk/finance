@@ -54,7 +54,12 @@
                     <div echarts [options]="stockPieOption" class="alloc-pie-chart"></div>
                 </ng-template>
             </mat-tab>
-            <mat-tab label="Funds">
+            <mat-tab label="ETF & Stock">
+                <ng-template matTabContent>
+                    <div echarts [options]="stockAndEtfPieOption" class="alloc-pie-chart"></div>
+                </ng-template>
+            </mat-tab>
+             <mat-tab label="Funds">
                 <ng-template matTabContent>
                     <div echarts [options]="fundsPieOption" class="alloc-pie-chart"></div>
                 </ng-template>
