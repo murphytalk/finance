@@ -43,35 +43,33 @@ export interface ChartData {
 
 export function pieChartOption(
                     title: any, // https://echarts.apache.org/en/option.html#title
-                    legend: ChartLegend,
+                    chartLegend: ChartLegend ,
                     data: ChartData[]){
-    const sum = data.map ( x => x.value).reduce( (acc, cur) => acc + cur, 0);
     function tooltipFormatter(params: any, ticket: string, callback: (ticket: string, html: string) => string){
         // console.log('chart param', params);
-        return `Market Value : \u00a5${formatNumber(params.data.value)} (${(params.data.value * 100 / sum).toFixed(2)}%)`;
+        return `Market Value : \u00a5${formatNumber(params.data.value)}`;
     }
-    return {
+    function labelFormatter(params: any){
+        // console.log('chart param', params);
+        return `${params.name} - ${params.percent}%`;
+    }
+    const opt = {
         title,
         tooltip: {
             trigger: 'item',
             // https://echarts.apache.org/en/option.html#tooltip.formatter
             formatter: tooltipFormatter,
         },
-        legend: {
-            type: 'scroll',
-            orient: 'vertical',
-            right: 10,
-            top: 20,
-            bottom: 20,
-            data: legend
-            //selected: data.selected
-        },
+        legend: null,
         series: [
             {
                 // name: '姓名',
                 type: 'pie',
                 radius: '55%',
                 center: ['40%', '50%'],
+                label: {
+                    formatter: labelFormatter
+                },
                 data,
                 emphasis: {
                     itemStyle: {
@@ -83,4 +81,18 @@ export function pieChartOption(
             }
         ]
     };
+
+    if (chartLegend){
+        opt.legend = {
+            type: 'scroll',
+            orient: 'vertical',
+            right: 10,
+            top: 20,
+            bottom: 20,
+            data: chartLegend
+            //selected: data.selected
+        };
+    }
+
+    return opt;
 }

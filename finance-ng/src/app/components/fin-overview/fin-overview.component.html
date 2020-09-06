@@ -44,21 +44,21 @@
     <div class="col-md-6">
         <h1 class="text-center">Instrument Allocations</h1>
         <mat-tab-group animationDuration="0ms">
-            <mat-tab label="Stock">
-                <ng-template matTabContent>
-                    <div echarts [options]="stockPieOption" class="alloc-pie-chart"></div>
-                </ng-template>
-             </mat-tab>
             <mat-tab label="ETF">
                 <ng-template matTabContent>
                     <div echarts [options]="etfPieOption" class="alloc-pie-chart"></div>
                 </ng-template>
-             </mat-tab>
+            </mat-tab>
+            <mat-tab label="Stock">
+                <ng-template matTabContent>
+                    <div echarts [options]="stockPieOption" class="alloc-pie-chart"></div>
+                </ng-template>
+            </mat-tab>
             <mat-tab label="Funds">
                 <ng-template matTabContent>
                     <div echarts [options]="fundsPieOption" class="alloc-pie-chart"></div>
                 </ng-template>
-             </mat-tab>
+            </mat-tab>
         </mat-tab-group>
     </div>
 </div>
