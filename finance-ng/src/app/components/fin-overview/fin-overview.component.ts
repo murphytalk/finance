@@ -34,7 +34,7 @@ interface Portfolio{
   [key: string]: PortAlloc;
 }
 
-interface PieChartDataCollect{
+interface DataCollect{
   [key: string]: number;
 }
 
@@ -67,7 +67,7 @@ export class FinOverviewComponent implements OnInit {
   private positions: Positions;
   private portfolios: Portfolio;
 
-  private pieChartData: {-readonly [key in keyof typeof PieChartType]: PieChartDataCollect} = {
+  private categorizedData: {-readonly [key in keyof typeof PieChartType]: DataCollect} = {
     AssetAlloc: {},
     CountryAlloc: {},
     RegionAlloc: {},
@@ -77,29 +77,48 @@ export class FinOverviewComponent implements OnInit {
   };
 
   get assetAllocPieOption(){
-    return this.pieChartOpt(this.pieChartData.AssetAlloc);
+    return this.pieChartOpt(this.categorizedData.AssetAlloc);
   }
   get countryAllocPieOption(){
-    return this.pieChartOpt(this.pieChartData.CountryAlloc);
+    return this.pieChartOpt(this.categorizedData.CountryAlloc);
   }
   get regionAllocPieOption(){
-    return this.pieChartOpt(this.pieChartData.RegionAlloc);
+    return this.pieChartOpt(this.categorizedData.RegionAlloc);
   }
   get stockPieOption(){
-    return this.pieChartOpt(this.pieChartData.Stock);
+    return this.pieChartOpt(this.categorizedData.Stock);
   }
   get etfPieOption(){
-    return this.pieChartOpt(this.pieChartData.ETF);
+    return this.pieChartOpt(this.categorizedData.ETF);
   }
   get stockAndEtfPieOption(){
-    let stockAndEtf = Object.assign({}, this.pieChartData.ETF);
-    stockAndEtf = Object.assign(stockAndEtf, this.pieChartData.Stock);
-    return this.pieChartOpt(stockAndEtf);
+   return this.pieChartOpt(this.stockAndEtfData());
   }
   get fundsPieOption(){
-    return this.pieChartOpt(this.pieChartData.Funds);
+    return this.pieChartOpt(this.categorizedData.Funds);
   }
 
+  get assetTotalValue(){
+    return this.pieChartTotalValue(this.categorizedData.AssetAlloc);
+  }
+  get regionTotalValue(){
+    return this.pieChartTotalValue(this.categorizedData.RegionAlloc);
+  }
+  get countryTotalValue(){
+    return this.pieChartTotalValue(this.categorizedData.CountryAlloc);
+  }
+  get stockTotalValue(){
+    return this.pieChartTotalValue(this.categorizedData.Stock);
+  }
+  get etfTotalValue(){
+    return this.pieChartTotalValue(this.categorizedData.ETF);
+  }
+  get stockAndEtfTotalValue(){
+    return this.pieChartTotalValue(this.stockAndEtfData());
+  }
+  get fundsTotalValue(){
+    return this.pieChartTotalValue(this.categorizedData.Funds);
+  }
 
   get portfolioNames(){
     return this.portfolios ? Object.keys(this.portfolios) : [];
@@ -153,9 +172,19 @@ export class FinOverviewComponent implements OnInit {
     );
   }
 
-  private pieChartOpt(data: PieChartDataCollect){
+  private stockAndEtfData(): DataCollect{
+    let stockAndEtf = Object.assign({}, this.categorizedData.ETF);
+    stockAndEtf = Object.assign(stockAndEtf, this.categorizedData.Stock);
+    return stockAndEtf;
+  }
+
+  private pieChartOpt(data: DataCollect){
     return pieChartOption(null, null,
       Object.keys(data).map( key => ({name: key, value: data[key]})));
+  }
+
+  private pieChartTotalValue(data: DataCollect){
+    return Object.keys(data).map ( key => data[key]).reduce((accu, cur) => accu + cur, 0);
   }
 
   private applyPortfolio(portfolio: PortAlloc, position: FinPosition): PositionAppliedWithPortfolio{
@@ -182,7 +211,7 @@ export class FinOverviewComponent implements OnInit {
   }
 
   private refresh(){
-    function filter_by_allocation(chartData: PieChartDataCollect, shares: number, position: FinPosition, allocationName: string){
+    function filter_by_allocation(chartData: DataCollect, shares: number, position: FinPosition, allocationName: string){
       const allocationCollection = allocationName + '_allocation';
       position[allocationCollection].forEach( allocation => {
         const ratio = allocation.ratio / 100.0;
@@ -197,12 +226,12 @@ export class FinOverviewComponent implements OnInit {
       });
     }
 
-    this.pieChartData.CountryAlloc = {};
-    this.pieChartData.RegionAlloc = {};
-    this.pieChartData.AssetAlloc = {};
-    this.pieChartData.ETF = {};
-    this.pieChartData.Stock = {};
-    this.pieChartData.Funds = {};
+    this.categorizedData.CountryAlloc = {};
+    this.categorizedData.RegionAlloc = {};
+    this.categorizedData.AssetAlloc = {};
+    this.categorizedData.ETF = {};
+    this.categorizedData.Stock = {};
+    this.categorizedData.Funds = {};
 
     const portfolio = this.portfolios[this.selectedPortfolio];
     let overview: OverviewItem[] = [];
@@ -216,9 +245,9 @@ export class FinOverviewComponent implements OnInit {
           const capital = newPos.capital;
           if (shares > 0) {
 
-              filter_by_allocation(this.pieChartData.CountryAlloc, shares, position, 'country');
-              filter_by_allocation(this.pieChartData.RegionAlloc, shares, position, 'region');
-              filter_by_allocation(this.pieChartData.AssetAlloc, shares, position, 'asset');
+              filter_by_allocation(this.categorizedData.CountryAlloc, shares, position, 'country');
+              filter_by_allocation(this.categorizedData.RegionAlloc, shares, position, 'region');
+              filter_by_allocation(this.categorizedData.AssetAlloc, shares, position, 'asset');
 
               const marketValue = shares * position.price;
               const marketValueBaseCcy = marketValue * position.xccy;
@@ -230,7 +259,7 @@ export class FinOverviewComponent implements OnInit {
                   asset === PieChartType.Stock ||
                   asset === PieChartType.Funds){
 
-                const pieData = this.pieChartData[assetName];
+                const pieData = this.categorizedData[assetName];
                 const name = position.instrument.name;
                 if (name in pieData){
                   pieData[name] += marketValueBaseCcy;
@@ -273,7 +302,7 @@ export class FinOverviewComponent implements OnInit {
 
     this.overviewData = overview;
     this.logger.debug('overview', this.overviewData);
-    this.logger.debug('asset alloc', this.pieChartData.AssetAlloc);
+    this.logger.debug('asset alloc', this.categorizedData.AssetAlloc);
   }
 
   onPortfolioChanged(e: MatRadioChange){

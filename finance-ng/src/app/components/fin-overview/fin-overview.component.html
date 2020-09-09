@@ -26,17 +26,44 @@
         <mat-tab-group animationDuration="0ms">
             <mat-tab label="Asset">
                 <ng-template matTabContent>
-                    <div echarts [options]="assetAllocPieOption"   class="alloc-pie-chart"></div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            Total Market Value : {{assetTotalValue | money:'JPY'}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div echarts [options]="assetAllocPieOption"   class="alloc-pie-chart"></div>
+                        </div>
+                    </div>
                 </ng-template>
             </mat-tab>
             <mat-tab label="Region">
                 <ng-template matTabContent>
-                    <div echarts [options]="regionAllocPieOption"  class="alloc-pie-chart"></div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            Total Market Value : {{regionTotalValue | money:'JPY'}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div echarts [options]="regionAllocPieOption"  class="alloc-pie-chart"></div>
+                        </div>
+                    </div>
                 </ng-template>
             </mat-tab>
             <mat-tab label="Country">
                 <ng-template matTabContent>
-                    <div echarts [options]="countryAllocPieOption" class="alloc-pie-chart"></div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            Total Market Value : {{countryTotalValue | money:'JPY'}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div echarts [options]="countryAllocPieOption" class="alloc-pie-chart"></div>
+                        </div>
+                    </div>
                 </ng-template>
             </mat-tab>
         </mat-tab-group>
@@ -46,22 +73,58 @@
         <mat-tab-group animationDuration="0ms">
             <mat-tab label="ETF">
                 <ng-template matTabContent>
-                    <div echarts [options]="etfPieOption" class="alloc-pie-chart"></div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            Total Market Value : {{etfTotalValue | money:'JPY'}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div echarts [options]="etfPieOption" class="alloc-pie-chart"></div>
+                        </div>
+                    </div>
                 </ng-template>
             </mat-tab>
             <mat-tab label="Stock">
                 <ng-template matTabContent>
-                    <div echarts [options]="stockPieOption" class="alloc-pie-chart"></div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            Total Market Value : {{stockTotalValue | money:'JPY'}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div echarts [options]="stockPieOption" class="alloc-pie-chart"></div>
+                        </div>
+                    </div>
                 </ng-template>
             </mat-tab>
             <mat-tab label="ETF & Stock">
                 <ng-template matTabContent>
-                    <div echarts [options]="stockAndEtfPieOption" class="alloc-pie-chart"></div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            Total Market Value : {{stockAndEtfTotalValue | money:'JPY'}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div echarts [options]="stockAndEtfPieOption" class="alloc-pie-chart"></div>
+                        </div>
+                    </div>
                 </ng-template>
             </mat-tab>
              <mat-tab label="Funds">
                 <ng-template matTabContent>
-                    <div echarts [options]="fundsPieOption" class="alloc-pie-chart"></div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            Total Market Value : {{etfTotalValue | money:'JPY'}}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div echarts [options]="fundsPieOption" class="alloc-pie-chart"></div>
+                        </div>
+                    </div>
                 </ng-template>
             </mat-tab>
         </mat-tab-group>

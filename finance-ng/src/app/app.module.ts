@@ -1,3 +1,4 @@
+import { FormatMoneyPipe } from './shared/pipes';
 import { AgGridModule } from 'ag-grid-angular';
 import { environment } from './../environments/environment';
 import { FinOverviewComponent } from './components/fin-overview/fin-overview.component';
@@ -31,6 +32,7 @@ import { FlaskApiComponent } from './components/flask-api/flask-api.component';
 @NgModule({
   declarations: [
     AppComponent,
+    FormatMoneyPipe,
     FinOverviewComponent,
     StocksPositionComponent,
     FlaskAdminComponent,
