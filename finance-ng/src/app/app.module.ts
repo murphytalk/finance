@@ -19,6 +19,8 @@ import {MatTabsModule} from '@angular/material/tabs';
 
 import { NgxEchartsModule } from 'ngx-echarts';
 
+import * as echarts from './shared/echarts';
+
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { StocksPositionComponent } from './components/stocks-position/stocks-position.component';
@@ -47,12 +49,7 @@ import { FlaskApiComponent } from './components/flask-api/flask-api.component';
       disableConsoleLogging: false
     }),
     NgxEchartsModule.forRoot({
-      /**
-       * This will import all modules from echarts.
-       * If you only need custom modules,
-       * please refer to [Custom Build] section.
-       */
-      echarts: () => import('echarts'), // or import('./path-to-my-custom-echarts')
+      echarts
     }),
     MatSidenavModule,
     MatToolbarModule,
