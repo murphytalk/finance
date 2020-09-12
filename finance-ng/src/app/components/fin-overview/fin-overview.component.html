@@ -105,7 +105,7 @@
                 <ng-template matTabContent>
                     <div class="d-flex flex-column">
                         <div class="mt-3">
-                            Total Market Value : {{etfTotalValue | money:'JPY'}}
+                            Total Market Value : {{fundsTotalValue | money:'JPY'}}
                         </div>
                         <div>
                             <div echarts [options]="fundsPieOption" class="alloc-pie-chart"></div>

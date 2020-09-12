@@ -38,7 +38,7 @@ interface DataCollect{
   [key: string]: number;
 }
 
-enum PieChartType{
+enum DataCategory{
   AssetAlloc,
   CountryAlloc,
   RegionAlloc,
@@ -67,7 +67,7 @@ export class FinOverviewComponent implements OnInit {
   private positions: Positions;
   private portfolios: Portfolio;
 
-  private categorizedData: {-readonly [key in keyof typeof PieChartType]: DataCollect} = {
+  private categorizedData: {-readonly [key in keyof typeof DataCategory]: DataCollect} = {
     AssetAlloc: {},
     CountryAlloc: {},
     RegionAlloc: {},
@@ -213,10 +213,11 @@ export class FinOverviewComponent implements OnInit {
   private refresh(){
     function filter_by_allocation(chartData: DataCollect, shares: number, position: FinPosition, allocationName: string){
       const allocationCollection = allocationName + '_allocation';
+      const totalValue = shares * position.price *  position.xccy;
       position[allocationCollection].forEach( allocation => {
         const ratio = allocation.ratio / 100.0;
-        const value = shares * position.price * ratio * position.xccy;
         const alloc = allocation[allocationName];
+        const value = totalValue * ratio;
         if ( alloc in chartData ){
           chartData[alloc] += value;
         }
@@ -235,9 +236,9 @@ export class FinOverviewComponent implements OnInit {
 
     const portfolio = this.portfolios[this.selectedPortfolio];
     let overview: OverviewItem[] = [];
-    const assetTypes = [PieChartType.ETF, PieChartType.Stock, PieChartType.Funds];
+    const assetTypes = [DataCategory.ETF, DataCategory.Stock, DataCategory.Funds];
     assetTypes.forEach( asset => {
-      const assetName = PieChartType[asset];
+      const assetName = DataCategory[asset];
       overview = overview.concat(this.calcOverview(assetName, (assetType, sum) => {
         this.positions[assetType].forEach( (position: FinPosition) => {
           const newPos = this.applyPortfolio(portfolio, position);
@@ -255,18 +256,14 @@ export class FinOverviewComponent implements OnInit {
               const profitBaseCcy = profit * position.xccy;
               const ccy = position.ccy;
 
-              if (asset === PieChartType.ETF ||
-                  asset === PieChartType.Stock ||
-                  asset === PieChartType.Funds){
 
-                const pieData = this.categorizedData[assetName];
-                const name = position.instrument.name;
-                if (name in pieData){
-                  pieData[name] += marketValueBaseCcy;
-                }
-                else{
-                  pieData[name] = marketValueBaseCcy;
-                }
+              const pieData = this.categorizedData[assetName];
+              const name = position.instrument.name;
+              if (name in pieData){
+                pieData[name] += marketValueBaseCcy;
+              }
+              else{
+                pieData[name] = marketValueBaseCcy;
               }
 
               if (ccy in sum){

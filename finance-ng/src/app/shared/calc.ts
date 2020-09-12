@@ -46,7 +46,7 @@ export function pieChartOption(
                     chartLegend: ChartLegend ,
                     data: ChartData[]){
     function tooltipFormatter(params: any, ticket: string, callback: (ticket: string, html: string) => string){
-        // console.log('chart param', params);
+        console.log('chart param', params);
         return `Market Value : \u00a5${formatNumber(params.data.value)}`;
     }
     function labelFormatter(params: any){
