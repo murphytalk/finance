@@ -8,9 +8,9 @@ import { MatRadioChange } from '@angular/material/radio';
 interface OverviewItem{
   asset?: string;
   ccy?: string;
-  marketValue: number;
+  marketValue?: number;
   marketValueBaseCcy: number;
-  profit: number;
+  profit?: number;
   profitBaseCcy: number;
 }
 
@@ -138,6 +138,10 @@ export class FinOverviewComponent implements OnInit {
      { headerName: 'JPY', field: 'profitBaseCcy', valueFormatter: currencyFormatter, type: 'numericColumn', flex: 2 }
     ]}
   ];
+
+  rowClassRules = {
+    sumRow: params =>  params.data.asset == null
+  };
 
   constructor(
     private data: DataService,
@@ -297,7 +301,14 @@ export class FinOverviewComponent implements OnInit {
       }));
     }
 
-    this.overviewData = overview;
+    // summery
+    const summery = overview.reduce( (accu, x) => {
+      accu.marketValueBaseCcy += x.marketValueBaseCcy;
+      accu.profitBaseCcy += x.profitBaseCcy;
+      return accu;
+    }, {marketValueBaseCcy: 0, profitBaseCcy: 0});
+
+    this.overviewData = overview.concat(summery);
     this.logger.debug('overview', this.overviewData);
     this.logger.debug('asset alloc', this.categorizedData.AssetAlloc);
   }

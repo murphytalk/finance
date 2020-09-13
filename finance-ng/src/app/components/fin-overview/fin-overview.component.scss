@@ -9,3 +9,11 @@
 .alloc-pie-chart{
     height: 600px;
 }
+
+//need this to make it avaible to grid compoment 's sub elements
+//https://blog.angular-university.io/angular-host-context/
+::ng-deep{
+  .sumRow{
+    font-weight: bold;
+  }
+}
