@@ -4,8 +4,14 @@ from flask_restx import Resource
 from finance.common.report import FundReport, StockReport2
 from finance.common.calculate import get_portfolios, rebalance_portfolio
 from finance.api.endpoints import run_func_against_dao
+from functools import reduce
+from dataclasses import dataclass
 
 ns = api.namespace('report', description='Financial reports')
+
+import logging.config
+
+log = logging.getLogger(__name__)
 
 
 @ns.route('/fund')
@@ -17,6 +23,10 @@ class FundPerformance(Resource):
         """
         return run_func_against_dao(lambda dao: FundReport(dao, date.today()).positions)
 
+@dataclass
+class AllocItem:
+    alloc: str
+    ratio: float
 
 @ns.route('/positions')
 class Positions(Resource):
@@ -25,6 +35,17 @@ class Positions(Resource):
         """
         Return a summary of all positions
         """
+        def _alloc_auto_other(allocations):
+            alloc = [AllocItem(x[0], x[1]) for x in allocations if x[0] != 'Other']
+            total = reduce(lambda accu,x: accu + x.ratio, alloc, 0)
+            if total > 100:
+                log.error('Alloc over 100% : {}'.format(allocations))
+            else:
+                alloc.append(AllocItem('Other', 100 - total))
+            for a in alloc:
+                yield (a.alloc, a.ratio)
+
+
         def _get_position(dao, report):
             return [{'instrument': {'id': p['instrument'], 'name':p['symbol']},
                      'asset_allocation':
@@ -34,11 +55,11 @@ class Positions(Resource):
                      'country_allocation':
                          [{'country': x[0],
                            'ratio': x[1]
-                           } for x in dao.get_country_allocation(instrument_id=p['instrument'])],
+                           } for x in _alloc_auto_other(dao.get_country_allocation(instrument_id=p['instrument']))],
                      'region_allocation':
                          [{'region': x[0],
                            'ratio': x[1]
-                           } for x in dao.get_region_allocation(instrument_id=p['instrument'])],
+                           } for x in _alloc_auto_other(dao.get_region_allocation(instrument_id=p['instrument']))],
                      'ccy': p['ccy'],
                      'xccy': p['xccy'],
                      'shares': p['shares'],

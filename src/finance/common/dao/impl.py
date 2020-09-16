@@ -146,7 +146,7 @@ class ImplDao(Raw):
         return a generator which generates a stream of (broker,name,price,amount,capital,value,profit,date in epoch)
         """
         sql = ('SELECT broker,name,instrument_id,url,expense_ratio,amount,price,value,profit,capital,date '
-               'FROM fund_performance2')
+               'FROM fund_performance3')
         for r in self.exec(sql):
             yield r
 

@@ -47,7 +47,7 @@ export function pieChartOption(
                     data: ChartData[]){
     function tooltipFormatter(params: any, ticket: string, callback: (ticket: string, html: string) => string){
         // console.log('chart param', params);
-        return `Market Value : \u00a5${formatNumber(params.data.value)}`;
+        return `Market Value : ${currencySign('JPY')}${formatNumber(params.data.value)}`;
     }
     function labelFormatter(params: any){
         // console.log('chart param', params);
@@ -63,7 +63,6 @@ export function pieChartOption(
         legend: null,
         series: [
             {
-                // name: '姓名',
                 type: 'pie',
                 radius: '55%',
                 center: ['40%', '50%'],
