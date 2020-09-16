@@ -22,7 +22,6 @@ import { NgxEchartsModule } from 'ngx-echarts';
 
 import * as echarts from './shared/echarts';
 
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { StocksPositionComponent } from './components/stocks-position/stocks-position.component';
 import { FlaskAdminComponent } from './components/flask-admin/flask-admin.component';
@@ -61,7 +60,6 @@ import { FlaskApiComponent } from './components/flask-api/flask-api.component';
     MatRadioModule,
     MatTabsModule,
     AgGridModule.withComponents([]),
-    NgbModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
