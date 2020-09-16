@@ -2,7 +2,7 @@
     <mat-sidenav #drawer class="app-sidenav  mat-elevation-z10" mode="push">
         <mat-nav-list>
            <mat-list-item *ngFor="let link of topNavLinks">
-                <a  [routerLink]="link.path" routerLinkActive="text-success">
+                <a  [routerLink]="link.path" routerLinkActive="text-green-600">
                     <div class="d-flex justify-content-between">
                         <div><mat-icon>{{link.icon}}</mat-icon></div>
                         <div>{{ link.name }}</div>
