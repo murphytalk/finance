@@ -1,15 +1,15 @@
 <mat-sidenav-container class="app-sidenav-container" autosize>
     <mat-sidenav #drawer class="app-sidenav  mat-elevation-z10" mode="push">
-        <ul ngbNav #nav="ngbNav" class="nav flex-column">
-           <li ngbNavItem *ngFor="let link of topNavLinks">
-                <a ngbNavLink  [routerLink]="link.path" routerLinkActive="text-success">
+        <mat-nav-list>
+           <mat-list-item *ngFor="let link of topNavLinks">
+                <a  [routerLink]="link.path" routerLinkActive="text-success">
                     <div class="d-flex justify-content-between">
                         <div><mat-icon>{{link.icon}}</mat-icon></div>
                         <div>{{ link.name }}</div>
                     </div>
                 </a>
-           </li>
-        </ul>
+           </mat-list-item>
+        </mat-nav-list>
     </mat-sidenav>
     <mat-toolbar color="primary">
         <button mat-icon-button (click)="drawer.toggle()">
