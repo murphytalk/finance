@@ -11,3 +11,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .ag-theme-alpine {
     @include ag-theme-alpine();
 }
+
+// suppress border-style: solid which appears to be introduced by tailwind
+// when parent element has a border-style ag-grid will always show a scrollbar
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-style: none;
+}
