@@ -233,3 +233,6 @@ typings
 # System Files
 .DS_Store
 Thumbs.db
+
+.ipynb_checkpoints/
+
