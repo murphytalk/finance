@@ -4,3 +4,5 @@ Flask-Script==2.0.5
 Flask-Admin>=1.5.3
 sqlalchemy>=1.2.7
 pandas>=0.20.3
+yahoo-historical
+docopt

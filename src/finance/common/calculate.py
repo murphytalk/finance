@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/env python
 """
 Various calculations
 
-parameter:
- -fxxxxxxx path to db file
- -i        do not update db file
+Calculations:
+    500 buy-policy based on 550-day move
+
+Usage:
+    calculate.py 500 <ticker>...
+    calculate.py -h | --help
+
+Options:
+    -h, --help        Show this screen
 
 """
 from finance.common.const import STOCK_START_DATE
@@ -110,3 +117,9 @@ def rebalance_portfolio(dao, at_which_day, name, new_fund):
         portfolio["delta_funds"] = portfolio["delta_shares"] * portfolio["price"]
 
     return {'plans': rebalancing_plans, 'merged': portfolio if len(rebalancing_plans) > 1 else None}
+
+
+if __name__ == "__main__":
+    from docopt import docopt
+    args = docopt(__doc__)
+    print(args)
