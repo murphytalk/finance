@@ -9,52 +9,53 @@ Options:
     -d=<days>         back days
 """
 from yahoo_historical import Fetcher
-from datetime import datetime, timedelta
+from datetime import timedelta
 from dataclasses import dataclass
 from enum import Enum
 
 
-class AvgClosing:
-    def __init__(self, ticker, start_date, end_date):
-        self.ticker = ticker
-        self.data = None
-        self.load_data(start_date,  end_date)
+def format_date(dt):
+    return dt.strftime("%Y-%m-%d")
 
-    def get_last_date_in_data(self):
-        return self.data['Date'].tail(1).item()
 
-    def load_data(self, start_date, end_date):
-        ticker = self.ticker
-        if self.data is None:
-            d1 = [start_date.year, start_date.month, start_date.day]
-            d2 = [end_date.year, end_date.month, end_date.day]
-            self.data = Fetcher(ticker, d1, d2).get_historical()
-        else:
-            last = datetime.strptime(self.get_last_date_in_data(), '%Y-%m-%d')
-            start_date = last + timedelta(days=1)
-            if start_date <= end_date:
-                d1 = [start_date.year, start_date.month, start_date.day]
-                d2 = [end_date.year, end_date.month, end_date.day]
-                extra = Fetcher(ticker, d1, d2).get_historical()
-                self.data = self.data.append(extra)
+@dataclass
+class Avg:
+    avg_closing: float
+    last_to_avg_percentage: float
 
-    def calc_avg(self, back_days):
-        hist = self.data.tail(back_days)
-        # display(hist)
-        closings = hist['Close']
-        t_1_closing = closings[-1:]
-        avg = closings.mean()
-        return (t_1_closing - avg) / avg
 
-class AvgClosingWithPreLoadedData(AvgClosing):
-    def __init__(self, ticker, preload_data, start_date, end_date):
-        pass
+def do_calc_avg(hist_data):
+    closings = hist_data['Close']
+    t_1_closing = closings[-1:].iat[0]
+    avg = closings.mean()
+    return Avg(avg, (t_1_closing - avg) / avg)
 
-    def load_data(self, start_date, end_date):
-        pass
 
-    def calc_avg(self, back_days):
-        
+def calc_avg(ticker, t_minus_1, back_days):
+    start_date = t_minus_1 - timedelta(days=back_days)
+    end_date = t_minus_1 + timedelta(days=1)
+    d1 = [start_date.year, start_date.month, start_date.day]
+    d2 = [end_date.year, end_date.month, end_date.day]
+    data = Fetcher(ticker, d1, d2).get_historical()
+    return do_calc_avg(ticker, data)
+
+
+def calc_avg_with_preloaded_data(preloaded_data, t_minus_1, back_days):
+    def get_idx_by_date(dt):
+        while(True):
+            df = preloaded_data[preloaded_data['Date'] == format_date(dt)]
+            # print(format_date(dt),df)
+            if df.empty:
+                dt = dt - timedelta(days=1)
+            else:
+                # print("idx=",df.index[0])
+                return df.index[0]
+
+    start_date = t_minus_1 - timedelta(days=back_days)
+    end_date = t_minus_1
+    data = preloaded_data.iloc[get_idx_by_date(start_date):get_idx_by_date(end_date)+1]
+    return do_calc_avg(data)
+
 
 class Side(Enum):
     BUY = 1
@@ -77,12 +78,3 @@ if __name__ == "__main__":
 
     if args['avg']:
         days = int(args['-d'])
-
-        d1 = datetime(2020, 1, 1)
-        d2 = datetime(2020, 2, 1)
-
-        avg = AvgClosing('VT', d1, d2)
-        print(avg.calc_avg(days))
-
-        avg.load_data(d1, datetime(2020, 2, 10))
-        print(avg.calc_avg(days))

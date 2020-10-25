@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 """
 Various calculations
@@ -14,11 +13,25 @@ Options:
     -h, --help        Show this screen
 
 """
+if __name__ == "__main__":
+    import sys
+    import os.path
+    from pathlib import Path
+
+    # set up lib path
+    p=Path(os.path.dirname(os.path.realpath(__file__)))
+    root=str(p.parent.parent)
+    sys.path.append(root)
+
+from dataclasses import dataclass
 from finance.common.const import STOCK_START_DATE
 from finance.common.model import Position
 from finance.common.const import REBALANCING_THRESHOLD
 from functools import reduce
+from yahoo_historical import Fetcher
+from datetime import datetime
 import pandas as pd
+from numpy import float64
 
 
 class CalcPosition:
@@ -119,7 +132,38 @@ def rebalance_portfolio(dao, at_which_day, name, new_fund):
     return {'plans': rebalancing_plans, 'merged': portfolio if len(rebalancing_plans) > 1 else None}
 
 
+@dataclass
+class Policy500DaysMove:
+    ticker: str
+    start_date: datetime
+    end_date: datetime
+    avg_closing: float64
+    avg_diff: float
+    # how many percentage of standard buy volume
+    buy_scale: float
+    
+
+def calc_buying_by_500d_move(ticker, start_date, end_date):
+    d1 = [start_date.year,start_date.month,start_date.day]
+    d2 = [end_date.year, end_date.month, end_date.day]
+    data = Fetcher(ticker, d1, d2)
+    hist = data.get_historical()
+
+    closings = hist['Close']
+    t_1_closing =closings[-1:]
+    avg = closings.mean()
+    avg_diff = (t_1_closing - avg) / avg
+
+    return Policy500DaysMove(ticker, start_date, end_date, avg)
+
+
 if __name__ == "__main__":
     from docopt import docopt
+    from datetime import timedelta
+
     args = docopt(__doc__)
-    print(args)
+    if args['500']:
+        t_1 = datetime.today() - timedelta(days=1)
+        d500 = t_1 - timedelta(days=500)
+        for ticker in args['<ticker>']:
+            print(calc_buying_by_500d_move(ticker,d500, t_1))
