@@ -227,8 +227,15 @@ if __name__ == "__main__":
     #args = docopt(__doc__)
     # print(args)
     # if args['avg']:
-    s = FluxtrateBuy(3, 2, 2, 2)
-    t = BackTester(240, '510500.SS', datetime(2015, 1, 1), datetime(2020, 11, 1))
-    actions = t.get_actions(s, 7)
-    r = t.evaluate(1000, actions)
-    print(r)
+    t = BackTester(240, '510300.SS', datetime(2015, 1, 1), datetime(2020, 11, 1))
+    evaluations = []
+    for up in range(1,10):
+        for down in range(1,10):
+            print('up {} down {}'.format(up, down))
+            s = FluxtrateBuy(up, down, 2, 2)
+            actions = t.get_actions(s, 7)
+            evaluations.append(t.evaluate(1000, actions))
+            #print(r)
+    evaluations.sort(key = lambda x : x[0].annualized_return)
+    print(evaluations[0])
+    print(evaluations[-1])
