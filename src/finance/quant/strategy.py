@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from enum import Enum
 from math import floor, ceil
 from functools import reduce
+from numpy import isnan
 
 FMT = "%Y-%m-%d"
 
@@ -221,10 +222,9 @@ if __name__ == "__main__":
 
     #args = docopt(__doc__)
     # print(args)
-
     # if args['avg']:
-    s = FluxtrateBuy(1, 2, 2)
-    t = BackTester(240, 'VTI', datetime(2019, 1, 1), datetime(2020, 10, 1))
+    s = FluxtrateBuy(1, 2, 2, 100)
+    t = BackTester(240, '510500.SS', datetime(2019, 1, 1), datetime(2020, 10, 1))
     actions = t.get_actions(s, 30)
     r = t.evaluate(800, actions)
     print(r)
