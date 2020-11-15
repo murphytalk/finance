@@ -65,7 +65,7 @@ def ensure_trading_date(preloaded_data, dt: datetime, day_step: int):
             return None
         df = preloaded_data[preloaded_data['Date'] == format_date(dt)]
         # print(format_date(dt),df)
-        if df.empty:
+        if df.empty or isnan(df['Close'].iloc[0]):
             dt = dt + timedelta(days=day_step)
         else:
             return df
@@ -112,7 +112,9 @@ class Strategy:
 
 
 class FluxtrateBuy(Strategy):
-    def __init__(self, scale_up: float, scale_down: float, stop_buy_level: float, buy_cap: float):
+    def __init__(self,
+                 scale_up: float, # how many times of down percentage to increase the buying
+                 scale_down: float, stop_buy_level: float, buy_cap: float):
         self.scale_up = scale_up
         self.scale_down = scale_down
         self.stop_buy_level = stop_buy_level
@@ -168,15 +170,17 @@ class BackTester:
         actions = []
         dt = self.start_date
         while dt <= self.end_date:
+            # get a date when there is valid closing
             dt = get_date_from_df(ensure_trading_date(self.data, dt, 1))
             t_minus_one = dt - timedelta(days=1)
             t_minus_one = get_date_from_df(
                 ensure_trading_date(self.data, t_minus_one, -1))
-            dt += timedelta(days=interval_days)
-
             avg = calc_avg_with_preloaded_data(
                 self.data, t_minus_one, self.avg_back_days)
             actions.append(strategy.calc(dt, avg))
+       
+            dt += timedelta(days=interval_days)
+
         return actions
 
     def evaluate(self, base_invest_vol: float, actions) -> (EvalResult, EvalResult):
@@ -223,8 +227,8 @@ if __name__ == "__main__":
     #args = docopt(__doc__)
     # print(args)
     # if args['avg']:
-    s = FluxtrateBuy(1, 2, 2, 100)
-    t = BackTester(240, '510500.SS', datetime(2019, 1, 1), datetime(2020, 10, 1))
-    actions = t.get_actions(s, 30)
-    r = t.evaluate(800, actions)
+    s = FluxtrateBuy(3, 2, 2, 2)
+    t = BackTester(240, '510500.SS', datetime(2015, 1, 1), datetime(2020, 11, 1))
+    actions = t.get_actions(s, 7)
+    r = t.evaluate(1000, actions)
     print(r)
