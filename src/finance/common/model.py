@@ -45,7 +45,7 @@ class Position(Model):
             for c in self.unclosed_positions:
                 c.split(price)
         else:
-            s = shares if trans_type == 'BUY' else -1 * shares
+            s = shares if trans_type == 'BUY' else (-1 if shares > 0 else 1) * shares
             self.shares = self.shares + s
             self.liquidated -= price * s
             self.fee = self.fee + fee
