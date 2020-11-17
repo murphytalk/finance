@@ -96,6 +96,7 @@ class Action:
     percentage: float
     explain: str
     avg: Avg
+    shares: int = 0
 
 
 class Strategy:
@@ -113,7 +114,7 @@ class Strategy:
 
 class FluxtrateBuy(Strategy):
     def __init__(self,
-                 scale_up: float, # how many times of down percentage to increase the buying
+                 scale_up: float,  # how many times of down percentage to increase the buying
                  scale_down: float, stop_buy_level: float, buy_cap: float):
         self.scale_up = scale_up
         self.scale_down = scale_down
@@ -140,7 +141,7 @@ class FluxtrateBuy(Strategy):
         return Action(date, Side.BUY, v, explain, avg)
 
 
-@ dataclass
+@dataclass
 class EvalResult:
     total_cost: float
     total_value: float
@@ -178,7 +179,7 @@ class BackTester:
             avg = calc_avg_with_preloaded_data(
                 self.data, t_minus_one, self.avg_back_days)
             actions.append(strategy.calc(dt, avg))
-       
+
             dt += timedelta(days=interval_days)
 
         return actions
@@ -221,21 +222,34 @@ class BackTester:
         return (calc_return(my_positions), calc_return(standard_positions))
 
 
+@dataclass
+class Result:
+    result: EvalResult
+    benchmark: EvalResult
+    up_scale: int
+    down_scale: int
+    actions: list
+
+
 if __name__ == "__main__":
     #from docopt import docopt
 
     #args = docopt(__doc__)
     # print(args)
     # if args['avg']:
-    t = BackTester(240, '510300.SS', datetime(2015, 1, 1), datetime(2020, 11, 1))
+    t = BackTester(240, '510300.SS', datetime(
+        2015, 1, 1), datetime(2020, 11, 1))
     evaluations = []
-    for up in range(1,10):
-        for down in range(1,10):
+    for up in range(1, 10):
+        for down in range(1, 10):
             print('up {} down {}'.format(up, down))
             s = FluxtrateBuy(up, down, 2, 2)
             actions = t.get_actions(s, 7)
-            evaluations.append(t.evaluate(1000, actions))
-            #print(r)
-    evaluations.sort(key = lambda x : x[0].annualized_return)
-    print(evaluations[0])
-    print(evaluations[-1])
+            my, standard = t.evaluate(1000, actions)
+            evaluations.append(Result(my, standard, up, down, actions))
+            # print(r)
+    evaluations.sort(key=lambda x: x.result.annualized_return)
+    worst = evaluations[0]
+    best = evaluations[-1]
+    print(worst)
+    print(best)

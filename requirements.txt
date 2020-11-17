@@ -6,3 +6,4 @@ sqlalchemy>=1.2.7
 pandas>=0.20.3
 yahoo-historical
 docopt
+xlrd
