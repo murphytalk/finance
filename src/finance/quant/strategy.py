@@ -1,12 +1,23 @@
 #!/usr/bin/env python
 """
 Usage:
-    strategy.py avg -d=<days> <ticker>...
+    strategy.py avg  -d=<days> --up=<up_scale> --down=<down_scale> <ticker>...
+    strategy.py test -d=<days> -f=<date1> -t=<date2> --buy-interval=<days> --invest=<invest>  --stop-buy=<stop_buy> --up-scale-limit=<up_limit> <ticker>
     strategy.py -h | --help
 
+Mode:
+    avg    compute buy vol by check closing vs last n days avg
+    test   Back test
+
 Options:
-    -h, --help        Show this screen
-    -d=<days>         back days
+    -h, --help                   show this screen
+    -d=<days>                    back days
+    --buy-interval=<days>        days between buying
+    --invest=<invest>            base invest amount for each buying
+    -f=<date1>                   back test start date in YYYYMMDD format
+    -t=<date2>                   back test end date in YYYYMMDD format
+    --stop-buy=<stop_buy>        when price is this times of avg stop buying
+    --up-scale-limit=<up_limit>  the limit to scale up buy vol
 """
 from yahoo_historical import Fetcher
 from datetime import timedelta, datetime
@@ -15,6 +26,7 @@ from enum import Enum
 from math import floor, ceil
 from functools import reduce
 from numpy import isnan
+import concurrent.futures
 
 FMT = "%Y-%m-%d"
 
@@ -129,6 +141,8 @@ class FluxtrateBuy(Strategy):
 
         if avg.last_to_avg_percentage >= 0:
             v = 1 - self.scale_down * avg.last_to_avg_percentage
+            if v < 0:
+                v = 0
             explain = self.explain_change(
                 avg) + ', scale down buy vol to {}'.format(format_ratio_to_percent(v))
             return Action(date, Side.BUY, v, explain, avg)
@@ -187,7 +201,7 @@ class BackTester:
     def evaluate(self, base_invest_vol: float, actions) -> (EvalResult, EvalResult):
         def calc_annualized_return(total_return: float, start_date: datetime, end_date: datetime) -> float:
             days = (end_date - start_date).days
-            return total_return / (days / 356)
+            return total_return / (days / 365)
 
         def round_shares(shares: float, price_is_up: bool):
             return ceil(shares) if price_is_up else floor(shares)
@@ -231,25 +245,61 @@ class Result:
     actions: list
 
 
-if __name__ == "__main__":
-    #from docopt import docopt
+def calc(up_and_down):
+    up, down, stop_buy, buy_cap,t = up_and_down
+    s = FluxtrateBuy(up, down, stop_buy, buy_cap)
+    actions = t.get_actions(s, 7)
+    my, standard = t.evaluate(1000, actions)
+    return Result(my, standard, up, down, actions)
 
-    #args = docopt(__doc__)
-    # print(args)
-    # if args['avg']:
-    t = BackTester(240, '510300.SS', datetime(
-        2015, 1, 1), datetime(2020, 11, 1))
-    evaluations = []
-    for up in range(1, 10):
-        for down in range(1, 10):
-            print('up {} down {}'.format(up, down))
-            s = FluxtrateBuy(up, down, 2, 2)
-            actions = t.get_actions(s, 7)
-            my, standard = t.evaluate(1000, actions)
-            evaluations.append(Result(my, standard, up, down, actions))
-            # print(r)
+def calc_in_parallel(up_down, worker_num):
+    with concurrent.futures.ProcessPoolExecutor(max_workers=worker_num) as executor:
+        for result in executor.map(calc, up_down):
+            yield result
+
+
+def back_test(back_days, interval, inveset,date1, date2, stop_buy, buy_cap, ticker):
+    print(back_days,interval, inveset,date1, date2, stop_buy, buy_cap, ticker)
+
+    t = BackTester(back_days, ticker[0], date1, date2)
+    up_down = []
+    for up in range(1, 101):
+        for down in range(1, 101):
+            up_down.append((up/10,down/10,stop_buy, buy_cap,t))
+
+
+    evaluations = list(calc_in_parallel(up_down, 8))
     evaluations.sort(key=lambda x: x.result.annualized_return)
+
     worst = evaluations[0]
     best = evaluations[-1]
-    print(worst)
-    print(best)
+
+    def dump(f, caption, result):
+        f.write("{}\nup={} down={}\n{}\n".format(caption,result.up_scale, result.down_scale, result.result))
+        for a in result.actions:
+            f.write("{}\n".format(a))
+
+    with open(ticker[0]+'.txt', 'w+') as f:
+        f.write('Benchmark: {}\n'.format(worst.benchmark))
+        dump(f,'Best', best)
+        dump(f,'Worst', worst)
+
+
+def parse_datetime(ymd):
+    return datetime.strptime(ymd, '%Y%m%d')
+
+if __name__ == "__main__":
+    from docopt import docopt
+
+    args = docopt(__doc__)
+    #print(args)
+
+    if args['test']:
+        back_test(int(args['-d']),
+                  int(args['--buy-interval']),
+                  int(args['--invest']),
+                  parse_datetime(args['-f']),
+                  parse_datetime(args['-t']),
+                  int(args['--stop-buy']),
+                  int(args['--up-scale-limit']),
+                  args['<ticker>'])
