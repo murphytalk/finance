@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
 Usage:
-    strategy.py avg  -d=<days> --up=<up_scale> --down=<down_scale> <ticker>...
-    strategy.py test -d=<days> -f=<date1> -t=<date2> --buy-interval=<days> --invest=<invest>  --stop-buy=<stop_buy> --up-scale-limit=<up_limit> <ticker>
+    strategy.py avg  -d=<days> --up=<up_scale> --down=<down_scale> --invest=<invest> --stop-buy=<stop_buy> --up-scale-limit=<up_limit> <ticker>...
+    strategy.py test -d=<days> -f=<date1> -t=<date2> --buy-interval=<days> --invest=<invest> --stop-buy=<stop_buy> --up-scale-limit=<up_limit> <ticker>
     strategy.py -h | --help
 
 Mode:
@@ -18,6 +18,8 @@ Options:
     -t=<date2>                   back test end date in YYYYMMDD format
     --stop-buy=<stop_buy>        when price is this times of avg stop buying
     --up-scale-limit=<up_limit>  the limit to scale up buy vol
+    --up=<up_scale>              up scale
+    --down=<down_scale>          down scale
 """
 from yahoo_historical import Fetcher
 from datetime import timedelta, datetime
@@ -288,6 +290,15 @@ def back_test(back_days, interval, inveset,date1, date2, stop_buy, buy_cap, tick
 def parse_datetime(ymd):
     return datetime.strptime(ymd, '%Y%m%d')
 
+def avg(ticker, avg_back_days,invest, stop_buy, up_cap, up_scale, down_scale):
+    print('ticker={}, back days={} invest={} stop buying = {} up cap ={} up scale={} down scale={}'.format(ticker, avg_back_days,invest, stop_buy, up_cap, up_scale, down_scale))
+    m = FluxtrateBuy(up_scale, down_scale, stop_buy, up_cap)
+    today = datetime.now()
+    avg = calc_avg(ticker, today - timedelta(days=1), avg_back_days)
+    action = m.calc(today, avg)
+    print(action)
+
+
 if __name__ == "__main__":
     from docopt import docopt
 
@@ -303,3 +314,12 @@ if __name__ == "__main__":
                   int(args['--stop-buy']),
                   int(args['--up-scale-limit']),
                   args['<ticker>'])
+    elif args['avg']:
+        avg(args['<ticker>'][0],
+            int(args['-d']),
+            int(args['--invest']),
+            int(args['--stop-buy']),
+            int(args['--up-scale-limit']),
+            int(args['--up']),
+            int(args['--down'])
+        )
