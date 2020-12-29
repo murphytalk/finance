@@ -1,0 +1,11 @@
+services:
+  finance:
+    build: .
+    user: "1024:100"
+    environment:
+      - JUPYTER_ENABLE_LAB=true
+      - TZ="Asia/Tokyo"
+    ports:
+      - "8888:8888"
+    volumes:
+      - ..:/home/jovyan/work
