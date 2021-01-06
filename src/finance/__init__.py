@@ -167,4 +167,4 @@ for view, model in (
         (ModelView, models.InstrumentType),
         (PortfolioView, models.Portfolio),
 ):
-    admin.add_view(view(model, models.session))
+    admin.add_view(view(model, models.finance_db_session))

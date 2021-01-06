@@ -66,8 +66,10 @@ def str2time(date_str):
             except ValueError:
                 return None
 
+
 def date2epoch(dt):
     return dt.timestamp() - time.timezone
+
 
 def date_str2epoch(str_date):
     """

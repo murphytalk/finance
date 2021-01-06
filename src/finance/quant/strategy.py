@@ -21,6 +21,7 @@ Options:
     --up=<up_scale>              up scale
     --down=<down_scale>          down scale
 """
+from typing import Tuple
 from yahoo_historical import Fetcher
 from datetime import timedelta, datetime
 from dataclasses import dataclass
@@ -200,7 +201,7 @@ class BackTester:
 
         return actions
 
-    def evaluate(self, base_invest_vol: float, actions) -> (EvalResult, EvalResult):
+    def evaluate(self, base_invest_vol: float, actions) -> Tuple(EvalResult, EvalResult):
         def calc_annualized_return(total_return: float, start_date: datetime, end_date: datetime) -> float:
             days = (end_date - start_date).days
             return total_return / (days / 365)

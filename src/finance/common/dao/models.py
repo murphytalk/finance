@@ -226,4 +226,4 @@ class PortfolioAllocation(Base):
 
 engine = create_engine("sqlite:///%s" % DATABASE if DATABASE else "sqlite://")
 session_factory = sessionmaker(bind=engine)
-session = scoped_session(session_factory)
+finance_db_session = scoped_session(session_factory)
