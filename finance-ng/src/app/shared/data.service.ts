@@ -6,97 +6,115 @@ import { shareReplay } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 @Injectable({
-    providedIn: 'root',
+  providedIn: 'root',
 })
 export class DataService {
-    private positionCache$: Observable<Positions>;
-    private portfolioCache$: Observable<RawPortfolio[]>;
+  private positionCache$: Observable<Positions>;
+  private portfolioCache$: Observable<RawPortfolio[]>;
 
-    constructor(
-        private logger: NGXLogger,
-        private httpClient: HttpClient
-    ) {}
+  constructor(
+    private logger: NGXLogger,
+    private httpClient: HttpClient
+  ) { }
 
-    private url(path: string){
-        return `/finance/api/${path}`;
+  private url(path: string) {
+    return `/finance/api/${path}`;
+  }
+
+  getPositions() {
+    if (!this.positionCache$) {
+      this.positionCache$ = this.httpClient.get<Positions>(this.url('report/positions')).pipe(shareReplay(1));
     }
+    return this.positionCache$;
+  }
 
-    getPositions(){
-        if (!this.positionCache$){
-            this.positionCache$ = this.httpClient.get<Positions>(this.url('report/positions')).pipe(shareReplay(1));
-        }
-        return this.positionCache$;
+  getPortfolios() {
+    if (!this.portfolioCache$) {
+      this.portfolioCache$ = this.httpClient.get<RawPortfolio[]>(this.url('report/portfolios')).pipe(shareReplay(1));
     }
+    return this.portfolioCache$;
+  }
 
-    getPortfolios(){
-        if (!this.portfolioCache$){
-            this.portfolioCache$ = this.httpClient.get<RawPortfolio[]>(this.url('report/portfolios')).pipe(shareReplay(1));
-        }
-        return this.portfolioCache$;
-    }
+  getFundPosition(){
+    return this.httpClient.get<FundPosition[]>(this.url('report/fund'));
+  }
 }
 
 export interface Instrument {
-    id: number;
-    name: string;
+  id: number;
+  name: string;
 }
 
 export interface AssetAllocation {
-    asset: string;
-    ratio: number;
+  asset: string;
+  ratio: number;
 }
 
 export interface CountryAllocation {
-    country: string;
-    ratio: number;
+  country: string;
+  ratio: number;
 }
 
 export interface RegionAllocation {
-    region: string;
-    ratio: number;
+  region: string;
+  ratio: number;
 }
 
 export interface FinPosition {
-    instrument: Instrument;
-    asset_allocation: AssetAllocation;
-    country_allocation: CountryAllocation;
-    region_allocation: RegionAllocation;
-    ccy: string;
-    xccy: number;
-    shares: number;
-    price: number;
-    capital: number;
+  instrument: Instrument;
+  asset_allocation: AssetAllocation;
+  country_allocation: CountryAllocation;
+  region_allocation: RegionAllocation;
+  ccy: string;
+  xccy: number;
+  shares: number;
+  price: number;
+  capital: number;
 }
 
 export interface CashBalance {
-    ccy: string;
-    broker: string;
-    balance: number;
-    xccy: number;
+  ccy: string;
+  broker: string;
+  balance: number;
+  xccy: number;
 }
 
 export interface Positions {
-    ETF: FinPosition[];
-    Stoc: FinPosition[];
-    Funds: FinPosition[];
-    Cash: CashBalance[];
+  ETF: FinPosition[];
+  Stoc: FinPosition[];
+  Funds: FinPosition[];
+  Cash: CashBalance[];
 }
 
-export interface ValuePair{
-    ccy: number;
-    jpy: number;
+export interface ValuePair {
+  ccy: number;
+  jpy: number;
 }
 
-export interface PortfolioAllocation{
-    instrument?: string;
-    price?: number;
-    target_allocation?: number;
-    shares: number;
-    market_value: number;
-    current_allocation: number;
+export interface PortfolioAllocation {
+  instrument?: string;
+  price?: number;
+  target_allocation?: number;
+  shares: number;
+  market_value: number;
+  current_allocation: number;
 }
 
-export interface RawPortfolio{
-    name: string;
-    allocations: PortfolioAllocation[];
+export interface RawPortfolio {
+  name: string;
+  allocations: PortfolioAllocation[];
+}
+
+export interface FundPosition {
+  broker: string;
+  name: string;
+  expense_ration: number;
+  price: number;
+  amount: number;
+  capital: number;
+  value: number;
+  porfit: number;
+  date: string | Date;
+  instrument_id: number;
+  url: string;
 }

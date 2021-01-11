@@ -26,6 +26,7 @@ import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { StocksPositionComponent } from './components/stocks-position/stocks-position.component';
 import { FlaskAdminComponent } from './components/flask-admin/flask-admin.component';
 import { FlaskApiComponent } from './components/flask-api/flask-api.component';
+import { FundsPositionComponent } from './components/funds-position/funds-position.component';
 
 
 @NgModule({
@@ -35,7 +36,8 @@ import { FlaskApiComponent } from './components/flask-api/flask-api.component';
     FinOverviewComponent,
     StocksPositionComponent,
     FlaskAdminComponent,
-    FlaskApiComponent
+    FlaskApiComponent,
+    FundsPositionComponent
   ],
   imports: [
     BrowserModule,
