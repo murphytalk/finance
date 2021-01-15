@@ -1,4 +1,3 @@
-pandas>=0.20.3
 yahoo-historical
 xlrd
 matplotlib

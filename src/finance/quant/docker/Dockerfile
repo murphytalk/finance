@@ -1,5 +1,5 @@
 # https://github.com/jupyter/docker-stacks/blob/master/minimal-notebook/Dockerfile
-ARG BASE_CONTAINER=jupyter/minimal-notebook
+ARG BASE_CONTAINER=lalopey/zipline-notebook
 FROM $BASE_CONTAINER
 
 LABEL maintainer="Mu Lu <murphytalk@gmail.com>"
