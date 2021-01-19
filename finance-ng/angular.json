@@ -17,7 +17,6 @@
         "build": {
           "builder": "ngx-build-plus:browser",
           "options": {
-            "extraWebpackConfig": "webpack.config.js",
             "outputPath": "dist/finance-ng",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -73,7 +72,6 @@
         "serve": {
           "builder": "ngx-build-plus:dev-server",
           "options": {
-            "extraWebpackConfig": "webpack.config.js",
             "browserTarget": "finance-ng:build",
             "proxyConfig": "src/proxy.conf.json"
           },
