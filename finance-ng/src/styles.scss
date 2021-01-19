@@ -1,17 +1,18 @@
+@import "../node_modules/ag-grid-community/dist/styles/ag-grid.css";
+@import "../node_modules/ag-grid-community/dist/styles/ag-theme-alpine.css";
+// if tailwind stuff are imported first the ag grid will be screwed up ...
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-@import "../node_modules/ag-grid-community/src/styles/ag-grid.scss";
-@import "../node_modules/ag-grid-community/src/styles/ag-theme-alpine/sass/ag-theme-alpine-mixin.scss";
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
-
+/*
 .ag-theme-alpine {
     @include ag-theme-alpine();
 }
-
+*/
 // suppress border-style: solid which appears to be introduced by tailwind
 // when parent element has a border-style ag-grid will always show a scrollbar
 *,
