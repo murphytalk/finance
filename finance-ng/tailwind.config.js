@@ -1,9 +1,6 @@
 module.exports = {
-  future: {
-    removeDeprecatedGapUtilities: true,
-    purgeLayersByDefault: true,
-  },
-  purge: ['./src/**/*.html', './src/**/*.ts'],
+  purge: ['./src/**/*.{html,ts}'],
+  darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {},
     container: {
@@ -11,7 +8,9 @@ module.exports = {
       padding: "15px",
     },
   },
-  variants: {},
+  variants: {
+    extend: {},
+  },
   plugins: [],
   important: true,
-}
+};
