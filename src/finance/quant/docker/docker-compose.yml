@@ -1,7 +1,7 @@
 services:
   finance:
     build: .
-    user: "1024:100"
+    user: "1000:1000"
     environment:
       - JUPYTER_ENABLE_LAB=true
       - TZ="Asia/Tokyo"

@@ -1,7 +1,8 @@
 yahoo-historical
 xlrd
 matplotlib
-numpy=1.19.0
-bcolz=1.1.1
-zipline=1.4.1
-
+yahoofinancials
+iexfinance
+numpy==1.19.0
+bcolz==1.1.1
+zipline
