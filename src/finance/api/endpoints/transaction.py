@@ -111,7 +111,7 @@ def _get_xccy_quote(dao, ccy_pair=None, max_days=None):
 @ns.route('/xccy')
 class XccyQuoteAll(Resource):
     @api.marshal_list_with(xccy_quote)
-    @ns.param('max_days', 'Only return quotes from today to max_days days earlier if specified')
+    @ns.param('max_days', 'Only return quotes of last max_days days earlier if specified')
     def get(self):
         """
         Return list of the quotes of the all (known) currency pairs

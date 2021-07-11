@@ -437,7 +437,9 @@ class ImplDao(Raw):
             params.append(ccy_pair[0])
             params.append(ccy_pair[1])
         if max_days is not None:
-            no_earlier_than = get_current_date_epoch() - max_days * SECONDS_PER_DAY
+            r = self.exec('select max(date) as last from xccy_hist')[0]
+            last_day = r['last']
+            no_earlier_than = last_day - max_days * SECONDS_PER_DAY
             sql += ' %s date >= ? ' % ('AND' if ccy_pair is not None else 'WHERE')
             params.append(no_earlier_than)
 
