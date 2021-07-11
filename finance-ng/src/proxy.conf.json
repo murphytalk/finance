@@ -1,16 +1,16 @@
 {
     "/finance/api": {
-      "target": "http://localhost:8080",
+      "target": "http://nas.lan:8080",
       "secure": false,
       "logLevel": "debug"
     },
     "/finance/admin": {
-      "target": "http://localhost:8080",
+      "target": "http://nas.lan:8080",
       "secure": false,
       "logLevel": "debug"
     },
     "/swaggerui": {
-      "target": "http://localhost:8080",
+      "target": "http://nas.lan:8080",
       "secure": false,
       "logLevel": "debug"
     }
