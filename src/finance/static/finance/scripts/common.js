@@ -119,7 +119,7 @@ function fuzzy_eq(a,b){
 
 function format_num(n){
     //console.log("format ",n);
-    return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return n ? n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '';
 }
 
 function update_footer(table, ccy_sign, col_idx, total_value, footer_id,calc){

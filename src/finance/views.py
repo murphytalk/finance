@@ -109,4 +109,4 @@ def region_allocation_json(instrument):
 
 @app.teardown_request
 def remove_session(ex=None):
-    models.session.remove()
+    models.finance_db_session.remove()
