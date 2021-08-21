@@ -1,4 +1,4 @@
-FROM python:3.9.0-slim-buster
+FROM python:3.9.6-slim-buster
 LABEL com.centurylinklabs.watchtower.enable="false"
 RUN mkdir /app
 COPY requirements.txt /app/
