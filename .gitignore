@@ -175,7 +175,6 @@ msvc/
 target/
 
 
-*.ini
 *.db
 
 .vs/
