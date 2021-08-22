@@ -25,7 +25,10 @@ INSERT INTO currency (name) VALUES('AUD');
 INSERT INTO currency (name) VALUES('NZD');
 INSERT INTO currency (name) VALUES('HKD');
 CREATE TABLE instrument (id INTEGER PRIMARY KEY, name text not null, type int null,  currency int null, "url" TEXT, "expense_ratio" FLOAT, active INTEGER NOT NULL DEFAULT 1, FOREIGN KEY(currency) REFERENCES currency(id),FOREIGN KEY(type) REFERENCES instrument_type(id));
-CREATE TABLE performance(instrument int not null ,amount int ,price real , value real , profit real , capital real ,date int not null, FOREIGN KEY(instrument) REFERENCES instrument(id));
+CREATE TABLE fund(instrument int not null , broker int not null, amount int ,price real , value real , profit real , capital real ,date int not null, 
+FOREIGN KEY(instrument) REFERENCES "instrument"(id),
+FOREIGN KEY(broker) REFERENCES broker(id));
+CREATE INDEX fund_date on fund(date);
 CREATE TABLE IF NOT EXISTS "transaction" ("instrument" int NOT NULL , "broker"	int NOT NULL, "type" text NOT NULL ,"price" real NOT NULL ,"shares" real   ,"fee" real ,"date" int NOT NULL ,FOREIGN KEY(broker) REFERENCES broker(id));
 CREATE TABLE xccy ([from] int not null ,[to] int not null,rate real , date int not null, FOREIGN KEY([from]) REFERENCES currency(id), FOREIGN KEY([to]) REFERENCES currency(id));
 CREATE TABLE IF NOT EXISTS "quote" ("instrument" int NOT NULL ,"price" real NOT NULL ,"date" int NOT NULL ,FOREIGN KEY(instrument) REFERENCES instrument(id));
@@ -254,7 +257,6 @@ CREATE TABLE cash(
   FOREIGN KEY (ccy) REFERENCES currency(id),
   FOREIGN KEY (broker) REFERENCES broker(id)
 );
-CREATE INDEX performance_date on performance (date);
 CREATE VIEW xccy_hist as
 select c1.id as from_id, c1.name as [From] , c2.id as to_id, c2.name as [To],x.rate,x.date
 from xccy x, currency c1, currency c2 where c1.id=x.[from] and c2.id=x.[to] order by x.date;
@@ -288,7 +290,10 @@ CREATE VIEW cash_balance AS
     c.balance
   FROM currency ccy, broker b, cash c
   WHERE c.ccy=ccy.id AND c.broker=b.id;
-CREATE VIEW fund_performance AS select p.ROWID as id,b.name as broker ,i.name,i.id as instrument_id, i.url ,i.expense_ratio, t.type,c.name currency,p.amount,p.price,p.value,p.profit,p.capital , date(p.date , 'unixepoch') as datestr, p.date from performance p, instrument i, broker b,instrument_type t,currency c where p.instrument = i.id and i.broker = b.id and i.type=t.id and i.currency=c.id;
+CREATE VIEW fund_performance AS 
+  select p.ROWID as id,b.name as broker ,i.name,i.id as instrument_id, i.url ,i.expense_ratio, t.type,c.name currency,p.amount,p.price,p.value,p.profit,p.capital,
+         date(p.date , 'unixepoch') as datestr, p.date from fund p, instrument i, broker b,instrument_type t,currency c 
+  where p.instrument = i.id and p.broker = b.id and i.type=t.id and i.currency=c.id;
 -- get the most recent performance for each fund
 CREATE VIEW fund_performance2 as
 select v1.* from fund_performance v1
