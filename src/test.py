@@ -136,7 +136,6 @@ class TestDao(unittest.TestCase):
 
             i = self.dao.get_instruments(instrument.name).__next__()
             self.assertIn(i["currency"], self.ccy)
-            self.assertIn(i["broker"], self.brokers)
             self.assertEqual(i["name"], instrument.name)
 
             for a in self.dao.get_asset_allocation(instrument_name=instrument.name):
@@ -160,6 +159,7 @@ class TestDao(unittest.TestCase):
             self.assertIn(instrument.currency, self.ccy)
             self.assertTrue(instrument.xccy_date <= epoch2date(TODAY))
 
+    @unittest.skip
     def test_funds(self):
         for pos in self.dao.get_funds_positions(TODAY):
             self.assertTrue(pos["instrument_id"] in self.instruments)
@@ -188,6 +188,7 @@ class TestDao(unittest.TestCase):
             self.dao.update_stock_transaction(
                 stock.name,
                 {
+                    "Broker": 'IB',
                     "Price": price,
                     "Type": trans_type,
                     "Date": dt,

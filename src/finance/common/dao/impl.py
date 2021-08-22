@@ -279,11 +279,10 @@ class ImplDao(Raw):
         return self._update_instrument_allocations(instrument_name, countries['countries'], 'country', 'name')
 
     def get_instruments(self, instrument_name=None):
-        sql = ('SELECT i.id, i.name, t.type, c.name AS currency, b.name AS broker, i.url, i.expense_ratio, i.active '
+        sql = ('SELECT i.id, i.name, t.type, c.name AS currency, i.url, i.expense_ratio, i.active '
                'FROM instrument i '
                'JOIN instrument_type t ON i.type = t.id '
-               'JOIN currency c ON i.currency = c.id '
-               'JOIN broker b ON i.broker = b.id')
+               'JOIN currency c ON i.currency = c.id ')
         if instrument_name:
             sql += ' WHERE i.name = ?'
         for r in self.exec(sql, (instrument_name,) if instrument_name else None):
@@ -291,7 +290,6 @@ class ImplDao(Raw):
                    'name': r['name'],
                    'type': r['type'],
                    'currency': r['currency'],
-                   'broker': r['broker'],
                    'url': r['url'],
                    'active': r['active'],
                    'expense': r['expense_ratio']}
@@ -318,7 +316,6 @@ class ImplDao(Raw):
         instrument_id = self._get_instrument_id(**kwargs)
 
         types = self.get_instrument_types_mapper()
-        brokers = self.get_broker_mapper()
         ccy = self.get_currency_mapper()
 
         params = []
@@ -327,9 +324,6 @@ class ImplDao(Raw):
         if 'type' in instrument:
             cols.append('type')
             params.append(types[instrument['type']])
-        if 'broker' in instrument:
-            cols.append('broker')
-            params.append(brokers[instrument['broker']])
         if 'currency' in instrument:
             cols.append('currency')
             params.append(ccy[instrument['currency']])
@@ -380,9 +374,11 @@ class ImplDao(Raw):
         kwargs = {'instrument_name': stock_name}
         instrument_id = self._get_instrument_id(**kwargs)
         if instrument_id > 0:
-            self.exec('INSERT INTO [transaction] (instrument, type, price, shares, fee, date) '
-                      'VALUES (?,?,?,?,?,?)',
+            brokers = self.get_broker_mapper()
+            self.exec('INSERT INTO [transaction] (instrument, broker, type, price, shares, fee, date) '
+                      'VALUES (?,?,?,?,?,?,?)',
                       (instrument_id,
+                       brokers[transaction['Broker']],
                        transaction['Type'],
                        transaction['Price'],
                        transaction['Shares'],
