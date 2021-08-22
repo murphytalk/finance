@@ -1,6 +1,6 @@
 from calendar import timegm
-from finance.common.utils import date_str2epoch, get_current_date_epoch, SECONDS_PER_DAY
-from finance.common.model import *
+from finance.common.utils import date_str2epoch, SECONDS_PER_DAY
+from finance.common.model import Quote, epoch2date, Instrument
 from finance.common.dao.db import Raw
 
 import logging.config
@@ -46,7 +46,8 @@ class ImplDao(Raw):
         epoch2 = int(timegm(end_date.timetuple()))
 
         for f in self.exec(sql, (epoch1, epoch2)):
-            callback(f['instrument'], f['name'], f['type'], f['price'], f['shares'], f['fee'], f['date'])
+            callback(f['instrument'], f['name'], f['type'],
+                     f['price'], f['shares'], f['fee'], f['date'])
 
     def populate_from_instruments(self, instrument_filter, create_new_obj_func=None):
         """
@@ -94,7 +95,8 @@ class ImplDao(Raw):
 
         def get_quote(iid, when=None):
             if when:
-                epoch = when if isinstance(when, int) else int(timegm(when.timetuple()))
+                epoch = when if isinstance(when, int) else int(
+                    timegm(when.timetuple()))
                 yield from self.exec('SELECT  price, date FROM quote WHERE instrument = ? and date <= ? ORDER BY date DESC LIMIT 1', (i, epoch))
             else:
                 yield from self.exec('SELECT  price, date FROM quote WHERE instrument = ? ORDER BY date DESC LIMIT 1', (i,))
@@ -121,7 +123,8 @@ class ImplDao(Raw):
                'i.expense_ratio,'
                'c.name currency,'
                'ifnull(x.rate,1) rate,'
-               'ifnull(x.date,?) rate_date '  # if instrument is denoted in JPY there is no xccy date
+               # if instrument is denoted in JPY there is no xccy date
+               'ifnull(x.date,?) rate_date '
                'FROM instrument i '
                'JOIN instrument_type a ON i.type = a.rowid '
                'JOIN currency c ON i.currency = c.rowid '
@@ -187,7 +190,7 @@ class ImplDao(Raw):
     def get_country_region_lookup(self):
         # get country id => region def
         sql = ('SELECT r.name region, rs.country FROM regions rs '
-                'JOIN region r ON rs.region = r.id JOIN country c ON rs.country = c.id')
+               'JOIN region r ON rs.region = r.id JOIN country c ON rs.country = c.id')
         return {r['country']: r['region'] for r in self.exec(sql)}
 
     def get_region_allocation(self, **kwargs):
@@ -238,14 +241,18 @@ class ImplDao(Raw):
                      self.exec('SELECT id,%s FROM %s' % (allocation_col_name, allocation_name))}
             sum_alloc = 0
             allocations = []
-            self.exec('DELETE from %s_allocation WHERE instrument = ?' % allocation_name, (instrument_id,))
+            self.exec('DELETE from %s_allocation WHERE instrument = ?' %
+                      allocation_name, (instrument_id,))
             for x in payload:
-                allocations.append((instrument_id, types[x[allocation_name]], x['ratio']))
+                allocations.append(
+                    (instrument_id, types[x[allocation_name]], x['ratio']))
                 sum_alloc += x['ratio']
             if sum_alloc < 100:
-                allocations.append((instrument_id, types['Other'], 100 - sum_alloc))
+                allocations.append(
+                    (instrument_id, types['Other'], 100 - sum_alloc))
 
-            self.exec_many('INSERT INTO %s_allocation VALUES (?,?,?)' % allocation_name, allocations)
+            self.exec_many('INSERT INTO %s_allocation VALUES (?,?,?)' %
+                           allocation_name, allocations)
 
             return True
         else:
@@ -339,7 +346,8 @@ class ImplDao(Raw):
             params.append(instrument_id)
         else:
             sql = 'INSERT INTO instrument ('
-            sql += ','.join(cols) + ',name) VALUES (' + ','.join(['?' for x in params]) + ',?)'
+            sql += ','.join(cols) + ',name) VALUES (' + \
+                ','.join(['?' for x in params]) + ',?)'
             params.append(instrument_name)
 
         # log.info('update instrument %s,SQL = %s, params=%s ', instrument_name, sql, params)
@@ -395,9 +403,11 @@ class ImplDao(Raw):
         kwargs = {'instrument_name': stock_name}
         instrument_id = self._get_instrument_id(**kwargs)
         if instrument_id > 0:
-            parameters = [(instrument_id, date_str2epoch(q['Date']), q['Price']) for q in quotes['quotes']]
+            parameters = [(instrument_id, date_str2epoch(
+                q['Date']), q['Price']) for q in quotes['quotes']]
             # remove existing quotes if there is any
-            self.exec_many('DELETE FROM quote WHERE instrument = ? and date = ?', [p[:2] for p in parameters])
+            self.exec_many('DELETE FROM quote WHERE instrument = ? and date = ?', [
+                           p[:2] for p in parameters])
             # then insert
             self.exec_many('INSERT INTO quote (instrument, date, price) '
                            'VALUES (?,?,?)', parameters)
@@ -456,10 +466,13 @@ class ImplDao(Raw):
         :param xccy_quotes : [{Date,From,To,Rate}]
         :return: True/False
         """
-        xccys = {r['name']: r['id'] for r in self.exec('SELECT id, name from currency')}
-        parameters = [(date_str2epoch(q['Date']), xccys[q['From']], xccys[q['To']], q['Rate']) for q in xccy_quotes['quotes']]
+        xccys = {r['name']: r['id']
+                 for r in self.exec('SELECT id, name from currency')}
+        parameters = [(date_str2epoch(q['Date']), xccys[q['From']],
+                       xccys[q['To']], q['Rate']) for q in xccy_quotes['quotes']]
         # remove existing quotes if there is any
-        self.exec_many('DELETE FROM xccy WHERE date = ? and [from] = ? and [to] = ?', [p[:-1] for p in parameters])
+        self.exec_many('DELETE FROM xccy WHERE date = ? and [from] = ? and [to] = ?', [
+                       p[:-1] for p in parameters])
         # then insert
         self.exec_many('INSERT INTO xccy (date, [from], [to], rate) '
                        'VALUES (?,?,?,?)', parameters)
@@ -493,7 +506,8 @@ class ImplDao(Raw):
             params.append(stock_name)
         if max_days is not None:
             no_earlier_than = latest - max_days * SECONDS_PER_DAY
-            sql += ' %s date >= ? ' % ('AND' if stock_name is not None else 'WHERE')
+            sql += ' %s date >= ? ' % (
+                'AND' if stock_name is not None else 'WHERE')
             params.append(no_earlier_than)
 
         sql += 'ORDER BY date DESC'
@@ -542,7 +556,8 @@ class ImplDao(Raw):
     def get_portfolios(self, name=None):
         portfolios = {}
         for x in self.exec('SELECT * from portfolio_v where name=?', (name,)) if name else self.exec('SELECT * from portfolio_v'):
-            allocation = (x['instrument_id'], x['instrument_name'], x['percentage'])
+            allocation = (x['instrument_id'],
+                          x['instrument_name'], x['percentage'])
             n = x['name']
             if n not in portfolios:
                 portfolios[n] = [allocation]

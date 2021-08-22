@@ -2,10 +2,11 @@
 Routes and views for the flask application.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from flask import render_template, g, current_app, Response
 from finance import finance_page, app
-from finance.common.report import *
+from finance.common.dao import Dao
+from finance.common.report import StockReport
 import finance.common.dao.models as models
 import logging.config
 from dataclasses import dataclass
@@ -95,7 +96,6 @@ def db():
 @finance_page.route("/asset.allocation/<instrument>")
 def asset_allocation_json(instrument):
     return Response(asset_allocation(g.dao, instrument), mimetype="application/json")
-
 
 @finance_page.route("/country.allocation/<instrument>")
 def country_allocation_json(instrument):
