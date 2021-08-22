@@ -45,9 +45,9 @@ class RandomDataDao(ImplDao):
                         (currencies['JPY'], 1, gen_price(1000000, 2000000))))
 
         # randomly generate instruments
-        self.gen_instruments("XYZ", currencies["USD"], (instrument_type["Stock"], instrument_type["ETF"]), 3,
+        self.gen_instruments(currencies["USD"], (instrument_type["Stock"], instrument_type["ETF"]), 3,
                              STOCK_NUM)
-        self.gen_instruments("ABC", currencies["JPY"], (instrument_type["Funds"],), 5, FUNDS_NUM)
+        self.gen_instruments(currencies["JPY"], (instrument_type["Funds"],), 5, FUNDS_NUM)
 
         # what stocks/ETFs we have generated ?
         stocks = [x['id'] for x in self.exec('SELECT id FROM instrument WHERE type = ? OR type = ?',
@@ -90,18 +90,18 @@ class RandomDataDao(ImplDao):
         buy = []
         for i in stocks:
             # instrument id, BUY, price, shares, fee, date
-            buy.append((i, 'BUY', gen_price(20, 1000), random.randint(1000, 2000),
+            buy.append((i,1, 'BUY', gen_price(20, 1000), random.randint(1000, 2000),
                         gen_price(5, 20), DAY1))
-        self.exec_many('INSERT INTO [transaction] VALUES (?,?,?,?,?,?)', buy)
+        self.exec_many('INSERT INTO [transaction] VALUES (?,?,?,?,?,?,?)', buy)
 
         # sell < 400 twice for each one we bought on random day after day one
         sell = []
         for x in range(2):
             for i in stocks:
                 # instrument id, SELL, price, shares, fee, date
-                sell.append((i, 'SELL', gen_price(20, 1000), random.randint(100, 400),
+                sell.append((i, 1, 'SELL', gen_price(20, 1000), random.randint(100, 400),
                              gen_price(5, 20), gen_date()))
-        self.exec_many('INSERT INTO [transaction] VALUES (?,?,?,?,?,?)', sell)
+        self.exec_many('INSERT INTO [transaction] VALUES (?,?,?,?,?,?,?)', sell)
 
         # randomly generate mutual funds performance
         performance = []
@@ -123,14 +123,11 @@ class RandomDataDao(ImplDao):
     def close(self):
         self.conn.commit()
 
-    def gen_instruments(self, broker, currency, instrument_types, symbol_len, count):
+    def gen_instruments(self, currency, instrument_types, symbol_len, count):
         """
         randomly generate instruments
         :return: None
         """
-        # read meta data
-        brokers = {x['name']: x['id'] for x in self.exec('SELECT id,name FROM broker')}
-
         instruments = set()
         while len(instruments) < count:
             symbol = gen_symbol(symbol_len)
@@ -138,11 +135,10 @@ class RandomDataDao(ImplDao):
                 continue
 
             instruments.add(symbol)
-            # name, instrument type, broker, currency, url, expense ratio
-            self.exec('INSERT INTO instrument ( name , type , broker , currency , "url" , "expense_ratio") VALUES (?,?,?,?,?,?)',
+            # name, instrument type, currency, url, expense ratio
+            self.exec('INSERT INTO instrument ( name , type ,  currency , "url" , "expense_ratio") VALUES (?,?,?,?,?)',
                       (symbol,
                        random.choice(instrument_types),
-                       brokers[broker],
                        currency,
                        URL,
                        gen_expense_ratio()

@@ -48,6 +48,8 @@ app.config['SESSION_TYPE'] = 'filesystem'
 p = Path(os.path.abspath(__file__))
 static_dir = '{}/finance-ng/dist/finance-ng'.format(Path(os.path.abspath(__file__)).parent.parent.parent)
 ng = Blueprint('ng', __name__, url_prefix='/ng')
+
+
 @ng.route('/<path:filename>')
 def ng_static(filename):
     req = filename
@@ -57,15 +59,19 @@ def ng_static(filename):
     return send_from_directory(static_dir,
                                filename, as_attachment=False)
 
+
 @ng.route('/')
 def ng_static_root():
     return ng_static('index.html')
+
 
 app.register_blueprint(ng)
 
 # legacy finance page
 finance_page = Blueprint('finance_page', __name__, url_prefix=URL_ROOT)
-from finance import views
+# needed for the URLs, and finance_page needs to be defined before import
+from finance import views 
+
 # need to register after all URLS are defined in views
 app.register_blueprint(finance_page)
 

@@ -24,9 +24,9 @@ INSERT INTO currency (name) VALUES('CNY');
 INSERT INTO currency (name) VALUES('AUD');
 INSERT INTO currency (name) VALUES('NZD');
 INSERT INTO currency (name) VALUES('HKD');
-CREATE TABLE instrument (id INTEGER PRIMARY KEY, name text not null, type int null, broker null, currency int null, "url" TEXT, "expense_ratio" FLOAT, active INTEGER NOT NULL DEFAULT 1, FOREIGN KEY(currency) REFERENCES currency(id),FOREIGN KEY(type) REFERENCES instrument_type(id),FOREIGN KEY(broker) REFERENCES broker(id));
+CREATE TABLE instrument (id INTEGER PRIMARY KEY, name text not null, type int null,  currency int null, "url" TEXT, "expense_ratio" FLOAT, active INTEGER NOT NULL DEFAULT 1, FOREIGN KEY(currency) REFERENCES currency(id),FOREIGN KEY(type) REFERENCES instrument_type(id));
 CREATE TABLE performance(instrument int not null ,amount int ,price real , value real , profit real , capital real ,date int not null, FOREIGN KEY(instrument) REFERENCES instrument(id));
-CREATE TABLE IF NOT EXISTS "transaction" ("instrument" int NOT NULL ,"type" text NOT NULL ,"price" real NOT NULL ,"shares" real   ,"fee" real ,"date" int NOT NULL );
+CREATE TABLE IF NOT EXISTS "transaction" ("instrument" int NOT NULL , "broker"	int NOT NULL, "type" text NOT NULL ,"price" real NOT NULL ,"shares" real   ,"fee" real ,"date" int NOT NULL ,FOREIGN KEY(broker) REFERENCES broker(id));
 CREATE TABLE xccy ([from] int not null ,[to] int not null,rate real , date int not null, FOREIGN KEY([from]) REFERENCES currency(id), FOREIGN KEY([to]) REFERENCES currency(id));
 CREATE TABLE IF NOT EXISTS "quote" ("instrument" int NOT NULL ,"price" real NOT NULL ,"date" int NOT NULL ,FOREIGN KEY(instrument) REFERENCES instrument(id));
 CREATE UNIQUE INDEX "quoteidx" ON "quote" (

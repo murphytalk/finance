@@ -19,8 +19,8 @@ if __name__ == "__main__":
     from pathlib import Path
 
     # set up lib path
-    p=Path(os.path.dirname(os.path.realpath(__file__)))
-    root=str(p.parent.parent)
+    p = Path(os.path.dirname(os.path.realpath(__file__)))
+    root = str(p.parent.parent)
     sys.path.append(root)
 
 from dataclasses import dataclass
@@ -49,7 +49,8 @@ class CalcPosition:
 
         if self.positions is None:
             self.positions = dao.populate_from_instruments(
-                '(i.type = 2 or i.type = 1)',  # todo : get rid of magic numbers
+                # todo : get rid of magic numbers
+                '(i.type = 2 or i.type = 1)',
                 lambda instrument_id, name, tid, t, u, e: Position(
                     instrument_id, name))
         dao.iterate_transaction(self.date1, self.date2, on_each_transaction)
@@ -69,7 +70,8 @@ def get_portfolios(dao, at_which_day, name=None):
         positions = {}
         for instrument_id, instrument_name, percentage in portfolio_allocation:
             positions[instrument_id] = Position(instrument_id, instrument_name)
-            quote = dao.get_stock_latest_quotes(at_which_day, instrument_name, instrument_id)
+            quote = dao.get_stock_latest_quotes(
+                at_which_day, instrument_name, instrument_id)
             closings.append((instrument_name, quote[instrument_id].price))
             targets.append((instrument_name, percentage))
 
@@ -77,12 +79,16 @@ def get_portfolios(dao, at_which_day, name=None):
         calc_pos.calc(dao)
 
         closings = pd.DataFrame(columns=['instrument', 'price'], data=closings)
-        targets = pd.DataFrame(columns=['instrument', 'target_allocation'], data=targets)
-        positions = pd.DataFrame(columns=['instrument', 'shares'], data=[[p.name, p.shares] for n, p in positions.items()])
-        portfolio = reduce(lambda left, right: pd.merge(left, right, on='instrument'), [positions, closings, targets])
+        targets = pd.DataFrame(
+            columns=['instrument', 'target_allocation'], data=targets)
+        positions = pd.DataFrame(columns=['instrument', 'shares'], data=[
+                                 [p.name, p.shares] for n, p in positions.items()])
+        portfolio = reduce(lambda left, right: pd.merge(
+            left, right, on='instrument'), [positions, closings, targets])
         portfolio['market_value'] = portfolio['shares'] * portfolio['price']
         total_value = portfolio.market_value.sum()
-        portfolio['current_allocation'] = 100 * portfolio['market_value'] / total_value
+        portfolio['current_allocation'] = 100 * \
+            portfolio['market_value'] / total_value
         return portfolio
 
     return [(name, get_portfolio(name, p)) for name, p in dao.get_portfolios(name).items()]
@@ -93,7 +99,8 @@ def rebalance_portfolio(dao, at_which_day, name, new_fund):
         port['market_value'] = port['shares'] * port['price']
         total_value = port.market_value.sum()
         port['current_allocation'] = 100 * port['market_value'] / total_value
-        port["deviation"] = port["target_allocation"] - port["current_allocation"]
+        port["deviation"] = port["target_allocation"] - \
+            port["current_allocation"]
 
     portfolios = get_portfolios(dao, at_which_day, name)
     if len(portfolios) == 0:
@@ -104,22 +111,30 @@ def rebalance_portfolio(dao, at_which_day, name, new_fund):
     _, portfolio = portfolios[0]
 
     # do we need to do a no new money rebalancing first ?
-    portfolio["deviation"] = abs(portfolio["target_allocation"] - portfolio["current_allocation"])
+    portfolio["deviation"] = abs(
+        portfolio["target_allocation"] - portfolio["current_allocation"])
     if portfolio.deviation.max() >= REBALANCING_THRESHOLD:
         total = portfolio.market_value.sum()
-        portfolio["target_market_value"] = total * portfolio["target_allocation"] / 100
-        portfolio["fund_to_transfer"] = portfolio["target_market_value"] - portfolio["market_value"]
-        portfolio["delta_shares"] = round(portfolio["fund_to_transfer"] / portfolio["price"])
-        portfolio["delta_funds"] = portfolio["delta_shares"] * portfolio["price"]
+        portfolio["target_market_value"] = total * \
+            portfolio["target_allocation"] / 100
+        portfolio["fund_to_transfer"] = portfolio["target_market_value"] - \
+            portfolio["market_value"]
+        portfolio["delta_shares"] = round(
+            portfolio["fund_to_transfer"] / portfolio["price"])
+        portfolio["delta_funds"] = portfolio["delta_shares"] * \
+            portfolio["price"]
         portfolio["shares"] = portfolio["shares"] + portfolio["delta_shares"]
 
         calc_cur_allocation(portfolio)
         rebalancing_plans.append(portfolio.copy())
 
     if new_fund > 0:
-        portfolio["fund_allocation"] = new_fund * portfolio["target_allocation"] / 100
-        portfolio["delta_shares"] = round(portfolio["fund_allocation"] / portfolio["price"])
-        portfolio["delta_funds"] = portfolio["delta_shares"] * portfolio["price"]
+        portfolio["fund_allocation"] = new_fund * \
+            portfolio["target_allocation"] / 100
+        portfolio["delta_shares"] = round(
+            portfolio["fund_allocation"] / portfolio["price"])
+        portfolio["delta_funds"] = portfolio["delta_shares"] * \
+            portfolio["price"]
         portfolio["shares"] += portfolio["delta_shares"]
 
         calc_cur_allocation(portfolio)
@@ -127,7 +142,8 @@ def rebalance_portfolio(dao, at_which_day, name, new_fund):
 
     if len(rebalancing_plans) > 1:
         portfolio["delta_shares"] += rebalancing_plans[0]["delta_shares"]
-        portfolio["delta_funds"] = portfolio["delta_shares"] * portfolio["price"]
+        portfolio["delta_funds"] = portfolio["delta_shares"] * \
+            portfolio["price"]
 
     return {'plans': rebalancing_plans, 'merged': portfolio if len(rebalancing_plans) > 1 else None}
 
@@ -141,16 +157,16 @@ class Policy500DaysMove:
     avg_diff: float
     # how many percentage of standard buy volume
     buy_scale: float
-    
+
 
 def calc_buying_by_500d_move(ticker, start_date, end_date):
-    d1 = [start_date.year,start_date.month,start_date.day]
+    d1 = [start_date.year, start_date.month, start_date.day]
     d2 = [end_date.year, end_date.month, end_date.day]
     data = Fetcher(ticker, d1, d2)
     hist = data.get_historical()
 
     closings = hist['Close']
-    t_1_closing =closings[-1:]
+    t_1_closing = closings[-1:]
     avg = closings.mean()
     avg_diff = (t_1_closing - avg) / avg
 
@@ -166,4 +182,4 @@ if __name__ == "__main__":
         t_1 = datetime.today() - timedelta(days=1)
         d500 = t_1 - timedelta(days=500)
         for ticker in args['<ticker>']:
-            print(calc_buying_by_500d_move(ticker,d500, t_1))
+            print(calc_buying_by_500d_move(ticker, d500, t_1))
