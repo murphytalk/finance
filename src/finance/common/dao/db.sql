@@ -270,8 +270,9 @@ from instrument i
 join instrument_type a on i.type = a.id
 join currency c on i.currency = c.id
 left join ( select * from xccy_hist2 where datestr = (select max(datestr) from xccy_hist2)) x on c.name = x.[From];
-CREATE VIEW stock_quote as select i.name,t.price,t.date from quote t,instrument i where t.instrument = i.id;
-CREATE VIEW stock_trans as select i.name,t.type,t.price,t.shares,t.fee,t.date,date(t.date, 'unixepoch') as datestr from [transaction] t,instrument i where t.instrument = i.id;
+CREATE VIEW stock_trans as 
+  select i.name, b.name as broker, t.type,t.price,t.shares,t.fee,t.date,date(t.date, 'unixepoch') as datestr 
+  from "transaction" t,instrument i, broker b where t.instrument = i.id and t.broker = b.id;
 CREATE VIEW instrument_filters AS
   SELECT
     n.name  as filter_name,

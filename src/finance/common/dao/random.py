@@ -113,9 +113,9 @@ class RandomDataDao(ImplDao):
                 value = amount * price
                 profit = value * random.uniform(-1, 2)
                 capital = price - profit
-                performance.append((i, amount, price, value, profit, capital, day))
+                performance.append((i,1, amount, price, value, profit, capital, day))
 
-        self.exec_many('INSERT INTO performance VALUES (?,?,?,?,?,?,?)', performance)
+        self.exec_many('INSERT INTO fund VALUES (?,?,?,?,?,?,?,?)', performance)
 
     def connect(self):
         pass

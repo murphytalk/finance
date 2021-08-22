@@ -3,7 +3,7 @@ import unittest
 from datetime import timedelta
 
 from finance.common.dao.random import RandomDataDao
-from finance.common.dao.utils import *
+from finance.common.dao.utils import DAY1, TODAY, URL
 from finance.common.model import Position
 from finance.common.utils import epoch2date, get_random_dict_value, get_random_dict_key
 
@@ -159,7 +159,6 @@ class TestDao(unittest.TestCase):
             self.assertIn(instrument.currency, self.ccy)
             self.assertTrue(instrument.xccy_date <= epoch2date(TODAY))
 
-    @unittest.skip
     def test_funds(self):
         for pos in self.dao.get_funds_positions(TODAY):
             self.assertTrue(pos["instrument_id"] in self.instruments)
@@ -173,7 +172,7 @@ class TestDao(unittest.TestCase):
             self.assertIsInstance(pos["price"], float)
             self.assertIsInstance(pos["profit"], float)
             self.assertIsInstance(pos["capital"], float)
-
+      
     def test_stocks(self):
         stock = get_random_dict_value(
             self.instruments,

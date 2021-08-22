@@ -149,7 +149,7 @@ class ImplDao(Raw):
         return a generator which generates a stream of (broker,name,price,amount,capital,value,profit,date in epoch)
         """
         sql = ('SELECT broker,name,instrument_id,url,expense_ratio,amount,price,value,profit,capital,date '
-               'FROM fund_performance3')
+               'FROM fund_performance2')
         for r in self.exec(sql):
             yield r
 
@@ -414,7 +414,6 @@ class ImplDao(Raw):
 
     @_remove_empty_value
     def update_fund_performance(self, fund_name, payload):
-        # todo : update existing
         kwargs = {'instrument_name': fund_name}
         instrument_id = self._get_instrument_id(**kwargs)
         if instrument_id > 0:
