@@ -16,7 +16,7 @@
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "0",
                 "PYTHONPATH": "src",
-                "FINANCE_DB": "/home/mu/Dropbox/data/finance.db"
+                "FINANCE_DB": "/home/mu/work/finance.db"
             },
             "args": [
                 "8080",
