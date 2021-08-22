@@ -3,12 +3,15 @@ from flask_restx import Resource
 from finance.api.endpoints import run_func_against_dao
 from flask import request
 
+from finance.common.dao.impl import ImplDao
+
 ns = api.namespace('transaction', description='Financial transactions')
 
 
-def _get_stock_transaction(dao, stock_name=None):
+def _get_stock_transaction(dao: ImplDao, stock_name=None):
     return [{'Date': x['date'],
              'Symbol': x['symbol'],
+             'Broker': x['broker'],
              'Type': x['type'],
              'Price': x['price'],
              'Shares': x['shares'],

@@ -5,17 +5,18 @@ from flask_restx import Resource
 from finance.api.endpoints import run_func_against_dao
 
 import logging.config
+
+from finance.common.dao.impl import ImplDao
 logger = logging.getLogger(__name__)
 
 ns = api.namespace('instrument', description='Financial instruments')
 
 
-def _get_instruments(dao, instrument_name=None):
+def _get_instruments(dao: ImplDao, instrument_name=None):
     return [{'id': x['id'],
              'type': x['type'],
              'name': x['name'],
              'currency': x['currency'],
-             'broker': x['broker'],
              'url': x['url'],
              'active': x['active'],
              'expense': x['expense']} for x in dao.get_instruments(instrument_name)]
@@ -133,14 +134,13 @@ class Cash(Resource):
         return None, run_func_against_dao(
             lambda dao: 201 if dao.update_cash_balance(ccy, broker, api.payload) else 500)
 
-
-@ns.route('/cash/adjust/<string:ccy>/<string:broker>')
-@api.doc(params={'ccy': 'Currency', 'broker': 'Broker'})
-class Cash(Resource):
-    @api.response(201, 'Cash balance successfully updated.')
-    @api.response(500, 'Cannot update cash balance.')
-    @api.expect(cash)
-    def post(self, ccy, broker):
-        return None, run_func_against_dao(
-            lambda dao: 201 if dao.update_cash_balance(ccy, broker, api.payload, True) else 500)
+#@ns.route('/cash/adjust/<string:ccy>/<string:broker>')
+#@api.doc(params={'ccy': 'Currency', 'broker': 'Broker'})
+#class Cash(Resource):
+#    @api.response(201, 'Cash balance successfully updated.')
+#    @api.response(500, 'Cannot update cash balance.')
+#    @api.expect(cash)
+#    def post(self, ccy, broker):
+#        return None, run_func_against_dao(
+#            lambda dao: 201 if dao.update_cash_balance(ccy, broker, api.payload, True) else 500)
 

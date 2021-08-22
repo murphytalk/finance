@@ -350,12 +350,13 @@ class ImplDao(Raw):
         return True
 
     def get_stock_transaction(self, stock_name=None):
-        sql = 'SELECT date,name,type,price,shares,fee FROM stock_trans '
+        sql = 'SELECT date,name,broker,type,price,shares,fee FROM stock_trans '
         if stock_name is not None:
             sql += 'WHERE name = ?'
         for x in self.exec(sql, (stock_name,) if stock_name else None):
             yield {
                 'date': str(epoch2date(x['date'])),
+                'broker': x['broker'],
                 'symbol': x['name'],
                 'type': x['type'],
                 'price': x['price'],

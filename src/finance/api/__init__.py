@@ -39,27 +39,27 @@ instrument_asset_allocation = api.model('Instrument asset allocation', {
 })
 
 asset_type = api.model('Asset types', {
-    'id':   fields.Integer(description='Asset ID'),
+    'id': fields.Integer(description='Asset ID'),
     'type': fields.String(description='Asset type')
 })
 
 country = api.model('Country', {
-    'id':   fields.Integer(description='Country ID'),
+    'id': fields.Integer(description='Country ID'),
     'country': fields.String(description='Country')
 })
 
 region = api.model('Region', {
-    'id':   fields.Integer(description='Region ID'),
+    'id': fields.Integer(description='Region ID'),
     'region': fields.String(description='Region')
 })
 
 instrument_type = api.model('Instrument types', {
-    'id':   fields.Integer(description='Instrument type ID'),
+    'id': fields.Integer(description='Instrument type ID'),
     'type': fields.String(description='Instrument type')
 })
 
 broker = api.model('Broker', {
-    'id':   fields.Integer(description='Broker ID'),
+    'id': fields.Integer(description='Broker ID'),
     'name': fields.String(description='Country'),
     'full_name': fields.String(description='Country')
 })
@@ -83,29 +83,29 @@ instrument_region_allocation = api.model('Instrument region allocation', {
 })
 
 Instrument = api.model('Instrument', {
-    'id':   fields.Integer(description='Instrument ID', required=False),
+    'id': fields.Integer(description='Instrument ID', required=False),
     'name': fields.String(description='Instrument name', required=True),
     'type': fields.String(description='Instrument type', required=False),
-    'broker': fields.String(description='Broker', required=False),
     'currency': fields.String(description='Currency', required=False),
     'url': fields.String(description='Instrument URL', required=False),
     'expense': fields.Float(description='Expense ratio', required=False),
-    'active':   fields.Integer(description='Active', required=False),
+    'active': fields.Integer(description='Active', required=False),
 })
 
 stock_transaction = api.model('Stock transactions', {
-    'Date':  fields.String(description='Transaction date'),
+    'Date': fields.String(description='Transaction date'),
+    'Broker': fields.String(description='Broker', required=False),
     'Symbol': fields.String(description='Stock/ETF symbol'),
-    'Type':  fields.String(description='Transaction type'),
-    'Price':  fields.Float(description='Price'),
+    'Type': fields.String(description='Transaction type'),
+    'Price': fields.Float(description='Price'),
     'Shares': fields.Float(description='Shares'),
-    'Fee':  fields.Float(description='Fee'),
+    'Fee': fields.Float(description='Fee'),
 })
 
 stock_quote = api.model('Stock quote', {
-    'Date':  fields.String(description='Closing date'),
+    'Date': fields.String(description='Closing date'),
     'Symbol': fields.String(description='Stock/ETF symbol'),
-    'Price':  fields.Float(description='Price'),
+    'Price': fields.Float(description='Price'),
 })
 
 stock_quotes = api.model('Stock quotes', {
@@ -113,20 +113,20 @@ stock_quotes = api.model('Stock quotes', {
 })
 
 funds_performance = api.model('Funds performance', {
-    'date':  fields.String(description='Closing date'),
+    'date': fields.String(description='Closing date'),
     'name': fields.String(description='Funds name'),
-    'amount':  fields.Integer(description='Amount'),
-    'price':  fields.Float(description='Price'),
-    'value':  fields.Float(description='Market value'),
-    'capital':  fields.Float(description='Capital'),
-    'profit':  fields.Float(description='Profit')
+    'amount': fields.Integer(description='Amount'),
+    'price': fields.Float(description='Price'),
+    'value': fields.Float(description='Market value'),
+    'capital': fields.Float(description='Capital'),
+    'profit': fields.Float(description='Profit')
 })
 
 xccy_quote = api.model('Xccy quote', {
-    'Date':  fields.String(description='Closing date'),
+    'Date': fields.String(description='Closing date'),
     'From': fields.String(description='Exchange from currency'),
     'To': fields.String(description='Exchange to currency'),
-    'Rate':  fields.Float(description='Exchange rate'),
+    'Rate': fields.Float(description='Exchange rate'),
 })
 
 xccy_quotes = api.model('Xccy quotes', {
@@ -134,7 +134,7 @@ xccy_quotes = api.model('Xccy quotes', {
 })
 
 _simple_instrument = api.model('Simple Instrument', {
-    'id':   fields.Integer(description='Instrument ID', required=False),
+    'id': fields.Integer(description='Instrument ID', required=False),
     'name': fields.String(description='Instrument name', required=True),
 })
 
