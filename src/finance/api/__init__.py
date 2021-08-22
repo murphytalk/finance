@@ -113,6 +113,7 @@ stock_quotes = api.model('Stock quotes', {
 })
 
 funds_performance = api.model('Funds performance', {
+    'broker': fields.String(description='Broker name'),
     'date': fields.String(description='Closing date'),
     'name': fields.String(description='Funds name'),
     'amount': fields.Integer(description='Amount'),

@@ -418,8 +418,10 @@ class ImplDao(Raw):
         kwargs = {'instrument_name': fund_name}
         instrument_id = self._get_instrument_id(**kwargs)
         if instrument_id > 0:
-            self.exec("INSERT INTO performance VALUES (?,?,?,?,?,?,?)",
+            brokers = self.get_broker_mapper()
+            self.exec("INSERT INTO fund VALUES (?,?,?,?,?,?,?,?)",
                       (instrument_id,
+                       brokers[payload['broker']],
                        payload["amount"],
                        payload["price"],
                        payload["value"],
