@@ -419,7 +419,7 @@ class ImplDao(Raw):
         instrument_id = self._get_instrument_id(**kwargs)
         if instrument_id > 0:
             brokers = self.get_broker_mapper()
-            self.exec("INSERT INTO fund VALUES (?,?,?,?,?,?,?,?)",
+            self.exec("REPLACE INTO fund VALUES (?,?,?,?,?,?,?,?)",
                       (instrument_id,
                        brokers[payload['broker']],
                        payload["amount"],
