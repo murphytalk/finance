@@ -1,5 +1,6 @@
+from six import b
 from finance.api import api
-from finance.api import instrument_asset_allocation, instrument_country_allocation, instrument_region_allocation, cash
+from finance.api import active_funds, instrument_asset_allocation, instrument_country_allocation, instrument_region_allocation, cash
 from finance.api import Instrument
 from flask_restx import Resource
 from finance.api.endpoints import run_func_against_dao
@@ -20,6 +21,10 @@ def _get_instruments(dao: ImplDao, instrument_name=None):
              'url': x['url'],
              'active': x['active'],
              'expense': x['expense']} for x in dao.get_instruments(instrument_name)]
+
+
+def _get_active_funds(dao: ImplDao, broker: str):
+    return dao.get_active_funds(broker)
 
 
 @ns.route('/')
@@ -51,6 +56,13 @@ class Instrument(Resource):
         :param instrument: instrument name
         """
         return run_func_against_dao(lambda dao: 201 if dao.update_instrument(instrument, api.payload) else 500)
+
+@ns.route('/active_funds/<string:broker>')
+@api.doc(params={'broker': 'Broker name'})
+class ActiveFunds(Resource):
+    @api.marshal_with(active_funds)
+    def get(self, broker):
+        return run_func_against_dao(lambda dao: _get_active_funds(dao, broker))
 
 
 @ns.route('/allocation/asset/<string:instrument>')

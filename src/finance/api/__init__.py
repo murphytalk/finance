@@ -123,6 +123,10 @@ funds_performance = api.model('Funds performance', {
     'profit': fields.Float(description='Profit')
 })
 
+active_funds = api.model('Active funds', {
+    'funds': fields.List(fields.String(descripion='Fund name'))
+})
+
 xccy_quote = api.model('Xccy quote', {
     'Date': fields.String(description='Closing date'),
     'From': fields.String(description='Exchange from currency'),

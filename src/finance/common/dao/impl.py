@@ -431,6 +431,22 @@ class ImplDao(Raw):
         else:
             return False
 
+    @_remove_empty_value
+    def mark_inactive_funds(self, broker, active_funds):
+        """ mark all funds of the given broker whose names are not in the payload inactive
+        """
+        payload: list = active_funds['funds']
+        names = [f'"{x}"' for x in payload]
+        # mark all instruments from this broker non-active
+        sql = f'''update instrument set active = 0 where id in (
+                  select i.id from instrument i, fund f, broker b where f.instrument = i.id and f.broker = b.id
+                  and b.name = ?) and name not in ({",".join(names)})'''
+        self.exec(sql, (broker,))
+
+    def get_active_funds(self, broker: str):
+        sql = 'select i.name from instrument i, fund f, broker b where f.instrument = i.id and f.broker = b.id and b.name = ?'
+        return (x['name'] for x in self.exec(sql, broker))
+
     def get_xccy_quote(self, ccy_pair=None, max_days=None):
         """
         Get xccy quotes
