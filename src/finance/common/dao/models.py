@@ -96,9 +96,6 @@ class Instrument(Base):
     instrument_type_id = Column('type', Integer, ForeignKey('instrument_type.id'))
     instrument_type = relationship("InstrumentType", backref='instrument')
 
-    broker_id = Column('broker', Integer, ForeignKey('broker.id'))
-    broker = relationship("Broker", backref='instrument')
-
     currency_id = Column('currency', Integer, ForeignKey('currency.id'))
     currency = relationship("Currency", backref='instrument')
 
@@ -144,11 +141,14 @@ class MyEpochType(types.TypeDecorator):
 
 
 class FundPerformance(Base):
-    __tablename__ = "performance"
+    __tablename__ = "fund"
 
     id = Column('ROWID', Integer, primary_key=True)
     instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
     instrument = relationship("Instrument")
+
+    broker_id = Column('broker', Integer, ForeignKey('broker.id'))
+    broker = relationship("Broker", backref='funds')
 
     amount = Column(Integer)
     price = Column(Float)
@@ -164,6 +164,9 @@ class StockTransaction(Base):
     id = Column('ROWID', Integer, primary_key=True)
     instrument_id = Column('instrument', Integer, ForeignKey('instrument.id'))
     instrument = relationship("Instrument")
+
+    broker_id = Column('broker', Integer, ForeignKey('broker.id'))
+    broker = relationship("Broker", backref='transaction')
 
     type = Column(String)
 

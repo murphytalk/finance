@@ -107,8 +107,7 @@ class InstrumentView(ModelView):
     column_filters = [
         'name', 'instrument_type',
         'currency',
-        #F(models.Instrument.currency, 'Currency', options=(('USD', 'USD'), ('JPY', 'JPY'))),
-        'broker', 'expense'
+        'expense'
     ]
     inline_models = (models.AssetAllocation, models.CountryAllocation)
 
