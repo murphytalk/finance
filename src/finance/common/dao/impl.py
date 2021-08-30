@@ -441,11 +441,18 @@ class ImplDao(Raw):
         sql = f'''update instrument set active = 0 where id in (
                   select i.id from instrument i, fund f, broker b where f.instrument = i.id and f.broker = b.id
                   and b.name = ?) and name not in ({",".join(names)})'''
-        self.exec(sql, (broker,))
+        try:
+            self.exec(sql, (broker,))
+            return True
+        except Exception:
+            log.exception('Failed to mark inactive funds')
 
     def get_active_funds(self, broker: str):
-        sql = 'select i.name from instrument i, fund f, broker b where f.instrument = i.id and f.broker = b.id and b.name = ?'
-        return (x['name'] for x in self.exec(sql, broker))
+        sql = 'select DISTINCT(i.name) from instrument i, fund f, broker b where f.instrument = i.id and f.broker = b.id and b.name = ?'
+        return {
+            'broker': broker,
+            'funds': [x['name'] for x in self.exec(sql, (broker,))]
+        }
 
     def get_xccy_quote(self, ccy_pair=None, max_days=None):
         """

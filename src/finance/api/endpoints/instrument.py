@@ -64,6 +64,12 @@ class ActiveFunds(Resource):
     def get(self, broker):
         return run_func_against_dao(lambda dao: _get_active_funds(dao, broker))
 
+    @api.response(201, 'Active funds successfully updated.')
+    @api.response(500, 'Cannot update active funds.')
+    @api.expect(active_funds)
+    def post(self, broker):
+        return run_func_against_dao(lambda dao: 201 if dao.mark_inactive_funds(broker, api.payload) else 500)
+
 
 @ns.route('/allocation/asset/<string:instrument>')
 @api.doc(params={'instrument': 'Instrument name'})

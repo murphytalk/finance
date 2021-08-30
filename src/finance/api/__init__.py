@@ -124,6 +124,7 @@ funds_performance = api.model('Funds performance', {
 })
 
 active_funds = api.model('Active funds', {
+    'broker': fields.String(descripion='Broker'),
     'funds': fields.List(fields.String(descripion='Fund name'))
 })
 

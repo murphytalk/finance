@@ -3,7 +3,7 @@ from json import dumps
 
 from finance.common.dao import ImplDao
 from finance.common.dao.db import get_sql_scripts
-from finance.common.dao.utils import *
+from finance.common.dao.utils import DAY1, FUNDS_NUM, STOCK_NUM, URL, gen_allocation, gen_date, gen_dates, gen_expense_ratio, gen_price, gen_symbol
 from finance.common.utils import get_valid_db_from_env
 
 
@@ -11,6 +11,7 @@ class RandomDataDao(ImplDao):
     """
     Using in memory DB with randomly generated market and position data
     """
+
     def __init__(self):
         # create the DB in memory and then populate random generated data
         super().__init__(get_valid_db_from_env('FAKE_DB', ":memory:"))
@@ -51,10 +52,10 @@ class RandomDataDao(ImplDao):
 
         # what stocks/ETFs we have generated ?
         stocks = [x['id'] for x in self.exec('SELECT id FROM instrument WHERE type = ? OR type = ?',
-                                                (instrument_type["Stock"], instrument_type["ETF"]))]
+                                             (instrument_type["Stock"], instrument_type["ETF"]))]
         # what funds we have generated ?
         funds = [x['id'] for x in self.exec('SELECT id FROM instrument WHERE type = ?',
-                                               (instrument_type["Funds"],))]
+                                            (instrument_type["Funds"],))]
         # populate instrument filters
         self.exec_many('INSERT INTO filter (name) VALUES (?)',
                        [("All-Stocks", ), ("First-Two-Stocks", ), ("All-Funds", )])
@@ -90,7 +91,7 @@ class RandomDataDao(ImplDao):
         buy = []
         for i in stocks:
             # instrument id, BUY, price, shares, fee, date
-            buy.append((i,1, 'BUY', gen_price(20, 1000), random.randint(1000, 2000),
+            buy.append((i, 1, 'BUY', gen_price(20, 1000), random.randint(1000, 2000),
                         gen_price(5, 20), DAY1))
         self.exec_many('INSERT INTO [transaction] VALUES (?,?,?,?,?,?,?)', buy)
 
@@ -113,7 +114,7 @@ class RandomDataDao(ImplDao):
                 value = amount * price
                 profit = value * random.uniform(-1, 2)
                 capital = price - profit
-                performance.append((i,1, amount, price, value, profit, capital, day))
+                performance.append((i, 1, amount, price, value, profit, capital, day))
 
         self.exec_many('INSERT INTO fund VALUES (?,?,?,?,?,?,?,?)', performance)
 
