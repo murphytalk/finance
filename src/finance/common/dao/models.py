@@ -148,7 +148,7 @@ class FundPerformance(Base):
     instrument = relationship("Instrument")
 
     broker_id = Column('broker', Integer, ForeignKey('broker.id'))
-    broker = relationship("Broker", backref='funds')
+    broker = relationship("Broker")
 
     amount = Column(Integer)
     price = Column(Float)
@@ -166,7 +166,7 @@ class StockTransaction(Base):
     instrument = relationship("Instrument")
 
     broker_id = Column('broker', Integer, ForeignKey('broker.id'))
-    broker = relationship("Broker", backref='transaction')
+    broker = relationship("Broker")
 
     type = Column(String)
 
