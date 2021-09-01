@@ -17,7 +17,6 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatTabsModule} from '@angular/material/tabs';
-
 import { NgxEchartsModule } from 'ngx-echarts';
 
 

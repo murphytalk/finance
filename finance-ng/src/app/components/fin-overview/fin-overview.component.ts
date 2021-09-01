@@ -4,6 +4,8 @@ import { Component, OnInit } from '@angular/core';
 import { first } from 'rxjs/operators';
 import { fromEntries, formatNumber, currencySign, pieChartOption, ChartData } from './../../shared/calc';
 import { MatRadioChange } from '@angular/material/radio';
+import { Grid } from "gridjs";
+import { Subject, Observable } from 'rxjs';
 
 interface OverviewItem {
   asset?: string;
@@ -153,32 +155,59 @@ export class FinOverviewComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.data.getPositions().pipe(first()).subscribe(
-      positions => {
-        this.logger.debug('positions', positions);
-        this.positions = positions;
-        this.data.getPortfolios().pipe(first()).subscribe(
-          rawPortfolios => {
-            // transform the shape of position objects
-            this.portfolios = {}; this.portfolios[ALL_PORTFOLIOS] = null;
-            rawPortfolios.forEach(rawPortfolio =>
-              this.portfolios[rawPortfolio.name] = fromEntries(rawPortfolio.allocations.map(allocation =>
-                // a key(instrument) and value(position of that instrument) pair
-                [allocation.instrument,
-                {
-                  alloc: allocation,
-                  // tslint:disable-next-line: max-line-length
-                  orgAlloc: { shares: allocation.shares, market_value: allocation.market_value, current_allocation: allocation.current_allocation }
-                }])
-              ));
-            this.logger.debug('converted portfolios', this.portfolios);
-            this.refresh();
-          }
-        );
-      },
-      err => this.logger.error('Failed to get positions', err),
-      () => this.logger.debug('position get done')
-    );
+    new Grid({
+      columns: [
+        {
+          name: 'Market Value',
+          columns: [
+            {name: 'Asset'},
+            {name: 'Currency'},
+            {name: 'CCY'},
+            {name: 'JPY'},
+          ]
+        },
+        {
+          name: 'Profit',
+          columns: [
+            {name: 'CCY'},
+            {name: 'JPY'},
+          ]
+        }
+      ],
+      data: () => new Promise( resolve => {
+          this.data.getPositions().pipe(first()).subscribe(
+              positions => {
+                this.logger.debug('positions', positions);
+                this.positions = positions;
+                this.data.getPortfolios().pipe(first()).subscribe(
+                  rawPortfolios => {
+                    // transform the shape of position objects
+                    this.portfolios = {}; this.portfolios[ALL_PORTFOLIOS] = null;
+                    rawPortfolios.forEach(rawPortfolio =>
+                      this.portfolios[rawPortfolio.name] = fromEntries(rawPortfolio.allocations.map(allocation =>
+                        // a key(instrument) and value(position of that instrument) pair
+                        [allocation.instrument,
+                        {
+                          alloc: allocation,
+                          // tslint:disable-next-line: max-line-length
+                          orgAlloc: { shares: allocation.shares, market_value: allocation.market_value, current_allocation: allocation.current_allocation }
+                        }])
+                      ));
+                    this.logger.debug('converted portfolios', this.portfolios);
+                    this.refresh();
+                    const v = this.overviewData.map ( item => [
+                        item.asset, item.marketValueBaseCcy, item.ccy, item.marketValue,
+                        item.profit, item.profitBaseCcy
+                      ]);
+                    this.logger.debug('overview grid', v);
+                    resolve(v);
+                  });
+              },
+              err => this.logger.error('Failed to get positions', err),
+              () => this.logger.debug('position get done')
+          );
+      })
+    }).render(document.getElementById("grid"));
   }
 
   private stockAndEtfData(): DataCollect {
