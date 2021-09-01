@@ -1,8 +1,8 @@
 <mat-sidenav-container class="app-sidenav-container" autosize>
     <mat-sidenav #drawer class="app-sidenav  mat-elevation-z10" mode="push">
-        <mat-nav-list class="text-blue-700">
-            <a class="flex-grow" [routerLink]="link.path" routerLinkActive="text-green-600" *ngFor="let link of topNavLinks">
-              <div class="flex flex-row justify-between items-center">
+        <mat-nav-list class="tw-text-blue-700">
+            <a class="tw-flex-grow" [routerLink]="link.path" routerLinkActive="tw-text-green-600" *ngFor="let link of topNavLinks">
+              <div class="tw-flex tw-flex-row tw-justify-between tw-items-center">
                 <div><mat-icon>{{link.icon}}</mat-icon></div>
                 <div>{{ link.name }}</div>
               </div>
@@ -20,7 +20,7 @@
         </button>
     </mat-toolbar>
 
-    <div class="container max-w-none">
+    <div class="tw-container tw-max-w-none">
       <router-outlet (activate)='onActivate($event)'></router-outlet>
     </div>
 </mat-sidenav-container>

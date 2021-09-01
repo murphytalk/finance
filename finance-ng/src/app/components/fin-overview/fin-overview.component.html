@@ -1,4 +1,4 @@
-<h1 class="mx-auto mt-3 text-center">Overview</h1>
+<h1 class="tw-mx-auto tw-mt-3 tw-text-center">Overview</h1>
 <ag-grid-angular
     class="ag-theme-alpine"
     [rowData]="overviewData"
@@ -7,7 +7,7 @@
     [rowClassRules]="rowClassRules"
     >
 </ag-grid-angular>
-<div class="mt-3">
+<div class="tw-mt-3">
   <label class="portfolio-label">Portfolios</label>
   <mat-radio-group
     class="portfolio-radio-group"
@@ -19,14 +19,14 @@
     </mat-radio-button>
   </mat-radio-group>
 </div>
-<div class="flex flex-row justify-between">
-    <div class="mt-3 flex-1">
-        <h1 class="text-center">Wealth Allocations</h1>
+<div class="tw-flex tw-flex-row tw-justify-between">
+    <div class="tw-mt-3 tw-flex-1">
+        <h1 class="tw-text-center">Wealth Allocations</h1>
         <mat-tab-group animationDuration="0ms">
             <mat-tab label="Asset">
                 <ng-template matTabContent>
                     <div class="d-flex flex-column">
-                        <div class="mt-3">
+                        <div class="tw-mt-3">
                             Total Market Value : {{assetTotalValue | money:'JPY'}}
                         </div>
                         <div>
@@ -38,7 +38,7 @@
             <mat-tab label="Region">
                 <ng-template matTabContent>
                     <div class="d-flex flex-column">
-                        <div class="mt-3">
+                        <div class="tw-mt-3">
                             Total Market Value : {{regionTotalValue | money:'JPY'}}
                         </div>
                         <div>
@@ -50,7 +50,7 @@
             <mat-tab label="Country">
                 <ng-template matTabContent>
                     <div class="d-flex flex-column">
-                        <div class="mt-3">
+                        <div class="tw-mt-3">
                             Total Market Value : {{countryTotalValue | money:'JPY'}}
                         </div>
                         <div class="col-md-12">
@@ -61,13 +61,13 @@
             </mat-tab>
         </mat-tab-group>
     </div>
-    <div class="mt-3 flex-1">
+    <div class="tw-mt-3 tw-flex-1">
         <h1 class="text-center">Instrument Allocations</h1>
         <mat-tab-group animationDuration="0ms">
             <mat-tab label="ETF">
                 <ng-template matTabContent>
                     <div class="d-flex flex-column">
-                        <div class="mt-3">
+                        <div class="tw-mt-3">
                             Total Market Value : {{etfTotalValue | money:'JPY'}}
                         </div>
                         <div>
@@ -79,7 +79,7 @@
             <mat-tab label="Stock">
                 <ng-template matTabContent>
                     <div class="d-flex flex-column">
-                        <div class="mt-3">
+                        <div class="tw-mt-3">
                             Total Market Value : {{stockTotalValue | money:'JPY'}}
                         </div>
                         <div>
@@ -91,7 +91,7 @@
             <mat-tab label="ETF & Stock">
                 <ng-template matTabContent>
                     <div class="d-flex flex-column">
-                        <div class="mt-3">
+                        <div class="tw-mt-3">
                             Total Market Value : {{stockAndEtfTotalValue | money:'JPY'}}
                         </div>
                         <div>
@@ -103,7 +103,7 @@
              <mat-tab label="Funds">
                 <ng-template matTabContent>
                     <div class="d-flex flex-column">
-                        <div class="mt-3">
+                        <div class="tw-mt-3">
                             Total Market Value : {{fundsTotalValue | money:'JPY'}}
                         </div>
                         <div>
