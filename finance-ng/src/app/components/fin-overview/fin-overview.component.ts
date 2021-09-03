@@ -143,6 +143,12 @@ export class FinOverviewComponent implements OnInit {
     }
   ];
 
+  defaultColDef = {
+    //sortable: true,
+    resizable: true,
+    //floatingFilter: true,
+  };
+
   rowClassRules = {
     sumRow: params => params.data.asset == null
   };
