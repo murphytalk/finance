@@ -30,7 +30,6 @@ import { FundsPositionComponent } from './components/funds-position/funds-positi
 // https://github.com/xieziyu/ngx-echarts#treeshaking-custom-build
 // Import the echarts core module, which provides the necessary interfaces for using echarts.
 import * as echarts from 'echarts/core';
-// Import bar charts, all with Chart suffix
 import { PieChart} from 'echarts/charts';
 import { TitleComponent, TooltipComponent } from 'echarts/components';
 // Import the Canvas renderer, note that introducing the CanvasRenderer or SVGRenderer is a required step
