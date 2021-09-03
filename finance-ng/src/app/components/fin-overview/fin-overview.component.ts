@@ -196,10 +196,9 @@ export class FinOverviewComponent implements OnInit {
                     this.logger.debug('converted portfolios', this.portfolios);
                     this.refresh();
                     const v = this.overviewData.map ( item => [
-                        item.asset, item.marketValueBaseCcy, item.ccy, item.marketValue,
+                        item.asset, item.ccy, item.marketValue, item.marketValueBaseCcy,
                         item.profit, item.profitBaseCcy
-                      ]);
-                    this.logger.debug('overview grid', v);
+                    ]);
                     resolve(v);
                   });
               },
