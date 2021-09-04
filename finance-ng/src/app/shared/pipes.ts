@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { currencySign, formatNumber } from './calc';
+import { currencySign, formatNumber } from './utils';
 
 // takes one optional currency sign argument(JPY, USD, CNY ...)
 @Pipe({name: 'money'})

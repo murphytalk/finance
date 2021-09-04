@@ -1,4 +1,4 @@
-import { FundPosition, DataService } from './../../shared/data.service';
+import { FundPosition, DataService } from './../../services/data.service';
 import { Component, OnInit } from '@angular/core';
 import { first } from 'rxjs/operators';
 
