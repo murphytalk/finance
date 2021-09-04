@@ -2,7 +2,7 @@ import { NGXLogger } from 'ngx-logger';
 import { DataService, Positions, PortfolioAllocation, FinPosition } from './../../shared/data.service';
 import { Component, OnInit } from '@angular/core';
 import { first } from 'rxjs/operators';
-import { fromEntries, formatNumber, currencySign, pieChartOption, ChartData } from './../../shared/calc';
+import { fromEntries, formatNumber, currencySign, pieChartOption, ChartData } from '../../shared/utils';
 import { MatRadioChange } from '@angular/material/radio';
 
 interface OverviewItem {
