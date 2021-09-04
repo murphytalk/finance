@@ -1,4 +1,4 @@
-import { logging } from 'protractor';
+import { financeHost } from './../shared/def';
 import { NGXLogger } from 'ngx-logger';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -18,7 +18,7 @@ export class DataService {
   ) { }
 
   private url(path: string) {
-    return `/finance/api/${path}`;
+    return `${financeHost}/api/${path}`;
   }
 
   getPositions() {
