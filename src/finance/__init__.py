@@ -4,6 +4,7 @@ The flask application package.
 from platform import node
 
 import flask_admin as admin
+from flask_cors import CORS
 from flask import Flask, Blueprint, send_from_directory
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.contrib.sqla.filters import DateTimeBetweenFilter
@@ -36,6 +37,7 @@ RESTPLUS_ERROR_404_HELP = False
 SWAGGER_UI_JSONEDITOR = True
 
 app = Flask(__name__)
+CORS(app)
 # load all uppercase variables as configuration
 app.config.from_object(__name__)
 app.debug = DEBUG
