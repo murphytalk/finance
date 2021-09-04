@@ -8,7 +8,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "build:prod": "cross-env NODE_ENV=production ng build --configuration production --base-href=/finance-ng --deploy-url=/finance-ng/"
+    "build:prod": "cross-env NODE_ENV=production ng build --configuration production --base-href=/finance-ng --deploy-url=/finance-ng/ --output-path=/mnt/nas/vault/docker/nginx/finance-ng --progress"
   },
   "proxy": "http://localhost:8080",
   "private": true,
