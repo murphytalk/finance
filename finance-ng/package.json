@@ -4,11 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --configuration production --base-href=/ng",
+    "build": "ng build --configuration production --base-href=/finance-ng --deploy-url=/finance-ng/",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "build:prod": "cross-env NODE_ENV=production ng build --configuration production --base-href=/ng"
+    "build:prod": "cross-env NODE_ENV=production ng build --configuration production --base-href=/finance-ng --deploy-url=/finance-ng/"
   },
   "proxy": "http://localhost:8080",
   "private": true,
