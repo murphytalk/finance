@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+from dataclasses import dataclass
 import sys
 from json import dumps, encoder
 from datetime import date
+from finance.api import Instrument
 
 from finance.common.calculate import CalcPosition
 from finance.common.dao import Dao
+from finance.common.dao.impl import ImplDao
 from finance.common.utils import cmdline_args, epoch2date
 
 
@@ -114,20 +117,40 @@ class StockReport2(Report):
         return positions
 
 
+@dataclass
+class FundPosition:
+    broker: str
+    name: str
+    expense_ratio: float
+    price: float
+    amount: float
+    capital: float
+    value: float
+    profit: float
+    date: str
+    instrument_id: int
+    url: str
+
+
+FundPositions = list[FundPosition]
+
+
 class FundReport(Report):
-    def __init__(self, dao, the_date):
-        self.positions = [{
-            'broker': x['broker'],
-            'name': x['name'],
-            'expense_ratio': x['expense_ratio'],
-            'price': x['price'],
-            'amount': x['amount'],
-            'capital': x['capital'],
-            'value': x['value'],
-            'profit': x['profit'],
-            'date': str(epoch2date(x['date'])),
-            'instrument_id': x['instrument_id'],
-            'url': x['url']} for x in dao.get_funds_positions(the_date)]
+    def __init__(self, dao: ImplDao, the_date):
+        self.positions: FundPositions = [
+            FundPosition(
+                x['broker'],
+                x['name'],
+                x['expense_ratio'],
+                x['price'],
+                x['amount'],
+                x['capital'],
+                x['value'],
+                x['profit'],
+                str(epoch2date(x['date'])),
+                x['instrument_id'],
+                ['url']) for x in dao.get_funds_positions(the_date)
+        ]
 
 
 class SummaryReport(Report):

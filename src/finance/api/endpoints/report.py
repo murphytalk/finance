@@ -6,11 +6,9 @@ from finance.common.calculate import get_portfolios, rebalance_portfolio
 from finance.api.endpoints import run_func_against_dao
 from functools import reduce
 from dataclasses import dataclass
-
-ns = api.namespace('report', description='Financial reports')
-
 import logging.config
 
+ns = api.namespace('report', description='Financial reports')
 log = logging.getLogger(__name__)
 
 
@@ -23,10 +21,12 @@ class FundPerformance(Resource):
         """
         return run_func_against_dao(lambda dao: FundReport(dao, date.today()).positions)
 
+
 @dataclass
 class AllocItem:
     alloc: str
     ratio: float
+
 
 @ns.route('/positions')
 class Positions(Resource):
@@ -37,14 +37,13 @@ class Positions(Resource):
         """
         def _alloc_auto_other(allocations):
             alloc = [AllocItem(x[0], x[1]) for x in allocations if x[0] != 'Other']
-            total = reduce(lambda accu,x: accu + x.ratio, alloc, 0)
+            total = reduce(lambda accu, x: accu + x.ratio, alloc, 0)
             if total > 100:
                 log.error('Alloc over 100% : {}'.format(allocations))
             else:
                 alloc.append(AllocItem('Other', 100 - total))
             for a in alloc:
                 yield (a.alloc, a.ratio)
-
 
         def _get_position(dao, report):
             return [{'instrument': {'id': p['instrument'], 'name':p['symbol']},
