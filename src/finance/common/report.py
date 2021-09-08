@@ -3,11 +3,8 @@ from dataclasses import dataclass
 import sys
 from json import dumps, encoder
 from datetime import date
-from finance.api import Instrument
 
 from finance.common.calculate import CalcPosition
-from finance.common.dao import Dao
-from finance.common.dao.impl import ImplDao
 from finance.common.utils import cmdline_args, epoch2date
 
 
@@ -136,7 +133,7 @@ FundPositions = list[FundPosition]
 
 
 class FundReport(Report):
-    def __init__(self, dao: ImplDao, the_date):
+    def __init__(self, dao, the_date):
         self.positions: FundPositions = [
             FundPosition(
                 x['broker'],
@@ -204,12 +201,12 @@ class SummaryReport(Report):
             return calc(stocks['Stock'] if 'Stock' in stocks else []), calc(stocks['ETF'] if 'ETF' in stocks else [])
 
         def funds_allocation(dao):
-            return [{'symbol': x['name'],
-                     'id': x['instrument_id'],
+            return [{'symbol': x.name,
+                     'id': x.instrument_id,
                      'ccy':'JPY',
-                     'value':x['value'],
-                     'JPY':x['value'],
-                     'profit':x['profit']} for x in FundReport(dao, date.today()).positions]
+                     'value':x.value,
+                     'JPY': x.value,
+                     'profit':x.profit} for x in FundReport(dao, date.today()).positions]
 
         stock, etf = stock_allocation(dao)
         return {

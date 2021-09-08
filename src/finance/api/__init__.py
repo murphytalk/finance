@@ -146,7 +146,6 @@ _simple_instrument = api.model('Simple Instrument', {
 
 instrument_position = api.model('Position of one instrument', {
     'instrument': fields.Nested(_simple_instrument, description='Instrument'),
-    # 'broker': fields.String(description='The broker that keeps the position'),
     'asset_allocation': fields.List(fields.Nested(asset_allocation), description='Asset allocations'),
     'country_allocation': fields.List(fields.Nested(country_allocation), description='Country allocations'),
     'region_allocation': fields.List(fields.Nested(region_allocation), description='Region allocations'),
@@ -154,7 +153,8 @@ instrument_position = api.model('Position of one instrument', {
     'xccy': fields.Float(description='Currency exchange rate to JPY'),
     'shares': fields.Float(description='Shares'),
     'price': fields.Float(description='Current market price'),
-    'capital': fields.Float(description='Invested capital')
+    'capital': fields.Float(description='Invested capital'),
+    'broker': fields.String(description='The broker that keeps the position'),
 })
 
 cash = api.model('Cash balance', {

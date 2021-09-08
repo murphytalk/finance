@@ -1,5 +1,5 @@
 from datetime import date
-from finance.api import api, fund_performance, positions, portfolio, portfolio_rebalancing
+from finance.api import Instrument, api, fund_performance, positions, portfolio, portfolio_rebalancing
 from flask_restx import Resource
 from finance.common.report import FundReport, StockReport2
 from finance.common.calculate import get_portfolios, rebalance_portfolio
@@ -47,6 +47,7 @@ class Positions(Resource):
 
         def _get_position(dao, report):
             return [{'instrument': {'id': p['instrument'], 'name':p['symbol']},
+                     'broker': p['broker'],
                      'asset_allocation':
                          [{'asset': x[0],
                            'ratio': x[1]
@@ -70,18 +71,19 @@ class Positions(Resource):
             return _get_position(dao, r['ETF']), _get_position(dao, r['Stock'])
 
         def _get_all(dao):
-            stocks = _get_stock_etf_positions(dao)
             # change to the same format as stock position
             # Japan mutual funds have different ways to calculate amount(口),
             # we simplify here by assigning total market value (scraped from broker's page) to price and keep share be 1
-            funds = [{'instrument': p['instrument_id'],
-                      'symbol': p['name'],
+            funds = [{'instrument': p.instrument_id,
+                      'broker': p.broker,
+                      'symbol': p.name,
                       'ccy': 'JPY',
                       'xccy': 1,
                       'shares': 1,
-                      'price': p['value'],
-                      'liquidated': -p['capital']
+                      'price': p.value,
+                      'liquidated': -p.capital
                       } for p in FundReport(dao, date.today()).positions]
+            stocks = _get_stock_etf_positions(dao)
             return {'ETF': stocks[0],
                     'Stock': stocks[1],
                     'Funds': _get_position(dao, funds),
@@ -100,6 +102,7 @@ class Portfolios(Resource):
         """
         portfolios = run_func_against_dao(lambda dao: get_portfolios(dao, date.today()))
         return [{'name': name, 'allocations': portfolio.to_dict('records')} for name, portfolio in portfolios]
+
 
 @ns.route('/rebalance_portfolio/<string:name>/<int:new_fund>')
 @api.doc(params={'name': 'Portfolio name'})

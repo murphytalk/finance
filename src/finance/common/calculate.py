@@ -38,10 +38,10 @@ class CalcPosition:
     def __init__(self, date2, positions=None):
         self.date1 = STOCK_START_DATE
         self.date2 = date2
-        self.positions = positions
+        self.positions: dict[int, Position] = positions
 
     def calc(self, dao):
-        def on_each_transaction(instrument, name, transaction_type, price,
+        def on_each_transaction(instrument, name, broker, transaction_type, price,
                                 shares, fee, the_date):
             if instrument in self.positions:
                 pos = self.positions[instrument]

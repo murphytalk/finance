@@ -1,5 +1,6 @@
 from flask import current_app
-from finance.common.report import Dao
+
+from finance.common.dao import Dao
 
 
 def run_func_against_dao(func):
