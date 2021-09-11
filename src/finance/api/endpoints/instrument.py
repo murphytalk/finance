@@ -1,4 +1,3 @@
-from six import b
 from finance.api import api
 from finance.api import active_funds, instrument_asset_allocation, instrument_country_allocation, instrument_region_allocation, cash
 from finance.api import Instrument

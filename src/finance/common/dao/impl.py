@@ -1,4 +1,5 @@
 from calendar import timegm
+from typing import Generator
 from finance.common.utils import date_str2epoch, SECONDS_PER_DAY
 from finance.common.model import Quote, epoch2date, Instrument
 from finance.common.dao.db import Raw
@@ -30,6 +31,7 @@ def _remove_empty_value(func):
 
     return wrapper
 
+
 @dataclass
 class Transaction:
     instrument_id: int
@@ -45,10 +47,9 @@ class ImplDao(Raw):
     def __init__(self, db_path):
         super().__init__(db_path)
 
-    def iterate_transaction(self, start_date, end_date, callback):
+    def iterate_transaction(self, start_date, end_date) -> Generator[Transaction, None, None]:
         """
-        iterate stock transactions, callback signature:
-        callback(instrument id,instrument name,broker, transaction type,price, shares,fee, date)
+        iterate stock transactions
         """
         sql = ('SELECT i.name,t.instrument, b.name broker, t.type,t.price,t.shares,t.fee,t.date FROM [transaction] t, instrument i, broker b '
                'WHERE t.instrument = i.rowid  and t.broker = b.id AND date >=? AND date<=? ORDER BY date')
@@ -56,8 +57,9 @@ class ImplDao(Raw):
         epoch2 = int(timegm(end_date.timetuple()))
 
         for f in self.exec(sql, (epoch1, epoch2)):
-            callback(f['instrument'], f['name'], f['broker'], f['type'],
-                     f['price'], f['shares'], f['fee'], f['date'])
+            yield Transaction(
+                f['instrument'], f['name'], f['broker'], f['type'],
+                f['price'], f['shares'], f['fee'], f['date'])
 
     def populate_from_instruments(self, instrument_filter, create_new_obj_func=None):
         """

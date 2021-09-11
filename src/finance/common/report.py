@@ -5,6 +5,8 @@ from json import dumps, encoder
 from datetime import date
 
 from finance.common.calculate import CalcPosition
+from finance.common.dao.impl import ImplDao
+from finance.common.model import Position
 from finance.common.utils import cmdline_args, epoch2date
 
 
@@ -37,56 +39,17 @@ class Report(object):
 
 
 class StockReport(Report):
-    def __init__(self, dao, date):
+    def __init__(self, dao: ImplDao, date):
         super(self.__class__, self).__init__(dao, date)
         self.q = dao.get_stock_latest_quotes(date)
         self.stock_position = CalcPosition(date)
         self.stock_position.calc(dao)
 
     def stock_positions(self, positions=None):
-        def calc_stock(instrument, position):
-            v = position.shares * self.q[instrument].price
-            vwap = position.VWAP()
-            market_profit = v - vwap * position.shares
-            rpt = {
-                'instrument': instrument, 'url': self.i[instrument].url, 'symbol': position.name,
-                'shares': position.shares, 'price': self.q[instrument].price,
-                'value': self.gen_price_with_xccy(v, self.i[instrument].currency, self.i[instrument].xccy_rate,
-                                                  self.i[instrument].xccy_date),
-                'liquidated': self.gen_price_with_xccy(position.liquidated, self.i[instrument].currency,
-                                                       self.i[instrument].xccy_rate, self.i[instrument].xccy_date),
-                'vwap': self.gen_price_with_xccy(vwap, self.i[instrument].currency,
-                                                       self.i[instrument].xccy_rate, self.i[instrument].xccy_date),
-                'market_profit': self.gen_price_with_xccy(market_profit, self.i[instrument].currency,
-                                                   self.i[instrument].xccy_rate, self.i[instrument].xccy_date)
-            }
-
-            t = self.i[instrument].instrument_type.name
-            if t in positions:
-                by_instrument = positions[t]
-            else:
-                by_instrument = []
-
-            by_instrument.append(rpt)
-            positions[t] = by_instrument
-
-        if positions is None:
-            positions = {}
-        self.stock_position.dump(calc_stock)
-        return positions
-
-
-class StockReport2(Report):
-    def __init__(self, dao, date):
-        super(self.__class__, self).__init__(dao, date)
-        self.q = dao.get_stock_latest_quotes(date)
-        self.stock_position = CalcPosition(date)
-        self.stock_position.calc(dao)
-
-    def stock_positions(self, positions=None):
-        def calc_stock(instrument, position):
+        def calc_stock(instrument, position: Position):
             if instrument not in self.q:
                 return
+            vwap = position.VWAP()
             v = position.shares * self.q[instrument].price
             rpt = {
                 'instrument': instrument,
@@ -97,6 +60,8 @@ class StockReport2(Report):
                 'shares': position.shares,
                 'price': self.q[instrument].price,
                 'value': v,
+                'vwap': self.gen_price_with_xccy(vwap, self.i[instrument].currency,
+                                                       self.i[instrument].xccy_rate, self.i[instrument].xccy_date),
                 'liquidated': position.liquidated}
 
             t = self.i[instrument].instrument_type.name
@@ -133,7 +98,7 @@ FundPositions = list[FundPosition]
 
 
 class FundReport(Report):
-    def __init__(self, dao, the_date):
+    def __init__(self, dao: ImplDao, the_date):
         self.positions: FundPositions = [
             FundPosition(
                 x['broker'],

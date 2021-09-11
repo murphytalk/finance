@@ -25,6 +25,7 @@ if __name__ == "__main__":
 
 from dataclasses import dataclass
 from finance.common.const import STOCK_START_DATE
+from finance.common.dao.impl import ImplDao
 from finance.common.model import Position
 from finance.common.const import REBALANCING_THRESHOLD
 from functools import reduce
@@ -35,25 +36,26 @@ from numpy import float64
 
 
 class CalcPosition:
-    def __init__(self, date2, positions=None):
+    def __init__(self, date2):
         self.date1 = STOCK_START_DATE
         self.date2 = date2
-        self.positions: dict[int, Position] = positions
+        # { broker => {instrument id => position} }
+        self.positions: dict[str: dict[int, Position]] = {}
 
-    def calc(self, dao):
-        def on_each_transaction(instrument, name, broker, transaction_type, price,
-                                shares, fee, the_date):
-            if instrument in self.positions:
-                pos = self.positions[instrument]
-                pos.transaction(transaction_type, price, shares, fee)
-
-        if self.positions is None:
-            self.positions = dao.populate_from_instruments(
-                # todo : get rid of magic numbers
-                '(i.type = 2 or i.type = 1)',
-                lambda instrument_id, name, tid, t, u, e: Position(
-                    instrument_id, name))
-        dao.iterate_transaction(self.date1, self.date2, on_each_transaction)
+    def calc(self, dao: ImplDao):
+        for t in dao.iterate_transaction(self.date1, self.date2):
+            if t.broker in self.positions:
+                positions = self.positions[t.broker]
+                if t.instrument_id in positions:
+                    pos = positions[t.instrument_id]
+                else:
+                    pos = Position(t.instrument_id, t.instrument_name)
+                    positions[t.instrument_id] = pos
+            else:
+                pos = Position(t.instrument_id, t.instrument_name)
+                self.positions[t.broker] = {t.instrument_id: pos}
+          
+            pos.transaction(t.transaction_type, t.price, t.shares, t.fee)
 
     def dump(self, callback=None):
         for k, v in self.positions.items():

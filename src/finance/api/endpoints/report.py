@@ -1,7 +1,7 @@
 from datetime import date
-from finance.api import Instrument, api, fund_performance, positions, portfolio, portfolio_rebalancing
+from finance.api import api, fund_performance, positions, portfolio, portfolio_rebalancing
 from flask_restx import Resource
-from finance.common.report import FundReport, StockReport2
+from finance.common.report import FundReport, StockReport
 from finance.common.calculate import get_portfolios, rebalance_portfolio
 from finance.api.endpoints import run_func_against_dao
 from functools import reduce
@@ -67,7 +67,7 @@ class Positions(Resource):
                      'capital': -p['liquidated']} for p in report if p['shares'] > 0]
 
         def _get_stock_etf_positions(dao):
-            r = StockReport2(dao, date.today()).stock_positions()
+            r = StockReport(dao, date.today()).stock_positions()
             return _get_position(dao, r['ETF']), _get_position(dao, r['Stock'])
 
         def _get_all(dao):

@@ -1,6 +1,11 @@
 #!/usr/bin/env python
+from collections import deque
 import unittest
+from unittest.mock import MagicMock
 from datetime import timedelta
+
+from finance.common.calculate import CalcPosition
+from finance.common.dao.impl import ImplDao, Transaction
 
 from finance.common.dao.random import RandomDataDao
 from finance.common.dao.utils import DAY1, TODAY, URL
@@ -13,14 +18,20 @@ YYYY_MM_DD = "%Y-%m-%d"
 class TestPosition(unittest.TestCase):
     def test_buy(self):
         p = Position(1, "test")
-        for trans in [
+
+        data = [
             ("BUY", 100, 10, 0),
             ("BUY", 200, 15, 0),
             ("BUY", 300, 20, 0),
             ("BUY", 400, 30, 0),
-        ]:
+        ]
+
+        for trans in data:
             p.transaction(trans[0], trans[1], trans[2], trans[3])
+
         self.assertAlmostEqual(p.VWAP(), 293.333, 3)
+        expected = deque([Position.Unclosed(t[1], t[2], t[3]) for t in data])
+        self.assertCountEqual(expected, p.unclosed_positions)
 
     def test_split(self):
         p = Position(1, "test")
@@ -55,6 +66,46 @@ class TestPosition(unittest.TestCase):
         ]:
             p.transaction(trans[0], trans[1], trans[2], trans[3])
         self.assertEqual(p.VWAP(), 0)
+
+
+class TestCaclPosition(unittest.TestCase):
+    def test_one_broker(self):
+        dao = ImplDao(None)
+        dao.iterate_transaction = MagicMock(return_value=iter([
+            Transaction(1, 'I1', 'b1', 'BUY', 1.0, 10, 1.0),
+            Transaction(1, 'I1', 'b1', 'BUY', 1.0, 10, 1.0),
+            Transaction(2, 'I2', 'b2', 'BUY', 2.0, 10, 1.0),
+            Transaction(1, 'I1', 'b1', 'SELL', 2.0, 20, 1.0),
+        ]))
+        expected = {
+            'b1': {1: Position(1, 'I1', 0, 20.0, 3.0, deque())},
+            'b2': {2: Position(2, 'I2', 10, -20.0, 1.0, deque([Position.Unclosed(2.0, 10, 1.0)]))}
+        }
+        pos = CalcPosition(None)
+        pos.calc(dao)
+        self.assertDictEqual(pos.positions, expected)
+
+    def test_two_brokers(self):
+        dao = ImplDao(None)
+        dao.iterate_transaction = MagicMock(return_value=iter([
+            Transaction(1, 'I1', 'b1', 'BUY', 1.0, 10, 1.0),
+            Transaction(1, 'I1', 'b1', 'BUY', 1.0, 10, 1.0),
+            Transaction(1, 'I1', 'b1', 'SELL', 2.0, 10, 1.0),
+
+            Transaction(1, 'I1', 'b2', 'BUY', 1.0, 20, 1.0),
+            Transaction(2, 'I2', 'b2', 'BUY', 3.0, 10, 1.0),
+            Transaction(2, 'I2', 'b2', 'SELL', 2.0, 5, 1.0),
+        ]))
+        pos = CalcPosition(None)
+        pos.calc(dao)
+        expected = {
+            'b1': {1: Position(1, 'I1', 10.0, 0.0, 3.0, deque([Position.Unclosed(1.0, 10, 1.0)]))},
+            'b2': {
+                1: Position(1, 'I1', 20.0, -20.0, 1.0, deque([Position.Unclosed(1.0, 20.0, 1.0)])),
+                2: Position(2, 'I2', 5.0, -20.0, 2.0, deque([Position.Unclosed(3.0, 5.0, 1.0)]))
+            }
+        }
+        self.assertDictEqual(expected, pos.positions)
 
 
 class TestDao(unittest.TestCase):

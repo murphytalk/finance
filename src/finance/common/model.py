@@ -2,6 +2,7 @@
 from collections import deque
 from functools import reduce
 from json import dumps
+from typing import Deque
 from finance.common.utils import epoch2date
 
 
@@ -25,18 +26,36 @@ class Position(Model):
             self.price = self.price / factor
             self.shares = self.shares * factor
 
-        def __str__(self):
-            return "Unclosed position, price=%f, shares=%d, fee=%f" % (self.price, self.shares, self.fee)
+        def __eq__(self, other):
+            if isinstance(other, Position.Unclosed):
+                return self.price == other.price and self.shares == other.shares and self.fee == other.fee
+            return False
 
-    def __init__(self, instrument, name):
-        self.instrument = instrument
-        self.name = name
-        self.shares = 0  # current shares
-        self.liquidated = 0  # negative value => money(original value) still in market
-        self.fee = 0
-        self.unclosed_positions = deque()
+        def __repr__(self):
+            return f"Unclosed position, price={self.price}, shares={self.shares}, fee={self.fee}"
 
-    def transaction(self, trans_type, price, shares, fee):
+    def __init__(self, instrument, name, *shares_liq_fee_unclosed):
+        self.instrument: int = instrument
+        self.name: str = name
+
+        if (len(shares_liq_fee_unclosed) == 0):
+            self.shares: float = 0.0  # current shares
+            self.liquidated: float = 0.0  # negative value => money(original value) still in market
+            self.fee: float = 0.0
+            self.unclosed_positions: Deque() = deque()
+        else:
+            # only for unit tests
+            self.shares = shares_liq_fee_unclosed[0]
+            self.liquidated = shares_liq_fee_unclosed[1]
+            self.fee = shares_liq_fee_unclosed[2]
+            self.unclosed_positions = shares_liq_fee_unclosed[3]
+
+    def __eq__(self, other):
+        if isinstance(other, Position):
+            return self.instrument == other.instrument and self.name == other.name and self.shares == other.shares and self.liquidated == other.liquidated and self.fee == other.fee and self.unclosed_positions == other.unclosed_positions
+        return False
+
+    def transaction(self, trans_type: str, price: float, shares: float, fee: float):
         if trans_type == 'SPLIT':
             # 1 to N share split, here price is the N
             self.shares = self.shares * price
@@ -74,8 +93,8 @@ class Position(Model):
             self.unclosed_positions, Position.Unclosed(0, 0, 0))
         return 0 if calc_vwap.shares == 0 else (calc_vwap.price + calc_vwap.fee) / calc_vwap.shares
 
-    def __str__(self):
-        return "Name=%4s,Shares=%4d,Fee=%6.2f,Liquidated=%10.2f" % (self.name, self.shares, self.fee, self.liquidated)
+    def __repr__(self):
+        return f"Name={self.name},Shares={self.shares},Fee={self.fee},Liquidated={self.liquidated}, unclosed pos={self.unclosed_positions}"
 
 
 # ================== to be deprecated ========================================================
