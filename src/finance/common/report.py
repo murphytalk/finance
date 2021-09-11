@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 from dataclasses import dataclass
-import sys
 from json import dumps, encoder
 from datetime import date
 
 from finance.common.calculate import CalcPosition
 from finance.common.dao.impl import ImplDao
 from finance.common.model import Position
-from finance.common.utils import cmdline_args, epoch2date
+from finance.common.utils import epoch2date
 
 
 # format float value in json
@@ -115,75 +114,6 @@ class FundReport(Report):
         ]
 
 
-class SummaryReport(Report):
-    def __init__(self, dao, the_date, filter_name):
-        def get_stock_positions(stock_positions):
-            for v in stock_positions.values():
-                for p in v:
-                    yield (p['instrument'], p['value']['JPY'])
-
-        def get_fund_positions(positions):
-            for x in positions:
-                yield (x['instrument_id'], x['value'])
-
-        stock = StockReport(dao, the_date)
-        funds = FundReport(dao, the_date)
-        self.positions = [x for x in get_stock_positions(stock.stock_positions())] + [x for x in get_fund_positions(
-            funds.positions)]
-
-    def report(self, dao):
-        def get_allocation(get_allocation_func):
-            allocation = {}
-            for instrument, value in self.positions:
-                for n, ratio in get_allocation_func(instrument_id=instrument):
-                    self.put(allocation, n, value * ratio / 100)
-            for k, v in allocation.items():
-                yield (k, v)
-
-        def asset_class(dao):
-            return get_allocation(dao.get_asset_allocation)
-
-        def country(dao):
-            return get_allocation(dao.get_country_allocation)
-
-        def region(dao):
-            return get_allocation(dao.get_region_allocation)
-
-        def stock_allocation(dao):
-            """
-            get stock instruments allocation, see /stock.json
-            :param dao: dao
-            :return (Stock,ETF)
-            """
-            def calc(stocks):
-                return [{'symbol': x['symbol'],
-                         'id': x['instrument'],
-                         'ccy':x['value']['ccy'],
-                         'value':x['value'][x['value']['ccy']],
-                         'JPY':x['value']['JPY'],
-                         'profit':x['value']['JPY'] - x['liquidated']['JPY']} for x in stocks if x['shares'] > 0]
-            stocks = StockReport(dao, date.today()).stock_positions()
-            return calc(stocks['Stock'] if 'Stock' in stocks else []), calc(stocks['ETF'] if 'ETF' in stocks else [])
-
-        def funds_allocation(dao):
-            return [{'symbol': x.name,
-                     'id': x.instrument_id,
-                     'ccy':'JPY',
-                     'value':x.value,
-                     'JPY': x.value,
-                     'profit':x.profit} for x in FundReport(dao, date.today()).positions]
-
-        stock, etf = stock_allocation(dao)
-        return {
-            'asset': get_pie_chart_data(asset_class(dao)),
-            'country': get_pie_chart_data(country(dao)),
-            'region': get_pie_chart_data(region(dao)),
-            'Stock': stock,
-            'ETF': etf,
-            'Funds': funds_allocation(dao)
-        }
-
-
 def get_pie_chart_data(generator):
     """
     return an array to be fed to HighCharts to plot pie chart
@@ -206,25 +136,3 @@ def country_allocation(dao, instrument_id):
 
 def region_allocation(dao, instrument_id):
     return get_pie_chart_data_json(dao.get_region_allocation(instrument_id=instrument_id))
-
-
-if __name__ == "__main__":
-    # import codecs,locale
-    # sys.stdout = codecs.getwriter(locale.getpreferredencoding())(sys.stdout)
-    args, others = cmdline_args(sys.argv[1:])
-    db = args['dbfile']
-
-    if db is None:
-        print('Need a db file')
-    else:
-        dao = Dao(db)
-        if 'stock' in others:
-            r = StockReport(dao, args['end_date'])
-            print(r.to_json(r.stock_positions()))
-        elif 'fund' in others:
-            r = FundReport(dao, args['end_date'])
-        elif 'sum' in others:
-            r = SummaryReport(dao, args['end_date'])
-            print(Report.to_json(r.report(dao)))
-
-        dao.close()

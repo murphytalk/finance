@@ -2,7 +2,7 @@
 import sys
 import time
 import os.path
-from datetime import datetime, date
+from datetime import date
 from os import environ
 
 try:
@@ -89,64 +89,3 @@ def get_valid_db_from_env(varname, default=None):
     """
     db = environ.get(varname)
     return default if db is None or (not os.path.exists(db)) else db
-
-
-def cmdline_args(argv, db_adapter_clz=None):
-    """
-    ConfigParser in stdlib is overkill, this is my poor man's ConfigParser
-
-    parameter :
-         argv : sys.argv[1:]
-
-    process the following cmd line arguments:
-
-        -d debug mode
-        -fxxxxxx  path to sqlite db file xxxxx
-                  if -f not spcified then output to stdout
-
-        -sYYYYMMDD start date
-        -eYYYYMMDD end date
-
-    return: ({processed arg name:value},[not processed arguments])
-        processed arg names :
-          start_date
-          end_date
-          dbfile
-    """
-
-    def convert_date(ss):
-        if len(ss) == 1:
-            try:
-                return datetime.strptime(ss[0][2:], '%Y%m%d')
-            except ValueError:
-                return None
-        else:
-            return None
-
-    debug_mode_option = '-d'
-    args = [x for x in argv if x != debug_mode_option]
-
-    result = {'debug': debug_mode_option in argv}
-
-    others = [x for x in args if x[:2] != '-f' and x[:2] != '-s' and x[:2] != '-e']
-    db = [x for x in args if x[:2] == '-f']
-    start_date = [x for x in args if x[:2] == '-s']
-    end_date = [x for x in args if x[:2] == '-e']
-
-    start_date = convert_date(start_date)
-    end_date = convert_date(end_date)
-
-    if start_date is None:
-        start_date = STOCK_START_DATE
-
-    if end_date is None:
-        end_date = date.today()
-
-    result['start_date'] = start_date
-    result['end_date'] = end_date
-    if len(db) > 0:
-        result['dbfile'] = db[0][2:]
-    else:
-        result['dbfile'] = None
-
-    return result, others

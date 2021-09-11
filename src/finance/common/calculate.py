@@ -168,9 +168,9 @@ def calc_buying_by_500d_move(ticker, start_date, end_date):
     hist = data.get_historical()
 
     closings = hist['Close']
-    t_1_closing = closings[-1:]
+    # t_1_closing = closings[-1:]
     avg = closings.mean()
-    avg_diff = (t_1_closing - avg) / avg
+    # avg_diff = (t_1_closing - avg) / avg
 
     return Policy500DaysMove(ticker, start_date, end_date, avg)
 
