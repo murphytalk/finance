@@ -54,15 +54,10 @@ class CalcPosition:
             else:
                 pos = Position(t.instrument_id, t.instrument_name)
                 self.positions[t.broker] = {t.instrument_id: pos}
-          
             pos.transaction(t.transaction_type, t.price, t.shares, t.fee)
 
-    def dump(self, callback=None):
-        for k, v in self.positions.items():
-            if callback is None:
-                print(k, v)
-            else:
-                callback(k, v)
+    def transform(self, transformer):
+        return {{broker: {instrument: transformer(instrument, position) for instrument, position in positions_by_instrument}} for broker, positions_by_instrument in self.positions}
 
 
 def get_portfolios(dao, at_which_day, name=None):

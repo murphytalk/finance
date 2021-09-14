@@ -154,8 +154,13 @@ instrument_position = api.model('Position of one instrument', {
     'shares': fields.Float(description='Shares'),
     'price': fields.Float(description='Current market price'),
     'capital': fields.Float(description='Invested capital'),
-    'broker': fields.String(description='The broker that keeps the position'),
 })
+
+insturment_position_nested = fields.Nested(instrument_position)
+insturment_position_wild = fields.Wildcard(insturment_position_nested)
+position_by_broker =  {
+    '*': insturment_position_wild
+}
 
 cash = api.model('Cash balance', {
     'ccy': fields.String(description='Currency', readonly=True),
@@ -165,9 +170,9 @@ cash = api.model('Cash balance', {
 })
 
 positions = api.model('Summary of all positions', {
-    'ETF': fields.List(fields.Nested(instrument_position), description='ETF positions'),
-    'Stock': fields.List(fields.Nested(instrument_position), description='Stock positions'),
-    'Funds': fields.List(fields.Nested(instrument_position), description='Mutual funds positions'),
+    'ETF': fields.Nested(position_by_broker, description='ETF positions'),
+    'Stock': fields.Nested(position_by_broker, description='Stock positions'),
+    'Funds': fields.Nested(position_by_broker, description='Mutual funds positions'),
     'Cash': fields.List(fields.Nested(cash), description='Cash balance')
 })
 

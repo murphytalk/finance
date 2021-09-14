@@ -14,8 +14,8 @@ encoder.FLOAT_REPR = lambda o: format(o, '.2f')
 
 
 class Report(object):
-    def __init__(self, dao, date):
-        self.i = dao.get_instrument_with_xccy_rate(date)
+    def __init__(self, dao: ImplDao, d: date):
+        self.i = dao.get_instrument_with_xccy_rate(d)
 
     @staticmethod
     def gen_price_with_xccy(org, currency, to_jpy_rate, rate_date):
@@ -37,45 +37,53 @@ class Report(object):
             d[k] = v
 
 
+@dataclass
+class PositionReportPayload:
+    instrument: int
+    symbol: str
+    instrument_type: str
+    url: str
+    ccy: str
+    xccy: float
+    shares: float
+    price: float
+    value: float
+    vwap: float
+    liquidated: float
+
+
 class StockReport(Report):
-    def __init__(self, dao: ImplDao, date):
+    def __init__(self, dao: ImplDao, d: date):
         super(self.__class__, self).__init__(dao, date)
         self.q = dao.get_stock_latest_quotes(date)
         self.stock_position = CalcPosition(date)
         self.stock_position.calc(dao)
 
-    def stock_positions(self, positions=None):
-        def calc_stock(instrument, position: Position):
+    def stock_positions(self):
+        pos_by_type = {}
+        def calc_stock(instrument: int, position: Position):
             if instrument not in self.q:
-                return
+                raise RuntimeError(f'unknown instrument id {instrument}')
+
             vwap = position.VWAP()
             v = position.shares * self.q[instrument].price
-            rpt = {
-                'instrument': instrument,
-                'symbol': position.name,
-                'url': self.i[instrument].url,
-                'ccy': self.i[instrument].currency,
-                'xccy': self.i[instrument].xccy_rate,
-                'shares': position.shares,
-                'price': self.q[instrument].price,
-                'value': v,
-                'vwap': self.gen_price_with_xccy(vwap, self.i[instrument].currency,
-                                                       self.i[instrument].xccy_rate, self.i[instrument].xccy_date),
-                'liquidated': position.liquidated}
+            PositionReportPayload(
+                instrument,
+                position.name,
+                self.i[instrument].instrument_type.name,
+                self.i[instrument].url,
+                self.i[instrument].currency,
+                self.i[instrument].xccy_rate,
+                position.shares,
+                self.q[instrument].price,
+                v,
+                self.gen_price_with_xccy(vwap, self.i[instrument].currency, self.i[instrument].xccy_rate, self.i[instrument].xccy_date),
+                position.liquidated
+            )
 
-            t = self.i[instrument].instrument_type.name
-            if t in positions:
-                by_instrument = positions[t]
-            else:
-                by_instrument = []
+            
 
-            by_instrument.append(rpt)
-            positions[t] = by_instrument
-
-        if positions is None:
-            positions = {}
-        self.stock_position.dump(calc_stock)
-        return positions
+        return self.stock_position.transform(calc_stock)
 
 
 @dataclass
