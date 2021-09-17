@@ -36,14 +36,15 @@ from numpy import float64
 
 
 class CalcPosition:
-    def __init__(self, date2):
+    def __init__(self, date2, instrument_type: str = None):
         self.date1 = STOCK_START_DATE
         self.date2 = date2
+        self.instrument_type = instrument_type
         # { broker => {instrument id => position} }
         self.positions: dict[str: dict[int, Position]] = {}
 
     def calc(self, dao: ImplDao):
-        for t in dao.iterate_transaction(self.date1, self.date2):
+        for t in dao.iterate_transaction(self.date1, self.date2, self.instrument_type):
             if t.broker in self.positions:
                 positions = self.positions[t.broker]
                 if t.instrument_id in positions:

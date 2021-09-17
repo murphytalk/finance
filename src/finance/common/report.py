@@ -52,15 +52,16 @@ class PositionReportPayload:
     liquidated: float
 
 
-class StockReport(Report):
+class StockAndEtfReport(Report):
     def __init__(self, dao: ImplDao, d: date):
         super(self.__class__, self).__init__(dao, date)
         self.q = dao.get_stock_latest_quotes(date)
-        self.stock_position = CalcPosition(date)
+        self.stock_position = CalcPosition(date, 'Stock')
         self.stock_position.calc(dao)
+        self.etf_position = CalcPosition(date, 'ETF')
+        self.etf_position.calc(dao)
 
-    def stock_positions(self):
-        pos_by_type = {}
+    def get_report(self, pos: CalcPosition):
         def calc_stock(instrument: int, position: Position):
             if instrument not in self.q:
                 raise RuntimeError(f'unknown instrument id {instrument}')
@@ -77,13 +78,17 @@ class StockReport(Report):
                 position.shares,
                 self.q[instrument].price,
                 v,
-                self.gen_price_with_xccy(vwap, self.i[instrument].currency, self.i[instrument].xccy_rate, self.i[instrument].xccy_date),
+                # self.gen_price_with_xccy(vwap, self.i[instrument].currency, self.i[instrument].xccy_rate, self.i[instrument].xccy_date),
+                vwap,
                 position.liquidated
             )
+        return pos.transform(calc_stock)
 
-            
+    def get_stock_report(self):
+        return self.get_report(self.stock_position)
 
-        return self.stock_position.transform(calc_stock)
+    def get_etf_report(self):
+        return self.get_report(self.etf_position)
 
 
 @dataclass

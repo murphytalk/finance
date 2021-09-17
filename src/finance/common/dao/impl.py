@@ -47,16 +47,16 @@ class ImplDao(Raw):
     def __init__(self, db_path):
         super().__init__(db_path)
 
-    def iterate_transaction(self, start_date, end_date) -> Generator[Transaction, None, None]:
+    def iterate_transaction(self, start_date, end_date, instrument_type) -> Generator[Transaction, None, None]:
         """
         iterate stock transactions
         """
-        sql = ('SELECT i.name,t.instrument, b.name broker, t.type,t.price,t.shares,t.fee,t.date FROM [transaction] t, instrument i, broker b '
-               'WHERE t.instrument = i.rowid  and t.broker = b.id AND date >=? AND date<=? ORDER BY date')
+        sql = ('SELECT i.name,t.instrument, tp.type, b.name broker, t.type,t.price,t.shares,t.fee,t.date FROM [transaction] t, instrument i, broker b , instrument_type tp '
+               'WHERE t.instrument = i.rowid  and t.broker = b.id and i.type = tp.id and tp.type = ? AND date >=? AND date<=? ORDER BY date')
         epoch1 = int(timegm(start_date.timetuple()))
         epoch2 = int(timegm(end_date.timetuple()))
 
-        for f in self.exec(sql, (epoch1, epoch2)):
+        for f in self.exec(sql, (instrument_type, epoch1, epoch2)):
             yield Transaction(
                 f['instrument'], f['name'], f['broker'], f['type'],
                 f['price'], f['shares'], f['fee'], f['date'])
