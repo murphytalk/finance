@@ -35,6 +35,30 @@ import pandas as pd
 from numpy import float64
 
 
+def associate_by_broker_then_instrument(item_generator,
+                                        get_broker_from_item,
+                                        get_instrument_from_item,
+                                        create_new_stuff_from_item,
+                                        on_item):
+    by_broker = {}
+    for item in item_generator:
+        broker = get_broker_from_item(item)
+        if broker in by_broker:
+            by_instruments = by_broker[broker]
+            instrument = get_instrument_from_item(item)
+            if instrument in by_instruments:
+                stuff = by_instruments[instrument]
+            else:
+                stuff = create_new_stuff_from_item(item)
+                by_instruments[instrument] = stuff
+        else:
+            stuff = create_new_stuff_from_item(item)
+            by_broker[broker] = {get_instrument_from_item(item): stuff}
+        on_item(stuff, item)
+
+    return by_broker
+
+
 class CalcPosition:
     def __init__(self, date2, instrument_type: str = None):
         self.date1 = STOCK_START_DATE
@@ -44,18 +68,13 @@ class CalcPosition:
         self.positions: dict[str: dict[int, Position]] = {}
 
     def calc(self, dao: ImplDao):
-        for t in dao.iterate_transaction(self.date1, self.date2, self.instrument_type):
-            if t.broker in self.positions:
-                positions = self.positions[t.broker]
-                if t.instrument_id in positions:
-                    pos = positions[t.instrument_id]
-                else:
-                    pos = Position(t.instrument_id, t.instrument_name)
-                    positions[t.instrument_id] = pos
-            else:
-                pos = Position(t.instrument_id, t.instrument_name)
-                self.positions[t.broker] = {t.instrument_id: pos}
-            pos.transaction(t.transaction_type, t.price, t.shares, t.fee)
+        self.positions = associate_by_broker_then_instrument(
+            dao.iterate_transaction(self.date1, self.date2, self.instrument_type),
+            lambda item: item.broker,
+            lambda item: item.instrument_id,
+            lambda item: Position(item.instrument_id, item.instrument_name),
+            lambda pos, t: pos.transaction(t.transaction_type, t.price, t.shares, t.fee)
+        )
 
     def transform(self, transformer):
         return {{broker: {instrument: transformer(instrument, position) for instrument, position in positions_by_instrument}} for broker, positions_by_instrument in self.positions}
