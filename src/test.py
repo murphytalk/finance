@@ -260,74 +260,71 @@ class TestDao(unittest.TestCase):
                 self.assertEqual(trans["price"], price)
                 self.assertEqual(trans["type"], trans_type)
 
-
-def test_update_instrument(self):
-    instrument = get_random_dict_value(
-        self.instruments, lambda x: True if x.instrument_type.name == "Funds" else False
-    )
-    url = "http://my.new.com/url"
-    expense = 9.99
-    ccy = "CNY"
-    broker = get_random_dict_key(self.brokers)
-
-    payload = {"currency": ccy, "broker": broker, "url": url, "expense": expense}
-
-    # update existing
-    self.assertTrue(self.dao.update_instrument(instrument.name, payload))
-    i = self.dao.get_instruments(instrument.name).__next__()
-    self.assertEqual(i["type"], "Funds")
-    self.assertEqual(i["currency"], ccy)
-    self.assertEqual(i["broker"], broker)
-    self.assertEqual(i["url"], url)
-    self.assertEqual(i["expense"], expense)
-
-    # update allocations
-    # asset allocation
-    assets = set(self.asset_types)
-    a1 = assets.pop()
-    a2 = assets.pop()
-    self.assertTrue(
-        self.dao.update_instrument_asset_allocations(
-            instrument.name,
-            {"assets": [{"asset": a1, "ratio": 20}, {"asset": a2, "ratio": 80}]},
+    def test_update_instrument(self):
+        instrument = get_random_dict_value(
+            self.instruments, lambda x: True if x.instrument_type.name == "Funds" else False
         )
-    )
-    a = {
-        t: r for t, r in self.dao.get_asset_allocation(instrument_name=instrument.name)
-    }
-    self.assertEqual(a[a1], 20)
-    self.assertEqual(a[a2], 80)
+        url = "http://my.new.com/url"
+        expense = 9.99
+        ccy = "CNY"
+        broker = get_random_dict_key(self.brokers)
 
-    # country allocation
-    countries = set(self.countries)
-    c1 = countries.pop()
-    c2 = countries.pop()
-    self.assertTrue(
-        self.dao.update_instrument_country_allocations(
-            instrument.name,
-            {"countries": [{"country": c1, "ratio": 20}, {"country": c2, "ratio": 80}]},
+        payload = {"currency": ccy, "broker": broker, "url": url, "expense": expense}
+
+        # update existing
+        self.assertTrue(self.dao.update_instrument(instrument.name, payload))
+        i = self.dao.get_instruments(instrument.name).__next__()
+        self.assertEqual(i["type"], "Funds")
+        self.assertEqual(i["currency"], ccy)
+        self.assertEqual(i["url"], url)
+        self.assertEqual(i["expense"], expense)
+
+        # update allocations
+        # asset allocation
+        assets = set(self.asset_types)
+        a1 = assets.pop()
+        a2 = assets.pop()
+        self.assertTrue(
+            self.dao.update_instrument_asset_allocations(
+                instrument.name,
+                {"assets": [{"asset": a1, "ratio": 20}, {"asset": a2, "ratio": 80}]},
+            )
         )
-    )
-    c = {
-        t: r
-        for t, r in self.dao.get_country_allocation(instrument_name=instrument.name)
-    }
-    self.assertEqual(c[c1], 20)
-    self.assertEqual(c[c2], 80)
+        a = {
+            t: r for t, r in self.dao.get_asset_allocation(instrument_name=instrument.name)
+        }
+        self.assertEqual(a[a1], 20)
+        self.assertEqual(a[a2], 80)
 
-    # insert new instrument
-    name = instrument.name + ":this is a new instrument"
-    # before insert
-    self.assertRaises(StopIteration, self.dao.get_instruments(name).__next__)
-    # now insert and verify
-    payload.pop("expense")
-    payload["type"] = "Stock"
-    self.assertTrue(self.dao.update_instrument(name, payload))
-    i = self.dao.get_instruments(name).__next__()
-    self.assertEqual(i["type"], "Stock")
-    self.assertEqual(i["currency"], ccy)
-    self.assertEqual(i["broker"], broker)
-    self.assertEqual(i["url"], url)
+        # country allocation
+        countries = set(self.countries)
+        c1 = countries.pop()
+        c2 = countries.pop()
+        self.assertTrue(
+            self.dao.update_instrument_country_allocations(
+                instrument.name,
+                {"countries": [{"country": c1, "ratio": 20}, {"country": c2, "ratio": 80}]},
+            )
+        )
+        c = {
+            t: r
+            for t, r in self.dao.get_country_allocation(instrument_name=instrument.name)
+        }
+        self.assertEqual(c[c1], 20)
+        self.assertEqual(c[c2], 80)
+
+        # insert new instrument
+        name = instrument.name + ":this is a new instrument"
+        # before insert
+        self.assertRaises(StopIteration, self.dao.get_instruments(name).__next__)
+        # now insert and verify
+        payload.pop("expense")
+        payload["type"] = "Stock"
+        self.assertTrue(self.dao.update_instrument(name, payload))
+        i = self.dao.get_instruments(name).__next__()
+        self.assertEqual(i["type"], "Stock")
+        self.assertEqual(i["currency"], ccy)
+        self.assertEqual(i["url"], url)
 
 
 if __name__ == "__main__":
