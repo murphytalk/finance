@@ -39,7 +39,7 @@ def associate_by_broker_then_instrument(item_generator,
                                         get_broker_from_item,
                                         get_instrument_from_item,
                                         create_new_stuff_from_item,
-                                        on_item):
+                                        on_item=None):
     by_broker = {}
     for item in item_generator:
         broker = get_broker_from_item(item)
@@ -54,7 +54,8 @@ def associate_by_broker_then_instrument(item_generator,
         else:
             stuff = create_new_stuff_from_item(item)
             by_broker[broker] = {get_instrument_from_item(item): stuff}
-        on_item(stuff, item)
+        if on_item is not None:
+            on_item(stuff, item)
 
     return by_broker
 

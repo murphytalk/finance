@@ -6,7 +6,7 @@ from datetime import date, datetime
 from flask import render_template, g, current_app, Response
 from finance import finance_page, app
 from finance.common.dao import Dao
-from finance.common.report import StockReport
+from finance.common.report import StockAndEtfReport
 import finance.common.dao.models as models
 import logging.config
 from dataclasses import dataclass
@@ -57,7 +57,7 @@ def summary():
 
 @finance_page.route("/stock.json")
 def stock_json():
-    r = StockReport(g.dao, date.today())
+    r = StockAndEtfReport(g.dao, date.today())
     return Response(r.to_json(r.stock_positions()), mimetype="application/json")
 
 

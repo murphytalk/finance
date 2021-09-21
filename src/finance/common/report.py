@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from json import dumps, encoder
 from datetime import date
 
-from finance.common.calculate import CalcPosition
+from finance.common.calculate import CalcPosition, associate_by_broker_then_instrument
 from finance.common.dao.impl import ImplDao
 from finance.common.model import Position
 from finance.common.utils import epoch2date
@@ -52,6 +52,9 @@ class PositionReportPayload:
     liquidated: float
 
 
+PositionReportPayloadByBroker = dict[str, dict[int, list[PositionReportPayload]]]
+
+
 class StockAndEtfReport(Report):
     def __init__(self, dao: ImplDao, d: date):
         super(self.__class__, self).__init__(dao, date)
@@ -61,7 +64,7 @@ class StockAndEtfReport(Report):
         self.etf_position = CalcPosition(date, 'ETF')
         self.etf_position.calc(dao)
 
-    def get_report(self, pos: CalcPosition):
+    def get_report(self, pos: CalcPosition) -> PositionReportPayloadByBroker:
         def calc_stock(instrument: int, position: Position):
             if instrument not in self.q:
                 raise RuntimeError(f'unknown instrument id {instrument}')
@@ -92,7 +95,7 @@ class StockAndEtfReport(Report):
 
 
 @dataclass
-class FundPosition:
+class FundPositionReportPayload:
     broker: str
     name: str
     expense_ratio: float
@@ -106,13 +109,16 @@ class FundPosition:
     url: str
 
 
-FundPositions = list[FundPosition]
+FundPositionReportPayloadByBroker = dict[str, dict[int, list[FundPositionReportPayload]]]
 
 
 class FundReport(Report):
     def __init__(self, dao: ImplDao, the_date):
-        self.positions: FundPositions = [
-            FundPosition(
+        self.positions = associate_by_broker_then_instrument(
+            dao.get_funds_positions(the_date),
+            lambda item: item['broker'],
+            lambda item: item['instrument_id'],
+            lambda x: FundPositionReportPayload(
                 x['broker'],
                 x['name'],
                 x['expense_ratio'],
@@ -123,8 +129,8 @@ class FundReport(Report):
                 x['profit'],
                 str(epoch2date(x['date'])),
                 x['instrument_id'],
-                ['url']) for x in dao.get_funds_positions(the_date)
-        ]
+                x['url'])
+        )
 
 
 def get_pie_chart_data(generator):

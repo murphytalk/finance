@@ -158,7 +158,7 @@ instrument_position = api.model('Position of one instrument', {
 
 insturment_position_nested = fields.Nested(instrument_position)
 insturment_position_wild = fields.Wildcard(insturment_position_nested)
-position_by_broker =  {
+position_by_broker = {
     '*': insturment_position_wild
 }
 
