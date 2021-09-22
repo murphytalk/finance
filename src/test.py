@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 from collections import deque
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from datetime import timedelta
-
+from finance import app
+from finance.api.endpoints.report import Positions
 from finance.common.calculate import CalcPosition
 from finance.common.dao.impl import ImplDao, Transaction
-
 from finance.common.dao.random import RandomDataDao
 from finance.common.dao.utils import DAY1, TODAY, URL
 from finance.common.model import Position
@@ -106,6 +106,38 @@ class TestCaclPosition(unittest.TestCase):
             }
         }
         self.assertDictEqual(expected, pos.positions)
+
+
+class TestReport(unittest.TestCase):
+    @patch('finance.common.dao.Dao')
+    def test_position_report(self, MockedDao):
+        with app.app_context():
+            dao = MockedDao.return_value
+            dao.get_funds_positions.return_value = iter([
+                {'broker': 'b1', 'name': 'f1', 'instrument_id': 1, 'url': 'url1', 'expense_ratio': 1, 'amount': 100, 'price': 110, 'value': 120, 'profit': 130, 'capital': 140, 'date': 0},
+                {'broker': 'b1', 'name': 'f2', 'instrument_id': 2, 'url': 'url2', 'expense_ratio': 2, 'amount': 200, 'price': 210, 'value': 220, 'profit': 230, 'capital': 240, 'date': 0},
+                {'broker': 'b2', 'name': 'f3', 'instrument_id': 3, 'url': 'url3', 'expense_ratio': 3, 'amount': 300, 'price': 310, 'value': 320, 'profit': 330, 'capital': 340, 'date': 0},
+            ])
+
+            def side_effect_iterate_trans(*args, **kwargs):
+                return iter([
+                    Transaction(1, 'I1', 'b1', 'BUY', 1.0, 10, 1.0),
+                    Transaction(1, 'I1', 'b1', 'BUY', 1.0, 10, 1.0),
+                    Transaction(1, 'I1', 'b1', 'SELL', 2.0, 10, 1.0),
+
+                    Transaction(1, 'I1', 'b2', 'BUY', 1.0, 20, 1.0),
+                    Transaction(2, 'I2', 'b2', 'BUY', 3.0, 10, 1.0),
+                    Transaction(2, 'I2', 'b2', 'SELL', 2.0, 5, 1.0),
+                ] if args[2] == 'Stock' else [
+                    Transaction(3, 'E1', 'b1', 'BUY', 1.0, 10, 1.0),
+                    Transaction(4, 'E2', 'b2', 'BUY', 1.0, 10, 1.0),
+                ])
+
+            dao.iterate_transaction.side_effect = side_effect_iterate_trans
+            # see Dao's implementation
+            MockedDao.singleton = dao
+            pos = Positions()
+            pos.get()
 
 
 class TestDao(unittest.TestCase):

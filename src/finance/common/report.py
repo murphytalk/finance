@@ -41,62 +41,46 @@ class Report(object):
 class PositionReportPayload:
     instrument: int
     symbol: str
-    instrument_type: str
-    url: str
     ccy: str
     xccy: float
     shares: float
     price: float
-    value: float
-    vwap: float
     liquidated: float
 
 
-PositionReportPayloadByBroker = dict[str, dict[int, list[PositionReportPayload]]]
+PositionReportPayloadByBroker = dict[str, dict[int, PositionReportPayload]]
 
 
 class StockAndEtfReport(Report):
     def __init__(self, dao: ImplDao, d: date):
         super(self.__class__, self).__init__(dao, date)
-        self.q = dao.get_stock_latest_quotes(date)
         self.stock_position = CalcPosition(date, 'Stock')
         self.stock_position.calc(dao)
         self.etf_position = CalcPosition(date, 'ETF')
         self.etf_position.calc(dao)
 
-    def get_report(self, pos: CalcPosition) -> PositionReportPayloadByBroker:
+    def get_position_report(self, pos: CalcPosition) -> PositionReportPayloadByBroker:
         def calc_stock(instrument: int, position: Position):
-            if instrument not in self.q:
-                raise RuntimeError(f'unknown instrument id {instrument}')
-
-            vwap = position.VWAP()
-            v = position.shares * self.q[instrument].price
             PositionReportPayload(
                 instrument,
                 position.name,
-                self.i[instrument].instrument_type.name,
-                self.i[instrument].url,
                 self.i[instrument].currency,
                 self.i[instrument].xccy_rate,
                 position.shares,
                 self.q[instrument].price,
-                v,
-                # self.gen_price_with_xccy(vwap, self.i[instrument].currency, self.i[instrument].xccy_rate, self.i[instrument].xccy_date),
-                vwap,
-                position.liquidated
+                position.liquidated,
             )
         return pos.transform(calc_stock)
 
-    def get_stock_report(self):
-        return self.get_report(self.stock_position)
+    def get_stock_position_report(self):
+        return self.get_position_report(self.stock_position)
 
-    def get_etf_report(self):
-        return self.get_report(self.etf_position)
+    def get_etf_position_report(self):
+        return self.get_position_report(self.etf_position)
 
 
 @dataclass
-class FundPositionReportPayload:
-    broker: str
+class FundPositioPayload:
     name: str
     expense_ratio: float
     price: float
@@ -109,17 +93,16 @@ class FundPositionReportPayload:
     url: str
 
 
-FundPositionReportPayloadByBroker = dict[str, dict[int, list[FundPositionReportPayload]]]
+FundPositionPayloadByBroker = dict[str, dict[int, FundPositioPayload]]
 
 
 class FundReport(Report):
     def __init__(self, dao: ImplDao, the_date):
-        self.positions = associate_by_broker_then_instrument(
+        self.positions: FundPositionPayloadByBroker = associate_by_broker_then_instrument(
             dao.get_funds_positions(the_date),
             lambda item: item['broker'],
             lambda item: item['instrument_id'],
-            lambda x: FundPositionReportPayload(
-                x['broker'],
+            lambda x: FundPositioPayload(
                 x['name'],
                 x['expense_ratio'],
                 x['price'],
@@ -131,6 +114,12 @@ class FundReport(Report):
                 x['instrument_id'],
                 x['url'])
         )
+
+    def get_position_report(self):
+        # change to the same format as stock position
+        # Japan mutual funds have different ways to calculate amount(口),
+        # we simplify here by assigning total market value (scraped from broker's page) to price and keep share be 1
+        return {broker: [PositionReportPayload(position.instrument_id, position.name, 'JPY', 1.0, 1, position.value, -position.capital) for position in positions_by_instrument.values()] for broker, positions_by_instrument in self.positions.items()}
 
 
 def get_pie_chart_data(generator):
