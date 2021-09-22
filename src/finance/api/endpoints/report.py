@@ -66,22 +66,23 @@ class Positions(Resource):
                      'capital': -p['liquidated']} for p in report if p['shares'] > 0]
 
         def _get_stock_etf_positions(dao):
-            r = StockAndEtfReport(dao, date.today()).stock_positions()
-            return _get_position(dao, r['ETF']), _get_position(dao, r['Stock'])
+            r = StockAndEtfReport(dao, date.today())
+            return _get_position(dao, r.etf_position.positions), _get_position(dao, r.stock_position.positions)
 
         def _get_all(dao):
             # change to the same format as stock position
             # Japan mutual funds have different ways to calculate amount(口),
             # we simplify here by assigning total market value (scraped from broker's page) to price and keep share be 1
-            funds = [{'instrument': p.instrument_id,
-                      'broker': p.broker,
-                      'symbol': p.name,
-                      'ccy': 'JPY',
-                      'xccy': 1,
-                      'shares': 1,
-                      'price': p.value,
-                      'liquidated': -p.capital
-                      } for p in FundReport(dao, date.today()).positions]
+            funds_report_payload = FundReport(dao, date.today()).positions
+            funds = {broker: [{'instrument': p.instrument_id,
+                               'broker': p.broker,
+                               'symbol': p.name,
+                               'ccy': 'JPY',
+                               'xccy': 1,
+                               'shares': 1,
+                               'price': p.value,
+                               'liquidated': -p.capital
+                               } for p in pp.values()] for broker, pp in funds_report_payload.items()}
             stocks = _get_stock_etf_positions(dao)
             return {'ETF': stocks[0],
                     'Stock': stocks[1],

@@ -58,7 +58,7 @@ PositionReportPayloadByBroker = dict[str, dict[int, list[PositionReportPayload]]
 class StockAndEtfReport(Report):
     def __init__(self, dao: ImplDao, d: date):
         super(self.__class__, self).__init__(dao, date)
-        self.q = dao.get_stock_latest_quotes(date)
+        # self.q = dao.get_stock_latest_quotes(date)
         self.stock_position = CalcPosition(date, 'Stock')
         self.stock_position.calc(dao)
         self.etf_position = CalcPosition(date, 'ETF')
@@ -66,8 +66,8 @@ class StockAndEtfReport(Report):
 
     def get_report(self, pos: CalcPosition) -> PositionReportPayloadByBroker:
         def calc_stock(instrument: int, position: Position):
-            if instrument not in self.q:
-                raise RuntimeError(f'unknown instrument id {instrument}')
+            # if instrument not in self.q:
+            #    raise RuntimeError(f'unknown instrument id {instrument}')
 
             vwap = position.VWAP()
             v = position.shares * self.q[instrument].price
