@@ -156,7 +156,7 @@ instrument_position = api.model('Position of one instrument', {
     'capital': fields.Float(description='Invested capital'),
 })
 
-insturment_position_nested = fields.Nested(instrument_position)
+insturment_position_nested = fields.List(fields.Nested(instrument_position))
 insturment_position_wild = fields.Wildcard(insturment_position_nested)
 position_by_broker = {
     '*': insturment_position_wild

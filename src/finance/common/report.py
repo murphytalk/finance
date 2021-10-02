@@ -48,12 +48,13 @@ class PositionReportPayload:
     liquidated: float
 
 
-PositionReportPayloadByBroker = dict[str, dict[int, PositionReportPayload]]
+PositionReportPayloadByBroker = dict[str, list[PositionReportPayload]]
 
 
 class StockAndEtfReport(Report):
     def __init__(self, dao: ImplDao, d: date):
         super(self.__class__, self).__init__(dao, date)
+        self.q = dao.get_stock_latest_quotes(date)
         self.stock_position = CalcPosition(date, 'Stock')
         self.stock_position.calc(dao)
         self.etf_position = CalcPosition(date, 'ETF')
@@ -61,7 +62,9 @@ class StockAndEtfReport(Report):
 
     def get_position_report(self, pos: CalcPosition) -> PositionReportPayloadByBroker:
         def calc_stock(instrument: int, position: Position):
-            PositionReportPayload(
+            if instrument not in self.q:
+                raise RuntimeError(f'unknown instrument id {instrument}')
+            return PositionReportPayload(
                 instrument,
                 position.name,
                 self.i[instrument].currency,
@@ -70,7 +73,8 @@ class StockAndEtfReport(Report):
                 self.q[instrument].price,
                 position.liquidated,
             )
-        return pos.transform(calc_stock)
+        p = pos.transform(calc_stock)
+        return {broker: pos.values() for broker, pos in p.items()}
 
     def get_stock_position_report(self):
         return self.get_position_report(self.stock_position)

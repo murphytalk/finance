@@ -78,7 +78,7 @@ class CalcPosition:
         )
 
     def transform(self, transformer):
-        return {{broker: {instrument: transformer(instrument, position) for instrument, position in positions_by_instrument}} for broker, positions_by_instrument in self.positions}
+        return {broker: {instrument: transformer(instrument, position) for instrument, position in positions_by_instrument.items()} for broker, positions_by_instrument in self.positions.items()}
 
 
 def get_portfolios(dao, at_which_day, name=None):

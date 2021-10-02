@@ -1,7 +1,8 @@
 from datetime import date
 from finance.api import api, fund_performance, positions, portfolio, portfolio_rebalancing
 from flask_restx import Resource
-from finance.common.report import FundReport, StockAndEtfReport
+from finance.common.dao.impl import ImplDao
+from finance.common.report import FundReport, PositionReportPayloadByBroker, StockAndEtfReport
 from finance.common.calculate import get_portfolios, rebalance_portfolio
 from finance.api.endpoints import run_func_against_dao
 from functools import reduce
@@ -45,29 +46,29 @@ class Positions(Resource):
             for a in alloc:
                 yield (a.alloc, a.ratio)
 
-        def _get_position(dao, report):
-            return [{'instrument': {'id': p['instrument'], 'name':p['symbol']},
-                     'asset_allocation':
-                         [{'asset': x[0],
-                           'ratio': x[1]
-                           } for x in dao.get_asset_allocation(instrument_id=p['instrument'])],
-                     'country_allocation':
-                         [{'country': x[0],
-                           'ratio': x[1]
-                           } for x in _alloc_auto_other(dao.get_country_allocation(instrument_id=p['instrument']))],
-                     'region_allocation':
-                         [{'region': x[0],
-                           'ratio': x[1]
-                           } for x in _alloc_auto_other(dao.get_region_allocation(instrument_id=p['instrument']))],
-                     'ccy': p['ccy'],
-                     'xccy': p['xccy'],
-                     'shares': p['shares'],
-                     'price': p['price'],
-                     'capital': -p['liquidated']} for p in report if p['shares'] > 0]
+        def _get_position(dao: ImplDao, report: PositionReportPayloadByBroker):
+            return {broker: [{'instrument': {'id': p.instrument, 'name': p.symbol},
+                    'asset_allocation':
+                              [{'asset': x[0],
+                                'ratio': x[1]
+                                } for x in dao.get_asset_allocation(instrument_id=p.instrument)],
+                              'country_allocation':
+                              [{'country': x[0],
+                                'ratio': x[1]
+                                } for x in _alloc_auto_other(dao.get_country_allocation(instrument_id=p.instrument))],
+                              'region_allocation':
+                              [{'region': x[0],
+                                'ratio': x[1]
+                                } for x in _alloc_auto_other(dao.get_region_allocation(instrument_id=p.instrument))],
+                              'ccy': p.ccy,
+                              'xccy': p.xccy,
+                              'shares': p.shares,
+                              'price': p.price,
+                              'capital': -p.liquidated} for p in rpt] for broker, rpt in report.items()}
 
         def _get_stock_etf_positions(dao):
             r = StockAndEtfReport(dao, date.today())
-            return _get_position(dao, r.etf_position.positions), _get_position(dao, r.stock_position.positions)
+            return _get_position(dao, r.get_etf_position_report()), _get_position(dao, r.get_stock_position_report())
 
         def _get_all(dao):
             funds = FundReport(dao, date.today()).get_position_report()

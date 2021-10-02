@@ -91,7 +91,7 @@ class ImplDao(Raw):
         return {x['id']: c(x['id'], x['name'], x['type_id'], x['type'], x['url'], x['expense_ratio'])
                 for x in self.exec(sql)}
 
-    def get_stock_latest_quotes(self, quote_date, instrument_name=None, instrument_id=None):
+    def get_stock_latest_quotes(self, quote_date, instrument_name=None, instrument_id=None) -> dict[int, Quote]:
         """
         get the latest quotes of all stocks before the given date
         :param quote_date: quote date

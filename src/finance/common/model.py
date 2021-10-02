@@ -97,7 +97,6 @@ class Position(Model):
         return f"Name={self.name},Shares={self.shares},Fee={self.fee},Liquidated={self.liquidated}, unclosed pos={self.unclosed_positions}"
 
 
-# ================== to be deprecated ========================================================
 class Quote(Model):
     def __init__(self, instrument, name, price, quote_date):
         self.instrument = instrument
@@ -105,7 +104,7 @@ class Quote(Model):
         self.price = price
         self.date = epoch2date(quote_date)  # the actual date
 
-    def __str__(self):
+    def __repr__(self):
         return "Date={},symbol={},id={},price={}".format(self.date, self.symbol, self.instrument, self.price)
 
 
@@ -114,7 +113,7 @@ class InstrumentType(Model):
         self.id = id
         self.name = name
 
-    def __str__(self):
+    def __repr__(self):
         return "id={},name={}".format(self.id, self.name)
 
 
@@ -137,5 +136,5 @@ class Instrument(Model):
         return Instrument(instrument_id, name, InstrumentType(instrument_type, instrument_type_name),
                           url, expense_ratio, currency, xccy_rate, xccy_rate_date)
 
-    def __str__(self):
+    def __repr__(self):
         return u"id={},type={}".format(self.id, self.instrument_type)

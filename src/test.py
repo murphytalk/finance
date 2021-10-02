@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from collections import deque
 import unittest
+from unittest.case import SkipTest
 from unittest.mock import MagicMock, patch
 from datetime import timedelta
 from finance import app
@@ -9,7 +10,7 @@ from finance.common.calculate import CalcPosition
 from finance.common.dao.impl import ImplDao, Transaction
 from finance.common.dao.random import RandomDataDao
 from finance.common.dao.utils import DAY1, TODAY, URL
-from finance.common.model import Position
+from finance.common.model import Instrument, Position, Quote
 from finance.common.utils import epoch2date, get_random_dict_value, get_random_dict_key
 
 YYYY_MM_DD = "%Y-%m-%d"
@@ -114,10 +115,23 @@ class TestReport(unittest.TestCase):
         with app.app_context():
             dao = MockedDao.return_value
             dao.get_funds_positions.return_value = iter([
-                {'broker': 'b1', 'name': 'f1', 'instrument_id': 1, 'url': 'url1', 'expense_ratio': 1, 'amount': 100, 'price': 110, 'value': 120, 'profit': 130, 'capital': 140, 'date': 0},
-                {'broker': 'b1', 'name': 'f2', 'instrument_id': 2, 'url': 'url2', 'expense_ratio': 2, 'amount': 200, 'price': 210, 'value': 220, 'profit': 230, 'capital': 240, 'date': 0},
-                {'broker': 'b2', 'name': 'f3', 'instrument_id': 3, 'url': 'url3', 'expense_ratio': 3, 'amount': 300, 'price': 310, 'value': 320, 'profit': 330, 'capital': 340, 'date': 0},
+                {'broker': 'b1', 'name': 'f1', 'instrument_id': 10, 'url': 'url1', 'expense_ratio': 1, 'amount': 100, 'price': 110, 'value': 120, 'profit': 130, 'capital': 140, 'date': 0},
+                {'broker': 'b1', 'name': 'f2', 'instrument_id': 20, 'url': 'url2', 'expense_ratio': 2, 'amount': 200, 'price': 210, 'value': 220, 'profit': 230, 'capital': 240, 'date': 0},
+                {'broker': 'b2', 'name': 'f3', 'instrument_id': 30, 'url': 'url3', 'expense_ratio': 3, 'amount': 300, 'price': 310, 'value': 320, 'profit': 330, 'capital': 340, 'date': 0},
             ])
+
+            dao.get_stock_latest_quotes.return_value = {
+                1: Quote(1, 'I1', 110, 0),
+                2: Quote(2, 'I2', 120, 0),
+                3: Quote(3, 'E1', 130, 0),
+                4: Quote(4, 'E2', 140, 0),
+            }
+            dao.get_instrument_with_xccy_rate.return_value = {
+                1: Instrument(1, 'I1', 'Stock', currency='JPY', xccy_rate=1, xccy_rate_date=0),
+                2: Instrument(2, 'I2', 'Stock', currency='JPY', xccy_rate=1, xccy_rate_date=0),
+                3: Instrument(3, 'E1', 'ETF', currency='JPY', xccy_rate=1, xccy_rate_date=0),
+                4: Instrument(4, 'E2', 'ETF', currency='JPY', xccy_rate=1, xccy_rate_date=0),
+            }
 
             def side_effect_iterate_trans(*args, **kwargs):
                 return iter([
@@ -134,6 +148,10 @@ class TestReport(unittest.TestCase):
                 ])
 
             dao.iterate_transaction.side_effect = side_effect_iterate_trans
+            dao.get_asset_allocation.return_value = iter([('Stock', 100)])
+            dao.get_country_allocation.return_value = iter([('Japan', 100)])
+            dao.get_region_allocation.return_value = iter([('Asia', 100)])
+
             # see Dao's implementation
             MockedDao.singleton = dao
             pos = Positions()

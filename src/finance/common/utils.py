@@ -46,7 +46,8 @@ def epoch2date(epoch):
     """
     epoch is in UTC, convert it to local date by applying timezone offset
     """
-    return date.fromtimestamp(epoch + time.timezone)
+    t = epoch + time.timezone
+    return date.fromtimestamp(0 if t < 0 else t)
 
 
 def str2time(date_str):
