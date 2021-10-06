@@ -119,7 +119,7 @@ class FundReport(Report):
                 x['url'])
         )
 
-    def get_position_report(self):
+    def get_position_report(self) -> PositionReportPayloadByBroker:
         # change to the same format as stock position
         # Japan mutual funds have different ways to calculate amount(口),
         # we simplify here by assigning total market value (scraped from broker's page) to price and keep share be 1

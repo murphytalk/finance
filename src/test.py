@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from collections import deque
 import unittest
-from unittest.case import SkipTest
 from unittest.mock import MagicMock, patch
 from datetime import timedelta
 from finance import app
@@ -112,7 +111,7 @@ class TestCaclPosition(unittest.TestCase):
 class TestReport(unittest.TestCase):
     @patch('finance.common.dao.Dao')
     def test_position_report(self, MockedDao):
-        with app.app_context():
+        with app.test_client() as client:
             dao = MockedDao.return_value
             dao.get_funds_positions.return_value = iter([
                 {'broker': 'b1', 'name': 'f1', 'instrument_id': 10, 'url': 'url1', 'expense_ratio': 1, 'amount': 100, 'price': 110, 'value': 120, 'profit': 130, 'capital': 140, 'date': 0},
@@ -148,14 +147,175 @@ class TestReport(unittest.TestCase):
                 ])
 
             dao.iterate_transaction.side_effect = side_effect_iterate_trans
-            dao.get_asset_allocation.return_value = iter([('Stock', 100)])
-            dao.get_country_allocation.return_value = iter([('Japan', 100)])
-            dao.get_region_allocation.return_value = iter([('Asia', 100)])
+            dao.get_asset_allocation.return_value = [('Stock', 100)]
+            dao.get_country_allocation.return_value = [('Japan', 100)]
+            dao.get_region_allocation.return_value = [('Asia', 100)]
 
             # see Dao's implementation
             MockedDao.singleton = dao
-            pos = Positions()
-            pos.get()
+
+            rpt = client.get('/finance_demo/api/report/positions')
+            assert rpt is not None
+            assert rpt.status_code == 200
+            assert rpt.json is not None
+            excepted = {
+                "ETF": {
+                    "b2": [
+                        {
+                            "instrument": {"id": 4, "name": "E2"},
+                            "asset_allocation": [{"asset": "Stock", "ratio": 100.0}],
+                            "country_allocation": [
+                                {"country": "Japan", "ratio": 100.0},
+                                {"country": "Other", "ratio": 0.0}
+                            ],
+                            "region_allocation": [
+                                {"region": "Asia", "ratio": 100.0},
+                                {"region": "Other", "ratio": 0.0}
+                            ],
+                            "ccy": "JPY",
+                            "xccy": 1.0,
+                            "shares": 10.0,
+                            "price": 140.0,
+                            "capital": 10.0
+                        }
+                    ],
+                    "b1": [
+                        {
+                            "instrument": {"id": 3, "name": "E1"},
+                            "asset_allocation": [{"asset": "Stock", "ratio": 100.0}],
+                            "country_allocation": [
+                                {"country": "Japan", "ratio": 100.0},
+                                {"country": "Other", "ratio": 0.0}
+                            ],
+                            "region_allocation": [
+                                {"region": "Asia", "ratio": 100.0},
+                                {"region": "Other", "ratio": 0.0}
+                            ],
+                            "ccy": "JPY",
+                            "xccy": 1.0,
+                            "shares": 10.0,
+                            "price": 130.0,
+                            "capital": 10.0
+                        }
+                    ]
+                },
+                "Stock": {
+                    "b2": [
+                        {
+                            "instrument": {"id": 1, "name": "I1"},
+                            "asset_allocation": [{"asset": "Stock", "ratio": 100.0}],
+                            "country_allocation": [
+                                {"country": "Japan", "ratio": 100.0},
+                                {"country": "Other", "ratio": 0.0}
+                            ],
+                            "region_allocation": [
+                                {"region": "Asia", "ratio": 100.0},
+                                {"region": "Other", "ratio": 0.0}
+                            ],
+                            "ccy": "JPY",
+                            "xccy": 1.0,
+                            "shares": 20.0,
+                            "price": 110.0,
+                            "capital": 20.0
+                        },
+                        {
+                            "instrument": {"id": 2, "name": "I2"},
+                            "asset_allocation": [{"asset": "Stock", "ratio": 100.0}],
+                            "country_allocation": [
+                                {"country": "Japan", "ratio": 100.0},
+                                {"country": "Other", "ratio": 0.0}
+                            ],
+                            "region_allocation": [
+                                {"region": "Asia", "ratio": 100.0},
+                                {"region": "Other", "ratio": 0.0}
+                            ],
+                            "ccy": "JPY",
+                            "xccy": 1.0,
+                            "shares": 5.0,
+                            "price": 120.0,
+                            "capital": 20.0
+                        }
+                    ],
+                    "b1": [
+                        {
+                            "instrument": {"id": 1, "name": "I1"},
+                            "asset_allocation": [{"asset": "Stock", "ratio": 100.0}],
+                            "country_allocation": [
+                                {"country": "Japan", "ratio": 100.0},
+                                {"country": "Other", "ratio": 0.0}
+                            ],
+                            "region_allocation": [
+                                {"region": "Asia", "ratio": 100.0},
+                                {"region": "Other", "ratio": 0.0}
+                            ],
+                            "ccy": "JPY",
+                            "xccy": 1.0,
+                            "shares": 10.0,
+                            "price": 110.0,
+                            "capital": -0.0
+                        }
+                    ]
+                },
+                "Funds": {
+                    "b2": [
+                        {
+                            "instrument": {"id": 30, "name": "f3"},
+                            "asset_allocation": [{"asset": "Stock", "ratio": 100.0}],
+                            "country_allocation": [
+                                {"country": "Japan", "ratio": 100.0},
+                                {"country": "Other", "ratio": 0.0}
+                            ],
+                            "region_allocation": [
+                                {"region": "Asia", "ratio": 100.0},
+                                {"region": "Other", "ratio": 0.0}
+                            ],
+                            "ccy": "JPY",
+                            "xccy": 1.0,
+                            "shares": 1.0,
+                            "price": 320.0,
+                            "capital": 340.0
+                        }
+                    ],
+                    "b1": [
+                        {
+                            "instrument": {"id": 10, "name": "f1"},
+                            "asset_allocation": [{"asset": "Stock", "ratio": 100.0}],
+                            "country_allocation": [
+                                {"country": "Japan", "ratio": 100.0},
+                                {"country": "Other", "ratio": 0.0}
+                            ],
+                            "region_allocation": [
+                                {"region": "Asia", "ratio": 100.0},
+                                {"region": "Other", "ratio": 0.0}
+                            ],
+                            "ccy": "JPY",
+                            "xccy": 1.0,
+                            "shares": 1.0,
+                            "price": 120.0,
+                            "capital": 140.0
+                        },
+                        {
+                            "instrument": {"id": 20, "name": "f2"},
+                            "asset_allocation": [{"asset": "Stock", "ratio": 100.0}],
+                            "country_allocation": [
+                                {"country": "Japan", "ratio": 100.0},
+                                {"country": "Other", "ratio": 0.0}
+                            ],
+                            "region_allocation": [
+                                {"region": "Asia", "ratio": 100.0},
+                                {"region": "Other", "ratio": 0.0}
+                            ],
+                            "ccy": "JPY",
+                            "xccy": 1.0,
+                            "shares": 1.0,
+                            "price": 220.0,
+                            "capital": 240.0
+                        }
+                    ]
+                },
+                "Cash": []
+            }
+            self.assertDictEqual(rpt.json, excepted)
 
 
 class TestDao(unittest.TestCase):
@@ -273,7 +433,7 @@ class TestDao(unittest.TestCase):
             self.assertIsInstance(pos["price"], float)
             self.assertIsInstance(pos["profit"], float)
             self.assertIsInstance(pos["capital"], float)
-      
+
     def test_stocks(self):
         stock = get_random_dict_value(
             self.instruments,
