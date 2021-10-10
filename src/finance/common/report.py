@@ -54,7 +54,7 @@ PositionReportPayloadByBroker = dict[str, list[PositionReportPayload]]
 class StockAndEtfReport(Report):
     def __init__(self, dao: ImplDao, d: date):
         super(self.__class__, self).__init__(dao, date)
-        # self.q = dao.get_stock_latest_quotes(date)
+        self.q = dao.get_stock_latest_quotes(date)
         self.stock_position = CalcPosition(date, 'Stock')
         self.stock_position.calc(dao)
         self.etf_position = CalcPosition(date, 'ETF')
