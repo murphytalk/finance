@@ -76,7 +76,7 @@ class Position(Model):
                 # sell
                 while shares > 0:
                     if len(self.unclosed_positions) == 0:
-                        raise RuntimeError("Not enough unclosed position")
+                        raise RuntimeError(f"{trans_type} {shares} shares of {self.name}: Not enough unclosed position")
                     if self.unclosed_positions[0].shares > shares:
                         self.unclosed_positions[0].shares -= shares
                         shares = 0

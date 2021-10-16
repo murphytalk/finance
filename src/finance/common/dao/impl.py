@@ -1,4 +1,5 @@
 from calendar import timegm
+from datetime import datetime
 from typing import Generator
 from finance.common.utils import date_str2epoch, SECONDS_PER_DAY
 from finance.common.model import Quote, epoch2date, Instrument
@@ -59,7 +60,7 @@ class ImplDao(Raw):
         for f in self.exec(sql, (instrument_type, epoch1, epoch2)):
             yield Transaction(
                 f['instrument'], f['name'], f['broker'], f['type'],
-                f['price'], f['shares'], f['fee'], f['date'])
+                f['price'], f['shares'], f['fee']) #, f['date'])
 
     def populate_from_instruments(self, instrument_filter, create_new_obj_func=None):
         """
@@ -120,7 +121,7 @@ class ImplDao(Raw):
 
         return quotes
 
-    def get_instrument_with_xccy_rate(self, the_date):
+    def get_instrument_with_xccy_rate(self, the_date: datetime.date):
         """
         if the xccy rate on specified date does not exist, then use rate on the closet earlier date
         return a dict {instrument id : Instrument}
