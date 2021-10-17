@@ -156,11 +156,11 @@ instrument_position = api.model('Position of one instrument', {
     'capital': fields.Float(description='Invested capital'),
 })
 
-insturment_position_nested = fields.List(fields.Nested(instrument_position))
-insturment_position_wild = fields.Wildcard(insturment_position_nested)
-position_by_broker = {
+insturment_position_nested = fields.List(fields.Nested(instrument_position), description='Instrument positions')
+insturment_position_wild = fields.Wildcard(insturment_position_nested, description='Instrument positions by broker')
+position_by_broker = api.model('Position by broker', {
     '*': insturment_position_wild
-}
+})
 
 cash = api.model('Cash balance', {
     'ccy': fields.String(description='Currency', readonly=True),
