@@ -81,7 +81,7 @@ class CalcPosition:
         return {broker: {instrument: transformer(instrument, position) for instrument, position in positions_by_instrument.items()} for broker, positions_by_instrument in self.positions.items()}
 
 
-def get_portfolios(dao, at_which_day, name=None):
+def get_portfolios(dao: ImplDao, at_which_day, name=None):
     def get_portfolio(portfolio_name, portfolio_allocation):
         closings = []
         targets = []

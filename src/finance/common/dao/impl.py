@@ -60,7 +60,7 @@ class ImplDao(Raw):
         for f in self.exec(sql, (instrument_type, epoch1, epoch2)):
             yield Transaction(
                 f['instrument'], f['name'], f['broker'], f['type'],
-                f['price'], f['shares'], f['fee']) #, f['date'])
+                f['price'], f['shares'], f['fee'])  # f['date'])
 
     def populate_from_instruments(self, instrument_filter, create_new_obj_func=None):
         """
@@ -591,7 +591,7 @@ class ImplDao(Raw):
         portfolios = {}
         for x in self.exec('SELECT * from portfolio_v where name=?', (name,)) if name else self.exec('SELECT * from portfolio_v'):
             allocation = (x['instrument_id'],
-                          x['instrument_name'], x['percentage'])
+                          x['instrument_name'], x['type'], x['percentage'])
             n = x['name']
             if n not in portfolios:
                 portfolios[n] = [allocation]
