@@ -10,7 +10,7 @@ from finance.common.dao.impl import ImplDao, Transaction
 from finance.common.dao.random import RandomDataDao
 from finance.common.dao.utils import DAY1, TODAY, URL
 from finance.common.model import Instrument, Position, Quote
-from finance.common.utils import epoch2date, get_random_dict_value, get_random_dict_key
+from finance.common.utils import epoch2date, get_current_date_epoch, get_random_dict_value, get_random_dict_key
 
 YYYY_MM_DD = "%Y-%m-%d"
 
@@ -109,6 +109,64 @@ class TestCaclPosition(unittest.TestCase):
 
 
 class TestReport(unittest.TestCase):
+    @patch('finance.common.dao.Dao')
+    def test_portfolio_report(self, MockedDao):
+        with app.test_client() as client:
+            dao = MockedDao.return_value
+
+            dao.get_portfolios.return_value = {
+                'p1': [
+                    (1, 'I1', 'Stock', 10),
+                    (2, 'I2', 'Stock', 90),
+                ]
+            }
+
+            today = get_current_date_epoch()
+            dao.get_stock_latest_quotes.return_value = {
+                1: Quote(1, 'I1', 100, today),
+                2: Quote(2, 'I2', 200, today)
+            }
+            dao.get_instrument_with_xccy_rate.return_value = {
+                1: Instrument(1, 'I1', 'Stock', currency='JPY', xccy_rate=1, xccy_rate_date=today),
+                2: Instrument(2, 'I2', 'Stock', currency='JPY', xccy_rate=1, xccy_rate_date=today),
+            }
+            dao.iterate_transaction.return_value = iter([
+                Transaction(1, 'I1', 'b1', 'BUY', 10, 10, 1.0),
+                Transaction(2, 'I2', 'b2', 'BUY', 20, 10, 1.0),
+            ])
+
+            # see Dao's implementation
+            MockedDao.singleton = dao
+
+            rpt = client.get('/finance_demo/api/report/portfolios')
+            assert rpt is not None
+            assert rpt.status_code == 200
+            assert rpt.json is not None
+            expected = [
+                {
+                    'name': 'p1',
+                    'allocations': [
+                        {
+                            'instrument': 'I1',
+                            'shares': 10,
+                            'price': 100,
+                            'market_value': 1000,
+                            'target_allocation': 10,
+                            'current_allocation': 20
+                        },
+                        {
+                            'instrument': 'I2',
+                            'shares': 20,
+                            'price': 200,
+                            'market_value': 4000,
+                            'target_allocation': 90,
+                            'current_allocation': 80
+                        },
+                    ]
+                }        
+            ]
+            self.assertDictEqual(expected, rpt.json)
+
     @patch('finance.common.dao.Dao')
     def test_position_report(self, MockedDao):
         with app.test_client() as client:
