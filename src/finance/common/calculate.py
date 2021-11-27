@@ -94,13 +94,15 @@ def get_portfolios(dao: ImplDao, at_which_day, name=None):
 
         calc_pos = CalcPosition(at_which_day)
         calc_pos.calc(dao)
-       
+     
         positions = {}
-        for p in list(itertools.chain.from_iterable([x.values() for x in calc_pos.positions.values()])):
-            if p.name in positions:
-                positions[p.name] += p.shares
-            else:
-                positions[p.name] = p.shares
+        for pos_by_broker in calc_pos.positions.values():
+            # pos by instruments
+            for p in pos_by_broker.values():
+                if p.name in positions:
+                    positions[p.name] += p.shares
+                else:
+                    positions[p.name] = p.shares
         positions = pd.DataFrame(columns=['instrument', 'shares'], data=[[name, shares] for name, shares in positions.items()])
 
         closings = pd.DataFrame(columns=['instrument', 'price'], data=closings)
