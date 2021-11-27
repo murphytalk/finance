@@ -53,11 +53,11 @@ class ImplDao(Raw):
         iterate stock transactions
         """
         sql = ('SELECT i.name,t.instrument, b.name broker, t.type,t.price,t.shares,t.fee,t.date FROM [transaction] t, instrument i, broker b , instrument_type tp '
-               'WHERE t.instrument = i.rowid  and t.broker = b.id and i.type = tp.id and tp.type = ? AND date >=? AND date<=? ORDER BY date')
+               f"WHERE t.instrument = i.rowid  and t.broker = b.id and i.type = tp.id {'and tp.type = ?' if instrument_type else ''} AND date >=? AND date<=? ORDER BY date")
         epoch1 = int(timegm(start_date.timetuple()))
         epoch2 = int(timegm(end_date.timetuple()))
 
-        for f in self.exec(sql, (instrument_type, epoch1, epoch2)):
+        for f in self.exec(sql, (instrument_type, epoch1, epoch2) if instrument_type else (epoch1, epoch2)):
             yield Transaction(
                 f['instrument'], f['name'], f['broker'], f['type'],
                 f['price'], f['shares'], f['fee'])  # f['date'])

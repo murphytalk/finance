@@ -132,7 +132,8 @@ class TestReport(unittest.TestCase):
             }
             dao.iterate_transaction.return_value = iter([
                 Transaction(1, 'I1', 'b1', 'BUY', 10, 10, 1.0),
-                Transaction(2, 'I2', 'b2', 'BUY', 20, 10, 1.0),
+                Transaction(2, 'I2', 'b1', 'BUY', 10, 10, 1.0),
+                Transaction(2, 'I2', 'b2', 'BUY', 10, 10, 1.0),
             ])
 
             # see Dao's implementation
@@ -148,24 +149,24 @@ class TestReport(unittest.TestCase):
                     'allocations': [
                         {
                             'instrument': 'I1',
-                            'shares': 10,
-                            'price': 100,
-                            'market_value': 1000,
-                            'target_allocation': 10,
-                            'current_allocation': 20
+                            'shares': 10.0,
+                            'price': 100.0,
+                            'market_value': 1000.0,
+                            'target_allocation': 10.0,
+                            'current_allocation': 20.0
                         },
                         {
                             'instrument': 'I2',
-                            'shares': 20,
-                            'price': 200,
-                            'market_value': 4000,
-                            'target_allocation': 90,
-                            'current_allocation': 80
+                            'shares': 20.0,
+                            'price': 200.0,
+                            'market_value': 4000.0,
+                            'target_allocation': 90.0,
+                            'current_allocation': 80.0
                         },
                     ]
-                }        
+                }
             ]
-            self.assertDictEqual(expected, rpt.json)
+            self.assertEqual(expected, rpt.json)
 
     @patch('finance.common.dao.Dao')
     def test_position_report(self, MockedDao):

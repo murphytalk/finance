@@ -24,6 +24,7 @@ if __name__ == "__main__":
     sys.path.append(root)
 
 from dataclasses import dataclass
+import itertools
 from finance.common.const import STOCK_START_DATE
 from finance.common.dao.impl import ImplDao
 from finance.common.model import Position
@@ -85,29 +86,32 @@ def get_portfolios(dao: ImplDao, at_which_day, name=None):
     def get_portfolio(portfolio_name, portfolio_allocation):
         closings = []
         targets = []
-        positions = {}
         for instrument_id, instrument_name, _, percentage in portfolio_allocation:
             quote = dao.get_stock_latest_quotes(
                 at_which_day, instrument_name, instrument_id)
             closings.append((instrument_name, quote[instrument_id].price))
             targets.append((instrument_name, percentage))
 
-        calc_pos = CalcPosition(at_which_day, positions)
+        calc_pos = CalcPosition(at_which_day)
         calc_pos.calc(dao)
+       
+        positions = {}
+        for p in list(itertools.chain.from_iterable([x.values() for x in calc_pos.positions.values()])):
+            if p.name in positions:
+                positions[p.name] += p.shares
+            else:
+                positions[p.name] = p.shares
+        positions = pd.DataFrame(columns=['instrument', 'shares'], data=[[name, shares] for name, shares in positions.items()])
 
         closings = pd.DataFrame(columns=['instrument', 'price'], data=closings)
-        targets = pd.DataFrame(
-            columns=['instrument', 'target_allocation'], data=targets)
-        positions = pd.DataFrame(columns=['instrument', 'shares'], data=[
-                                 [p.name, p.shares] for n, p in positions.items()])
+        targets = pd.DataFrame(columns=['instrument', 'target_allocation'], data=targets)
+
         portfolio = reduce(lambda left, right: pd.merge(
             left, right, on='instrument'), [positions, closings, targets])
         portfolio['market_value'] = portfolio['shares'] * portfolio['price']
         total_value = portfolio.market_value.sum()
-        portfolio['current_allocation'] = 100 * \
-            portfolio['market_value'] / total_value
+        portfolio['current_allocation'] = 100 * portfolio['market_value'] / total_value
         return portfolio
-
     return [(name, get_portfolio(name, p)) for name, p in dao.get_portfolios(name).items()]
 
 
