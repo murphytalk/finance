@@ -5,6 +5,7 @@ import {  NgxLoggerLevel } from 'ngx-logger';
 
 export const environment = {
   production: false,
+  financeHost : 'http://nas.lan:8080/finance',
   logLevel: NgxLoggerLevel.DEBUG
 };
 

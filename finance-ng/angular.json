@@ -15,9 +15,8 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "ngx-build-plus:browser",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "extraWebpackConfig": "webpack.config.js",
             "outputPath": "dist/finance-ng",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -26,7 +25,6 @@
             "aot": true,
             "stylePreprocessorOptions": {
               "includePaths": [
-                "node_modules/@infragistics"
               ]
             },
             "assets": [
@@ -70,17 +68,15 @@
           }
         },
         "serve": {
-          "builder": "ngx-build-plus:dev-server",
+          "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "extraWebpackConfig": "webpack.config.js",
             "browserTarget": "finance-ng:build"
-            // "proxyConfig": "src/proxy.conf.json"
           },
           "configurations": {
             "production": {
               "browserTarget": "finance-ng:build:production"
-            }
-          }
+            },
+          },
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
@@ -91,7 +87,6 @@
         "test": {
           "builder": "ngx-build-plus:karma",
           "options": {
-            "extraWebpackConfig": "webpack.config.js",
             "main": "src/test.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
