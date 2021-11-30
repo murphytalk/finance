@@ -72,6 +72,10 @@ export interface FinPosition {
   capital: number;
 }
 
+export interface FinPositionByBroker {
+  [key: string]: FinPosition;
+}
+
 export interface CashBalance {
   ccy: string;
   broker: string;
@@ -80,9 +84,9 @@ export interface CashBalance {
 }
 
 export interface Positions {
-  ETF: FinPosition[];
-  Stoc: FinPosition[];
-  Funds: FinPosition[];
+  ETF: FinPositionByBroker[];
+  Stock: FinPositionByBroker[];
+  Funds: FinPositionByBroker[];
   Cash: CashBalance[];
 }
 

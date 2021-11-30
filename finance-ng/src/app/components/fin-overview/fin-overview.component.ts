@@ -1,53 +1,12 @@
 import { NGXLogger } from 'ngx-logger';
 import { DataService, Positions, PortfolioAllocation, FinPosition } from './../../services/data.service';
 import { Component, OnInit } from '@angular/core';
-import { first } from 'rxjs/operators';
 import { fromEntries, formatNumber, currencySign, pieChartOption, ChartData } from '../../shared/utils';
 import { MatRadioChange } from '@angular/material/radio';
+import { AllPosAndPort, ALL_PORTFOLIOS, CalcService, DataCategory, DataCollect, OverviewItem } from 'src/app/services/calc.service';
 
-interface OverviewItem {
-  asset?: string;
-  ccy?: string;
-  marketValue?: number;
-  marketValueBaseCcy: number;
-  profit?: number;
-  profitBaseCcy: number;
-}
 
-interface PositionAppliedWithPortfolio {
-  shares: number;
-  capital?: number;
-}
 
-interface PortAllocItem {
-  alloc: PortfolioAllocation;
-  orgAlloc: PortfolioAllocation;
-}
-
-interface PortAlloc {
-  // key is instrument name
-  [key: string]: PortAllocItem;
-}
-
-interface Portfolio {
-  // key is portfolio name
-  [key: string]: PortAlloc;
-}
-
-interface DataCollect {
-  [key: string]: number;
-}
-
-enum DataCategory {
-  AssetAlloc,
-  CountryAlloc,
-  RegionAlloc,
-  Stock,
-  ETF,
-  Funds
-}
-
-const ALL_PORTFOLIOS = 'All';
 
 // for ag-grid
 function currencyFormatter(params) {
@@ -57,15 +16,13 @@ function currencyFormatter(params) {
   return params.value == null ? '' : `${params.colDef.headerName === 'JPY' ? '\u00a5' : currencySign(overview.ccy)} ${formatNumber(params.value)}`;
 }
 
-
 @Component({
   selector: 'app-fin-overview',
   templateUrl: './fin-overview.component.html',
   styleUrls: ['./fin-overview.component.scss']
 })
 export class FinOverviewComponent implements OnInit {
-  private positions: Positions;
-  private portfolios: Portfolio;
+  private allPos: AllPosAndPort;
 
   private categorizedData: { -readonly [key in keyof typeof DataCategory]: DataCollect } = {
     AssetAlloc: {},
@@ -121,12 +78,14 @@ export class FinOverviewComponent implements OnInit {
   }
 
   get portfolioNames() {
-    return this.portfolios ? Object.keys(this.portfolios) : [];
+    return this.allPos.portfolios ? Object.keys(this.allPos.portfolios) : [];
   }
+
   selectedPortfolio = ALL_PORTFOLIOS;
   overviewData: OverviewItem[];
 
   columnDefs = [
+    { headerName: 'Broker', field: 'broker', flex: 1 },
     { headerName: 'Asset', field: 'asset', flex: 1 },
     { headerName: 'Currency', field: 'ccy', flex: 1 },
     {
@@ -155,36 +114,17 @@ export class FinOverviewComponent implements OnInit {
 
   constructor(
     private data: DataService,
+    private calc: CalcService,
     private logger: NGXLogger
   ) { }
 
   ngOnInit(): void {
-    this.data.getPositions().pipe(first()).subscribe(
-      positions => {
-        this.logger.debug('positions', positions);
-        this.positions = positions;
-        this.data.getPortfolios().pipe(first()).subscribe(
-          rawPortfolios => {
-            // transform the shape of position objects
-            this.portfolios = {}; this.portfolios[ALL_PORTFOLIOS] = null;
-            rawPortfolios.forEach(rawPortfolio =>
-              this.portfolios[rawPortfolio.name] = fromEntries(rawPortfolio.allocations.map(allocation =>
-                // a key(instrument) and value(position of that instrument) pair
-                [allocation.instrument,
-                {
-                  alloc: allocation,
-                  // tslint:disable-next-line: max-line-length
-                  orgAlloc: { shares: allocation.shares, market_value: allocation.market_value, current_allocation: allocation.current_allocation }
-                }])
-              ));
-            this.logger.debug('converted portfolios', this.portfolios);
-            this.refresh();
-          }
-        );
-      },
-      err => this.logger.error('Failed to get positions', err),
-      () => this.logger.debug('position get done')
-    );
+    this.calc.loadPosition()
+      .then ( all => {
+          this.allPos = all;
+          this.refresh();
+      })
+      .catch ( err => this.logger.error('Failed to load positions', err));
   }
 
   private stockAndEtfData(): DataCollect {
@@ -200,30 +140,6 @@ export class FinOverviewComponent implements OnInit {
 
   private pieChartTotalValue(data: DataCollect) {
     return Object.keys(data).map(key => data[key]).reduce((accu, cur) => accu + cur, 0);
-  }
-
-  private applyPortfolio(portfolio: PortAlloc, position: FinPosition): PositionAppliedWithPortfolio {
-    const instrument = position.instrument.name;
-
-    if (portfolio != null && !(instrument in portfolio)) {
-      return { shares: -1 };
-    }
-    return { shares: position.shares, capital: position.capital };
-  }
-
-  private calcOverview(assetType: string,
-    sumByCcy: (assetType: string, sum: { [key: string]: OverviewItem }) => void): OverviewItem[] {
-    // see /finance_demo/api/report/positions
-    const sum: { [key: string]: OverviewItem } = {};
-    sumByCcy(assetType, sum);
-    return Object.keys(sum).map(ccy => ({
-      asset: assetType,
-      ccy,
-      marketValue: sum[ccy].marketValue,
-      marketValueBaseCcy: sum[ccy].marketValueBaseCcy,
-      profit: sum[ccy].profit,
-      profitBaseCcy: sum[ccy].profitBaseCcy
-    }));
   }
 
   private refresh() {
@@ -250,18 +166,8 @@ export class FinOverviewComponent implements OnInit {
     this.categorizedData.Stock = {};
     this.categorizedData.Funds = {};
 
-    const portfolio = this.portfolios[this.selectedPortfolio];
-    let overview: OverviewItem[] = [];
-    const assetTypes = [DataCategory.ETF, DataCategory.Stock, DataCategory.Funds];
-    assetTypes.forEach(asset => {
-      const assetName = DataCategory[asset];
-      overview = overview.concat(this.calcOverview(assetName, (assetType, sum) => {
-        this.positions[assetType].forEach((position: FinPosition) => {
-          const newPos = this.applyPortfolio(portfolio, position);
-          const shares = newPos.shares;
-          const capital = newPos.capital;
-          if (shares > 0) {
-
+    this.overviewData = this.calc.getPositionOverviewByPortfolio(this.allPos, this.selectedPortfolio,
+      (assetName, position, shares, capital, sum) => {
             filter_by_allocation(this.categorizedData.CountryAlloc, shares, position, 'country');
             filter_by_allocation(this.categorizedData.RegionAlloc, shares, position, 'region');
             filter_by_allocation(this.categorizedData.AssetAlloc, shares, position, 'asset');
@@ -291,36 +197,8 @@ export class FinOverviewComponent implements OnInit {
             else {
               sum[ccy] = { marketValue, marketValueBaseCcy, profit, profitBaseCcy };
             }
-          }
-        });
-      }));
-    });
 
-    // cash positions
-    if (this.selectedPortfolio === ALL_PORTFOLIOS) {
-      overview = overview.concat(this.calcOverview('Cash', (_, sum) => {
-        const cashBalances = this.positions.Cash;
-        cashBalances.forEach(balance => {
-          if (balance.ccy in sum) {
-            sum[balance.ccy].marketValue += balance.balance;
-            sum[balance.ccy].marketValueBaseCcy += balance.balance * balance.xccy;
-          }
-          else {
-            // tslint:disable-next-line: max-line-length
-            sum[balance.ccy] = { marketValue: balance.balance, marketValueBaseCcy: balance.balance * balance.xccy, profit: null, profitBaseCcy: null };
-          }
-        });
-      }));
-    }
-
-    // summery
-    const summery = overview.reduce((accu, x) => {
-      accu.marketValueBaseCcy += x.marketValueBaseCcy;
-      accu.profitBaseCcy += x.profitBaseCcy;
-      return accu;
-    }, { marketValueBaseCcy: 0, profitBaseCcy: 0 });
-
-    this.overviewData = overview.concat(summery);
+      });
     this.logger.debug('overview', this.overviewData);
     this.logger.debug('asset alloc', this.categorizedData.AssetAlloc);
   }
