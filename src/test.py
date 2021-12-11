@@ -205,6 +205,13 @@ class TestReport(unittest.TestCase):
                     Transaction(4, 'E2', 'b2', 'BUY', 1.0, 10, 1.0),
                 ])
 
+            dao.get_cash_balance.return_value = iter([
+                ('JPY', 'b1', 123.0, 1.0),
+                ('USD', 'b1', 456.0, 100.0),
+                ('CNY', 'b2', 1000.0, 15.0),
+                ('CNY', 'b1', 789, 15.0),
+            ])
+
             dao.iterate_transaction.side_effect = side_effect_iterate_trans
             dao.get_asset_allocation.return_value = [('Stock', 100)]
             dao.get_country_allocation.return_value = [('Japan', 100)]
@@ -372,7 +379,16 @@ class TestReport(unittest.TestCase):
                         }
                     ]
                 },
-                "Cash": []
+                "Cash": {
+                    'b1': [
+                        {'ccy': 'JPY', 'balance': 123.0, 'xccy': 1.0},
+                        {'ccy': 'USD', 'balance': 456.0, 'xccy': 100.0},
+                        {'ccy': 'CNY', 'balance': 789.0, 'xccy': 15.0},
+                    ],
+                    'b2': [
+                        {'ccy': 'CNY', 'balance': 1000.0, 'xccy': 15.0},
+                    ]
+                }
             }
             self.assertDictEqual(rpt.json, excepted)
 

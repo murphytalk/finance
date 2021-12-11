@@ -157,23 +157,27 @@ instrument_position = api.model('Position of one instrument', {
 })
 
 insturment_position_nested = fields.List(fields.Nested(instrument_position), description='Instrument positions')
-insturment_position_wild = fields.Wildcard(insturment_position_nested, description='Instrument positions by broker')
+insturment_position_wild = fields.Wildcard(insturment_position_nested, description='Instrument positions of broker')
 position_by_broker = api.model('Position by broker', {
     '*': insturment_position_wild
 })
 
 cash = api.model('Cash balance', {
     'ccy': fields.String(description='Currency', readonly=True),
-    'broker': fields.String(description='The broker that we keeps the position with', readonly=True),
     'balance': fields.Float(description='Cash balance'),
     'xccy': fields.Float(description='To JPY exchange rate', readonly=True)
+})
+cash_nested = fields.List(fields.Nested(cash), description='Cash')
+cash_wild = fields.Wildcard(cash_nested, description='Cash balances of broker')
+cash_by_broker = api.model('Cash balance by broker', {
+    '*': cash_wild
 })
 
 positions = api.model('Summary of all positions', {
     'ETF': fields.Nested(position_by_broker, description='ETF positions'),
     'Stock': fields.Nested(position_by_broker, description='Stock positions'),
     'Funds': fields.Nested(position_by_broker, description='Mutual funds positions'),
-    'Cash': fields.List(fields.Nested(cash), description='Cash balance')
+    'Cash': fields.Nested(cash_by_broker, description='Cash balance')
 })
 
 portfolio_alloc = api.model('PortfolioAllocation', {

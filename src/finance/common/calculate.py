@@ -24,7 +24,6 @@ if __name__ == "__main__":
     sys.path.append(root)
 
 from dataclasses import dataclass
-import itertools
 from finance.common.const import STOCK_START_DATE
 from finance.common.dao.impl import ImplDao
 from finance.common.model import Position

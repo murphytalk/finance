@@ -66,18 +66,28 @@ class Positions(Resource):
                               'price': p.price,
                               'capital': -p.liquidated} for p in rpt] for broker, rpt in report.items()}
 
-        def _get_stock_etf_positions(dao):
-            r = StockAndEtfReport(dao, date.today())
-            return _get_position(dao, r.get_etf_position_report()), _get_position(dao, r.get_stock_position_report())
+        def _get_all(dao: ImplDao):
+            def get_stock_etf_positions(dao):
+                r = StockAndEtfReport(dao, date.today())
+                return _get_position(dao, r.get_etf_position_report()), _get_position(dao, r.get_stock_position_report())
 
-        def _get_all(dao):
+            def group_cash_by_broker(cash_list):
+                by_broker: dict[str, list] = {}
+                for cash in cash_list:
+                    broker = cash[1]
+                    c = {'ccy': cash[0], 'balance': cash[2], 'xccy': cash[3]}
+                    if broker in by_broker:
+                        by_broker[broker].append(c)
+                    else:
+                        by_broker[broker] = [c]
+                return by_broker
+
             funds = FundReport(dao, date.today()).get_position_report()
-            stocks = _get_stock_etf_positions(dao)
+            stocks = get_stock_etf_positions(dao)
             return {'ETF': stocks[0],
                     'Stock': stocks[1],
                     'Funds': _get_position(dao, funds),
-                    'Cash': [{'ccy': x[0], 'broker': x[1], 'balance': x[2], 'xccy': x[3]}
-                             for x in dao.get_cash_balance()]}
+                    'Cash': group_cash_by_broker(dao.get_cash_balance())}
 
         return run_func_against_dao(lambda dao: _get_all(dao))
 
