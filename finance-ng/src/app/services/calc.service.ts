@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { first } from 'rxjs/operators';
 import { fromEntries } from '../shared/utils';
-import { DataService, FinPosition, FinPositionByBroker, PortfolioAllocation, Positions } from './data.service';
+import { CashBalance, DataService, FinPosition, FinPositionByBroker, PortfolioAllocation, Positions } from './data.service';
 
 interface PositionAppliedWithPortfolio {
   shares: number;
@@ -57,6 +57,10 @@ export const ALL_PORTFOLIOS = 'All';
 type SumByCcy = { [key: string]: OverviewItem };
 type SumByBrokerCcy = { [key: string]: SumByCcy };
 
+function isCashBalance(o: SumByBrokerCcy | CashBalance): o is CashBalance {
+  return (o as CashBalance).xccy !== undefined;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -93,13 +97,17 @@ export class CalcService {
   }
 
   private calcOverview(assetType: string,
-    sumByBrokerCcy: (assetType: string, sum: SumByBrokerCcy) => void): OverviewItem[] {
+    sumByBrokerCcy: (assetType: string, sum: SumByBrokerCcy | CashBalance) => void): OverviewItem[] {
     // see /finance/api/report/positions
-    const sum: SumByBrokerCcy  = {};
+    const sum: SumByBrokerCcy | CashBalance  = {};
     sumByBrokerCcy(assetType, sum);
 
     const overviews: OverviewItem[] = [];
 
+    if(isCashBalance(sum)){
+      sum.
+    }
+    else{
     Object.entries(sum).forEach( ([broker, byCcy]) => {
       // broker summary : broker, market value in base ccy, profit in base ccy
       let marketValueBaseCcy = 0;
@@ -119,6 +127,7 @@ export class CalcService {
           profitBaseCcy: overview.profitBaseCcy
       })));
     });
+    }
 
     return overviews;
   }
@@ -181,7 +190,7 @@ export class CalcService {
 
     // cash positions
     if (portfolioName === ALL_PORTFOLIOS) {
-      overview = overview.concat(this.calcOverview('Cash', (_, sum) => {
+      overview = overview.concat(this.calcOverview('Cash', (_, sum ) => {
         const cashBalances = all.positions.Cash;
         cashBalances.forEach(balance => {
           if (balance.ccy in sum) {

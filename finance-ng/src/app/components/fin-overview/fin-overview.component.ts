@@ -167,19 +167,12 @@ export class FinOverviewComponent implements OnInit {
     this.categorizedData.Funds = {};
 
     this.overviewData = this.calc.getPositionOverviewByPortfolio(this.allPos, this.selectedPortfolio,
-      (assetName, position, shares, capital, sum) => {
+      (assetType, position, shares, marketValueBaseCcy) => {
             filter_by_allocation(this.categorizedData.CountryAlloc, shares, position, 'country');
             filter_by_allocation(this.categorizedData.RegionAlloc, shares, position, 'region');
             filter_by_allocation(this.categorizedData.AssetAlloc, shares, position, 'asset');
 
-            const marketValue = shares * position.price;
-            const marketValueBaseCcy = marketValue * position.xccy;
-            const profit = marketValue - capital;
-            const profitBaseCcy = profit * position.xccy;
-            const ccy = position.ccy;
-
-
-            const pieData = this.categorizedData[assetName];
+            const pieData = this.categorizedData[assetType];
             const name = position.instrument.name;
             if (name in pieData) {
               pieData[name] += marketValueBaseCcy;
@@ -187,17 +180,6 @@ export class FinOverviewComponent implements OnInit {
             else {
               pieData[name] = marketValueBaseCcy;
             }
-
-            if (ccy in sum) {
-              sum[ccy].marketValue += marketValue;
-              sum[ccy].marketValueBaseCcy += marketValueBaseCcy;
-              sum[ccy].profit += profit;
-              sum[ccy].profitBaseCcy += profitBaseCcy;
-            }
-            else {
-              sum[ccy] = { marketValue, marketValueBaseCcy, profit, profitBaseCcy };
-            }
-
       });
     this.logger.debug('overview', this.overviewData);
     this.logger.debug('asset alloc', this.categorizedData.AssetAlloc);
