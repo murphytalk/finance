@@ -97,22 +97,20 @@ export class CalcService {
   }
 
   private calcOverview(assetType: string,
-    sumByBrokerCcy: (assetType: string, sum: SumByBrokerCcy | CashBalance) => void): OverviewItem[] {
+    sumByBrokerCcy: (assetType: string, sum: SumByBrokerCcy) => void): OverviewItem[] {
     // see /finance/api/report/positions
-    const sum: SumByBrokerCcy | CashBalance  = {};
+    const sum: SumByBrokerCcy = {};
     sumByBrokerCcy(assetType, sum);
 
     const overviews: OverviewItem[] = [];
 
-    if(isCashBalance(sum)){
-      sum.
-    }
-    else{
     Object.entries(sum).forEach( ([broker, byCcy]) => {
       // broker summary : broker, market value in base ccy, profit in base ccy
       let marketValueBaseCcy = 0;
       let profitBaseCcy = 0;
-      Object.entries(byCcy).forEach( ([ccy, overview]) => {
+      Object.entries(byCcy).forEach( ([ccy, overview]) =>
+        overview.marketValueBaseCcy
+      {
         marketValueBaseCcy += overview.marketValueBaseCcy;
         profitBaseCcy += overview.profitBaseCcy;
       });
@@ -127,7 +125,6 @@ export class CalcService {
           profitBaseCcy: overview.profitBaseCcy
       })));
     });
-    }
 
     return overviews;
   }
@@ -192,25 +189,35 @@ export class CalcService {
     if (portfolioName === ALL_PORTFOLIOS) {
       overview = overview.concat(this.calcOverview('Cash', (_, sum ) => {
         const cashBalances = all.positions.Cash;
-        cashBalances.forEach(balance => {
-          if (balance.ccy in sum) {
-            sum[balance.ccy].marketValue += balance.balance;
-            sum[balance.ccy].marketValueBaseCcy += balance.balance * balance.xccy;
-          }
-          else {
-            sum[balance.ccy] = { marketValue: balance.balance, marketValueBaseCcy: balance.balance * balance.xccy, profit: null, profitBaseCcy: null };
-          }
+        Object.entries(cashBalances).forEach( ([broker, balance]) => {
+            const ccy = balance.ccy;
+            let byCcy: SumByCcy;
+            if (broker in sum){
+              byCcy = sum[broker];
+            }
+            else{
+              byCcy = {};
+              sum[broker] = byCcy;
+            }
+
+            if(ccy in byCcy){
+              byCcy[balance.ccy].marketValue += balance.balance;
+              byCcy[balance.ccy].marketValueBaseCcy += balance.balance * balance.xccy;
+            }
+            else {
+              byCcy[balance.ccy] = { marketValue: balance.balance, marketValueBaseCcy: balance.balance * balance.xccy, profit: null, profitBaseCcy: null };
+           }
         });
       }));
     }
 
-    // summery
-    const summery = overview.reduce((accu, x) => {
+    // summary
+    const summary = overview.reduce((accu, x) => {
       accu.marketValueBaseCcy += x.marketValueBaseCcy;
       accu.profitBaseCcy += x.profitBaseCcy;
       return accu;
     }, { marketValueBaseCcy: 0, profitBaseCcy: 0 });
 
-    return overview.concat(summery);
+    return overview.concat(summary);
   }
 }

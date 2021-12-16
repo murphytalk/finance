@@ -78,7 +78,6 @@ export interface FinPositionByBroker {
 
 export interface CashBalance {
   ccy: string;
-  broker: string;
   balance: number;
   xccy: number;
 }
