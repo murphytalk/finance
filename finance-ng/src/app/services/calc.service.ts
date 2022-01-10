@@ -111,13 +111,11 @@ export class CalcService {
 
     Object.entries(sum).forEach( ([broker, byCcy]) => {
       // broker summary : broker, market value in base ccy, profit in base ccy
-      const sumByBroker: OverviewItem = {broker, marketValueBaseCcy: 0, profitBaseCcy: 0};
-      Object.values(byCcy).reduce( (initOverview, cur) => ({
-        marketValueBaseCcy: initOverview.marketValue + cur.marketValue,
-        profitBaseCcy: initOverview.profit + cur.profitBaseCcy
-      }));
-
-      overviews.push(sumByBroker);
+      const s = Object.values(byCcy).reduce( (prev, cur) => ({
+        marketValueBaseCcy: prev.marketValueBaseCcy + cur.marketValueBaseCcy,
+        profitBaseCcy: prev.profitBaseCcy+ cur.profitBaseCcy
+      }), {marketValueBaseCcy: 0, profitBaseCcy: 0});
+      overviews.push(s);
 
       // items grouped by ccy for this broker
       overviews.concat(Object.entries(byCcy).map(([ccy, overview]) =>  ({
@@ -144,8 +142,8 @@ export class CalcService {
 
   getPositionOverviewByPortfolio(all: AllPosAndPort, portfolioName: string,
                                  onFilteredPosition: (assetName:string, position :FinPosition, shares: number, mktValueBaseCcy: number) => void ): OverviewItem[] {
-    const portfolio = all.portfolios[portfolioName];
 
+    const portfolio = all.portfolios[portfolioName];
     let overview: OverviewItem[] = [];
     const assetTypes = [DataCategory.ETF, DataCategory.Stock, DataCategory.Funds];
     assetTypes.forEach(asset => {

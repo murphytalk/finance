@@ -278,5 +278,6 @@ describe('CalcService', () => {
 
   it('When all portfolios specified  getPositionOverviewByPortfolio should return overview of all positions', () => {
     const overviews = service.getPositionOverviewByPortfolio(allPosAndPort, ALL_PORTFOLIOS, () => {})
+    console.log(overviews);
   });
 });
