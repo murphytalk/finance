@@ -1,9 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { LoggerTestingModule } from 'ngx-logger/testing';
 
-import { AllPosAndPort, ALL_PORTFOLIOS, CalcService } from './calc.service';
+import { AllPosAndPort, ALL_PORTFOLIOS, CalcService, OverviewItem } from './calc.service';
 import { DataService, FinPosition, FinPositionByBroker, Instrument } from './data.service';
 
+function log(obj: any): void{
+  console.log(JSON.stringify(obj, null, null))
+}
 
 describe('CalcService', () => {
   let service: CalcService;
@@ -13,6 +16,7 @@ describe('CalcService', () => {
   const etf2: Instrument = {id: 11, name: 'ETF 2'};
   const stock1: Instrument = {id: 1, name: 'Stock 1'};
   const stock2: Instrument = {id: 2, name: 'Stock 2'};
+  const stock3: Instrument = {id: 22, name: 'Stock 3'};
   const funds1: Instrument = {id: 3, name: 'Funds 1'};
   const funds2: Instrument = {id: 4, name: 'Funds 2'};
 
@@ -77,6 +81,23 @@ describe('CalcService', () => {
             price: 100,
             capital: 1000
           },
+          {
+            instrument: stock3,
+            asset_allocation: [
+              {asset: 'Stock', ratio: 100},
+            ],
+            country_allocation: [
+              {country: 'Japan', ratio: 100},
+            ],
+            region_allocation: [
+              {region: 'Asia', ratio: 100},
+            ],
+            ccy: 'JPY',
+            xccy: 1,
+            shares: 20,
+            price: 100,
+            capital: 1000
+          },
          ],
          b2: [
           {
@@ -96,18 +117,16 @@ describe('CalcService', () => {
             price: 100,
             capital: 1000
           },
-           {
+          {
             instrument: stock2,
             asset_allocation: [
               {asset: 'Stock', ratio: 100},
             ],
-            country_allocation: [
-              {country: 'US', ratio: 10},
-              {country: 'Japan', ratio: 90},
+             country_allocation: [
+              {country: 'US', ratio: 100},
             ],
             region_allocation: [
-              {region: 'America', ratio: 10},
-              {region: 'Asia', ratio: 90},
+              {region: 'America', ratio: 100},
             ],
             ccy: 'USD',
             xccy: 115,
@@ -142,10 +161,12 @@ describe('CalcService', () => {
               {asset: 'Stock', ratio: 100},
             ],
             country_allocation: [
-              {country: 'US', ratio: 100},
+              {country: 'US', ratio: 10},
+              {country: 'Japan', ratio: 90},
             ],
             region_allocation: [
-              {region: 'America', ratio: 100},
+              {region: 'America', ratio: 10},
+              {region: 'Asia', ratio: 90},
             ],
             ccy: 'USD',
             xccy: 115,
@@ -276,7 +297,51 @@ describe('CalcService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('When all portfolios specified  getPositionOverviewByPortfolio should return overview of all positions', () => {
+  it('When all portfolios specified getPositionOverviewByPortfolio should return overview of all positions', () => {
+    const expected: OverviewItem[] = [
+      //0
+      {asset: 'ETF',
+        marketValueBaseCcy: (10*100 + 100*200)*115, profitBaseCcy: ((10*100 - 50 + 100*200 - 30000)*115)
+      },
+      {broker: 'b1', marketValueBaseCcy: (10*100 + 100*200)*115, profitBaseCcy: ((10*100 - 50 + 100*200 - 30000)*115) },
+      {ccy: 'USD', marketValueBaseCcy: (10*100 + 100*200)*115, marketValue: 10*100 + 100*200, profit: 10*100 - 50 + 100*200 - 30000, profitBaseCcy: ((10*100 - 50 + 100*200 - 30000)*115) },
+
+      //3
+      {asset: 'Stock',
+        marketValueBaseCcy: (20*100)*115 + 20*100 + (20*100)*115 + 100*200*115,
+        profitBaseCcy:  ((20*100-1000)*115 + (20*100-1000))+ ((20*100-1000)*115 + (100*200-30000)*115)
+      },
+      {broker: 'b1',
+        marketValueBaseCcy: (20*100)*115 + 20*100,
+        profitBaseCcy: ((20*100-1000)*115 + (20*100-1000))
+      },
+      { ccy: 'USD',
+        marketValueBaseCcy: (20*100)*115,
+        marketValue: 20*100,
+        profitBaseCcy: (20*100-1000)*115,
+        profit: 20*100-1000,
+      },
+      { ccy: 'JPY',
+        marketValueBaseCcy: 20*100,
+        marketValue: 20*100,
+        profitBaseCcy: 20*100-1000,
+        profit: 20*100-1000,
+      },
+      //7
+      { broker: 'b2',
+        marketValueBaseCcy: (20*100)*115 + 100*200*115,
+        profitBaseCcy: ((20*100-1000)*115 + (100*200-30000)*115)
+      },
+      { ccy: 'USD',
+        marketValueBaseCcy: (20*100)*115 + 100*200*115,
+        marketValue: 20*100 + 100*200,
+        profitBaseCcy: (20*100-1000)*115 + (100*200-30000)*115,
+        profit: ((20*100-1000) + (100*200-30000))
+      },
+      //9
+     ];
     const overviews = service.getPositionOverviewByPortfolio(allPosAndPort, ALL_PORTFOLIOS, () => {})
+    log(overviews);
+    expect(overviews).toEqual(expected);
   });
 });
