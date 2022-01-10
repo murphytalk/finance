@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { _ } from 'ag-grid-community';
 import { NGXLogger } from 'ngx-logger';
 import { first } from 'rxjs/operators';
 import { fromEntries } from '../shared/utils';
@@ -153,38 +152,40 @@ export class CalcService {
       const assetType = DataCategory[asset];
       overview = overview.concat(this.toOverviewWithBrokerAndCcySum(assetType, (theAssetType, sum) => {
         const p: FinPositionByBroker = all.positions[theAssetType];
-        Object.entries(p).forEach( ([broker, position]) => {
-          const newPos = this.applyPortfolio(portfolio, position);
-          const shares = newPos.shares;
-          const capital = newPos.capital;
-          // apply portfolio
-          const marketValue = shares * position.price;
-          const marketValueBaseCcy = marketValue * position.xccy;
-          const profit = marketValue - capital;
-          const profitBaseCcy = profit * position.xccy;
-          const ccy = position.ccy;
+        Object.entries(p).forEach( ([broker, positions]) => {
+          for(const position of positions){
+             const newPos = this.applyPortfolio(portfolio, position);
+             const shares = newPos.shares;
+             const capital = newPos.capital;
+             // apply portfolio
+             const marketValue = shares * position.price;
+             const marketValueBaseCcy = marketValue * position.xccy;
+             const profit = marketValue - capital;
+             const profitBaseCcy = profit * position.xccy;
+             const ccy = position.ccy;
 
-          if (shares > 0) {
-            let byCcy: SumByCcy;
-            if (broker in sum){
-              byCcy = sum[broker];
-            }
-            else{
-              byCcy = {};
-              sum[broker] = byCcy;
-            }
+             if (shares > 0) {
+               let byCcy: SumByCcy;
+               if (broker in sum){
+                 byCcy = sum[broker];
+               }
+               else{
+                 byCcy = {};
+                 sum[broker] = byCcy;
+               }
 
-            if(ccy in byCcy){
-              byCcy[ccy].marketValue += marketValue;
-              byCcy[ccy].marketValueBaseCcy += marketValueBaseCcy;
-              byCcy[ccy].profit += profit;
-              byCcy[ccy].profitBaseCcy += profitBaseCcy;
-            }
-            else {
-              byCcy[ccy] = { marketValue, marketValueBaseCcy, profit, profitBaseCcy };
-            }
+               if(ccy in byCcy){
+                 byCcy[ccy].marketValue += marketValue;
+                 byCcy[ccy].marketValueBaseCcy += marketValueBaseCcy;
+                 byCcy[ccy].profit += profit;
+                 byCcy[ccy].profitBaseCcy += profitBaseCcy;
+               }
+               else {
+                 byCcy[ccy] = { marketValue, marketValueBaseCcy, profit, profitBaseCcy };
+               }
 
-            onFilteredPosition(theAssetType, position, shares, marketValueBaseCcy);
+               onFilteredPosition(theAssetType, position, shares, marketValueBaseCcy);
+             }
           }
         });
       }));
@@ -194,9 +195,10 @@ export class CalcService {
     if (portfolioName === ALL_PORTFOLIOS) {
       overview = overview.concat(this.toOverviewWithBrokerAndCcySum('Cash', (_, sum ) => {
         const cashBalances = all.positions.Cash;
-        Object.entries(cashBalances).forEach( ([broker, balance]) => {
-            const ccy = balance.ccy;
+        Object.entries(cashBalances).forEach( ([broker, balanceByCcy]) => {
+          for(const balance of balanceByCcy){
             let byCcy: SumByCcy;
+            const ccy = balance.ccy;
             if (broker in sum){
               byCcy = sum[broker];
             }
@@ -212,7 +214,7 @@ export class CalcService {
             else {
               byCcy[balance.ccy] = { marketValue: balance.balance, marketValueBaseCcy: balance.balance * balance.xccy, profit: null, profitBaseCcy: null };
            }
-        });
+        }});
       }));
     }
 

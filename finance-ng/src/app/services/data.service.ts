@@ -62,9 +62,9 @@ export interface RegionAllocation {
 
 export interface FinPosition {
   instrument: Instrument;
-  asset_allocation: AssetAllocation;
-  country_allocation: CountryAllocation;
-  region_allocation: RegionAllocation;
+  asset_allocation: AssetAllocation[];
+  country_allocation: CountryAllocation[];
+  region_allocation: RegionAllocation[];
   ccy: string;
   xccy: number;
   shares: number;
@@ -73,7 +73,7 @@ export interface FinPosition {
 }
 
 export interface FinPositionByBroker {
-  [key: string]: FinPosition;
+  [key: string]: FinPosition[];
 }
 
 export interface CashBalance {
@@ -82,11 +82,15 @@ export interface CashBalance {
   xccy: number;
 }
 
+export interface CashBalanceByBroker {
+  [key: string]: CashBalance[];
+}
+
 export interface Positions {
-  ETF: FinPositionByBroker[];
-  Stock: FinPositionByBroker[];
-  Funds: FinPositionByBroker[];
-  Cash: CashBalance[];
+  ETF: FinPositionByBroker;
+  Stock: FinPositionByBroker;
+  Funds: FinPositionByBroker;
+  Cash: CashBalanceByBroker;
 }
 
 export interface ValuePair {
