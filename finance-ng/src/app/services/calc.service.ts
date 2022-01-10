@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { _ } from 'ag-grid-community';
 import { NGXLogger } from 'ngx-logger';
 import { first } from 'rxjs/operators';
 import { fromEntries } from '../shared/utils';
@@ -96,25 +97,29 @@ export class CalcService {
     ));
   }
 
-  private calcOverview(assetType: string,
+  /* call sumByBrokerCcy by asset type
+     sumByBrokerCcy should aggregate position of the specified asset by broker and then currency into sum
+     this function will compute and insert a summary for each broker
+  */
+  private toOverviewWithBrokerAndCcySum(assetType: string,
     sumByBrokerCcy: (assetType: string, sum: SumByBrokerCcy) => void): OverviewItem[] {
     // see /finance/api/report/positions
     const sum: SumByBrokerCcy = {};
+
     sumByBrokerCcy(assetType, sum);
 
     const overviews: OverviewItem[] = [];
 
     Object.entries(sum).forEach( ([broker, byCcy]) => {
       // broker summary : broker, market value in base ccy, profit in base ccy
-      let marketValueBaseCcy = 0;
-      let profitBaseCcy = 0;
-      Object.entries(byCcy).forEach( ([ccy, overview]) =>
-        overview.marketValueBaseCcy
-      {
-        marketValueBaseCcy += overview.marketValueBaseCcy;
-        profitBaseCcy += overview.profitBaseCcy;
-      });
-      overviews.push({broker, marketValueBaseCcy, profitBaseCcy});
+      const sumByBroker: OverviewItem = {broker, marketValueBaseCcy: 0, profitBaseCcy: 0};
+      Object.values(byCcy).reduce( (initOverview, cur) => ({
+        marketValueBaseCcy: initOverview.marketValue + cur.marketValue,
+        profitBaseCcy: initOverview.profit + cur.profitBaseCcy
+      }));
+
+      overviews.push(sumByBroker);
+
       // items grouped by ccy for this broker
       overviews.concat(Object.entries(byCcy).map(([ccy, overview]) =>  ({
           asset: assetType,
@@ -146,7 +151,7 @@ export class CalcService {
     const assetTypes = [DataCategory.ETF, DataCategory.Stock, DataCategory.Funds];
     assetTypes.forEach(asset => {
       const assetType = DataCategory[asset];
-      overview = overview.concat(this.calcOverview(assetType, (theAssetType, sum) => {
+      overview = overview.concat(this.toOverviewWithBrokerAndCcySum(assetType, (theAssetType, sum) => {
         const p: FinPositionByBroker = all.positions[theAssetType];
         Object.entries(p).forEach( ([broker, position]) => {
           const newPos = this.applyPortfolio(portfolio, position);
@@ -187,7 +192,7 @@ export class CalcService {
 
     // cash positions
     if (portfolioName === ALL_PORTFOLIOS) {
-      overview = overview.concat(this.calcOverview('Cash', (_, sum ) => {
+      overview = overview.concat(this.toOverviewWithBrokerAndCcySum('Cash', (_, sum ) => {
         const cashBalances = all.positions.Cash;
         Object.entries(cashBalances).forEach( ([broker, balance]) => {
             const ccy = balance.ccy;
