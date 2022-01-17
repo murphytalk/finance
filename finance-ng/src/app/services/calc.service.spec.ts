@@ -170,7 +170,7 @@ describe('CalcService', () => {
             ],
             ccy: 'USD',
             xccy: 115,
-            shares: 10,
+            shares: 20,
             price: 100,
             capital: 50
           },
@@ -300,7 +300,7 @@ describe('CalcService', () => {
   it('When all portfolios specified getPositionOverviewByPortfolio should return overview of all positions', () => {
     const expected: OverviewItem[] = [
       //0
-      {asset: 'ETF',
+      { asset: 'ETF',
         marketValueBaseCcy: (10*100 + 100*200)*115, profitBaseCcy: ((10*100 - 50 + 100*200 - 30000)*115)
       },
       {broker: 'b1', marketValueBaseCcy: (10*100 + 100*200)*115, profitBaseCcy: ((10*100 - 50 + 100*200 - 30000)*115) },
@@ -339,7 +339,36 @@ describe('CalcService', () => {
         profit: ((20*100-1000) + (100*200-30000))
       },
       //9
-     ];
+      {
+        asset: 'Funds',
+        marketValueBaseCcy: (10*100)*115 + (20*100)*115 + (10*100)*115 + (10*100)*115,
+        profitBaseCcy: (10*100-50)*115 + (20*100 - 50)*115 + (10*100-50)*115 + (10*100-50)*115,
+      },
+      {
+        broker: 'b1',
+        marketValueBaseCcy: (10*100)*115 + (20*100)*115,
+        profitBaseCcy: (10*100-50)*115 + (20*100 - 50)*115,
+      },
+      {
+        ccy: 'USD',
+        marketValueBaseCcy: (10*100)*115 + (20*100)*115,
+        marketValue: 10*100 + 20*100,
+        profitBaseCcy: (10*100-50)*115 + (20*100 - 50)*115,
+        profit: 10*100-50+ (20*100 - 50),
+      },
+      {
+        broker: 'b3',
+        marketValueBaseCcy: (10*100)*115 + (10*100)*115,
+        profitBaseCcy: (10*100-50)*115 + (10*100-50)*115,
+      },
+      {
+        ccy: 'USD',
+        marketValueBaseCcy: (10*100)*115 + (10*100)*115,
+        marketValue: (10*100)+ (10*100),
+        profitBaseCcy: (10*100-50)*115 + (10*100-50)*115,
+        profit: (10*100-50)+ (10*100-50),
+      }
+      ];
     const overviews = service.getPositionOverviewByPortfolio(allPosAndPort, ALL_PORTFOLIOS, () => {})
     log(overviews);
     expect(overviews).toEqual(expected);
