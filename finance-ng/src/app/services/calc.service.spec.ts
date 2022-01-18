@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { _ } from 'ag-grid-community';
 import { LoggerTestingModule } from 'ngx-logger/testing';
 
 import { AllPosAndPort, ALL_PORTFOLIOS, CalcService, OverviewItem } from './calc.service';
@@ -301,7 +302,7 @@ describe('CalcService', () => {
     const expected: OverviewItem[] = [
       //0
       { asset: 'ETF',
-        marketValueBaseCcy: (10*100 + 100*200)*115, profitBaseCcy: ((10*100 - 50 + 100*200 - 30000)*115)
+        marketValueBaseCcy: (10*100 + 100*200)*115, profitBaseCcy: (10*100 - 50 + 100*200 - 30000)*115
       },
       {broker: 'b1', marketValueBaseCcy: (10*100 + 100*200)*115, profitBaseCcy: ((10*100 - 50 + 100*200 - 30000)*115) },
       {ccy: 'USD', marketValueBaseCcy: (10*100 + 100*200)*115, marketValue: 10*100 + 100*200, profit: 10*100 - 50 + 100*200 - 30000, profitBaseCcy: ((10*100 - 50 + 100*200 - 30000)*115) },
@@ -309,7 +310,7 @@ describe('CalcService', () => {
       //3
       {asset: 'Stock',
         marketValueBaseCcy: (20*100)*115 + 20*100 + (20*100)*115 + 100*200*115,
-        profitBaseCcy:  ((20*100-1000)*115 + (20*100-1000))+ ((20*100-1000)*115 + (100*200-30000)*115)
+        profitBaseCcy:  (20*100-1000)*115 + (20*100-1000)+ ((20*100-1000)*115 + (100*200-30000)*115)
       },
       {broker: 'b1',
         marketValueBaseCcy: (20*100)*115 + 20*100,
@@ -367,8 +368,67 @@ describe('CalcService', () => {
         marketValue: (10*100)+ (10*100),
         profitBaseCcy: (10*100-50)*115 + (10*100-50)*115,
         profit: (10*100-50)+ (10*100-50),
+      },
+      //14
+      {
+        asset: 'Cash',
+        marketValueBaseCcy: 1000*115 + 1000 + 1000*200 + 2000*115 + 2000 + 2000*200 + 1000,
+      },
+      {
+        broker: 'b1',
+        marketValueBaseCcy: 1000*115 + 1000 + 1000*200,
+      },
+      {
+        ccy: 'USD',
+        marketValueBaseCcy: 1000*115,
+        marketValue: 1000
+      },
+      {
+        ccy: 'JPY',
+        marketValueBaseCcy: 1000,
+        marketValue: 1000
+      },
+      {
+        ccy: 'EUR',
+        marketValueBaseCcy: 1000*200,
+        marketValue: 1000
+      },
+      {
+        broker: 'b2',
+        marketValueBaseCcy: 2000*115 + 2000 + 2000*200,
+      },
+      {
+        ccy: 'USD',
+        marketValueBaseCcy: 2000*115,
+        marketValue: 2000
+      },
+      {
+        ccy: 'JPY',
+        marketValueBaseCcy: 2000,
+        marketValue: 2000
+      },
+      {
+        ccy: 'EUR',
+        marketValueBaseCcy: 2000*200,
+        marketValue: 2000
+      },
+      {
+        broker: 'b3',
+        marketValueBaseCcy: 1000
+      },
+      {
+        ccy: 'JPY',
+        marketValueBaseCcy: 1000,
+        marketValue: 1000,
+      },
+      // summary
+      {
+        marketValueBaseCcy: (10*100 + 100*200)*115 + (20*100)*115 + 20*100 + (20*100)*115 +
+                            100*200*115 + (10*100)*115 + (20*100)*115 + (10*100)*115 + (10*100)*115 + 1000*115 + 1000 + 1000*200 + 2000*115 + 2000 + 2000*200 + 1000,
+        profitBaseCcy: (10*100 - 50 + 100*200 - 30000)*115 + (20*100-1000)*115 + (20*100-1000)+ ((20*100-1000)*115 + (100*200-30000)*115) +
+                             (10*100-50)*115 + (20*100 - 50)*115 + (10*100-50)*115 + (10*100-50)*115
       }
-      ];
+    ];
     const overviews = service.getPositionOverviewByPortfolio(allPosAndPort, ALL_PORTFOLIOS, () => {})
     log(overviews);
     expect(overviews).toEqual(expected);

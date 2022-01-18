@@ -45,7 +45,7 @@ export interface OverviewItem {
   marketValue?: number;
   marketValueBaseCcy: number;
   profit?: number;
-  profitBaseCcy: number;
+  profitBaseCcy?: number;
 }
 
 export interface DataCollect {
@@ -53,6 +53,7 @@ export interface DataCollect {
 }
 
 export const ALL_PORTFOLIOS = 'All';
+export const CASH = 'Cash';
 
 type SumByCcy = { [key: string]: OverviewItem };
 type SumByBrokerCcy = { [key: string]: SumByCcy };
@@ -109,29 +110,41 @@ export class CalcService {
 
     let overviews: OverviewItem[] = [];
 
-    const assetOverview: OverviewItem = {asset: assetType, marketValueBaseCcy: 0, profitBaseCcy: 0};
+    const assetOverview: OverviewItem = (assetType === CASH) ?
+    {asset: assetType, marketValueBaseCcy: 0,                 }:
+    {asset: assetType, marketValueBaseCcy: 0, profitBaseCcy: 0};
 
     Object.entries(sum).forEach( ([broker, byCcy]) => {
       // broker summary : broker, market value in base ccy, profit in base ccy
-      const brokerOverview = Object.values(byCcy).reduce( (prev, cur) => ({
-        broker,
-        marketValueBaseCcy: prev.marketValueBaseCcy + cur.marketValueBaseCcy,
-        profitBaseCcy: prev.profitBaseCcy+ cur.profitBaseCcy
-      }), {marketValueBaseCcy: 0, profitBaseCcy: 0});
+      const brokerOverview = Object.values(byCcy).reduce( (prev, cur) => {
+        const r: OverviewItem = {
+          broker,
+          marketValueBaseCcy: prev.marketValueBaseCcy + cur.marketValueBaseCcy,
+        };
+        if(assetType !== CASH){
+          r.profitBaseCcy = prev.profitBaseCcy+ cur.profitBaseCcy;
+        }
+        return r;
+      }, {marketValueBaseCcy: 0, profitBaseCcy: 0});
 
       assetOverview.marketValueBaseCcy += brokerOverview.marketValueBaseCcy;
-      assetOverview.profitBaseCcy += brokerOverview.profitBaseCcy;
+      if(assetType !== CASH) assetOverview.profitBaseCcy += brokerOverview.profitBaseCcy;
 
       overviews.push(brokerOverview);
 
       // items grouped by ccy for this broker
-      overviews = overviews.concat(Object.entries(byCcy).map(([ccy, overview]) =>  ({
+      overviews = overviews.concat(Object.entries(byCcy).map(([ccy, overview]) =>  {
+        const r: OverviewItem = {
           ccy,
           marketValue: overview.marketValue,
           marketValueBaseCcy: overview.marketValueBaseCcy,
-          profit: overview.profit,
-          profitBaseCcy: overview.profitBaseCcy
-      })));
+        };
+        if(assetType !== CASH){
+          r.profit = overview.profit;
+          r.profitBaseCcy = overview.profitBaseCcy;
+        }
+        return r;
+    }));
     });
 
     return [assetOverview].concat(overviews);
@@ -197,7 +210,7 @@ export class CalcService {
 
     // cash positions
     if (portfolioName === ALL_PORTFOLIOS) {
-      overview = overview.concat(this.toOverviewWithBrokerAndCcySum('Cash', (_, sum ) => {
+      overview = overview.concat(this.toOverviewWithBrokerAndCcySum(CASH, (_, sum ) => {
         const cashBalances = all.positions.Cash;
         Object.entries(cashBalances).forEach( ([broker, balanceByCcy]) => {
           for(const balance of balanceByCcy){
@@ -224,8 +237,10 @@ export class CalcService {
 
     // summary
     const summary = overview.reduce((accu, x) => {
-      accu.marketValueBaseCcy += x.marketValueBaseCcy;
-      accu.profitBaseCcy += x.profitBaseCcy;
+      if (x.asset != null){
+        accu.marketValueBaseCcy += x.marketValueBaseCcy;
+        accu.profitBaseCcy +=  x.profitBaseCcy == null ? 0 : x.profitBaseCcy;
+      }
       return accu;
     }, { marketValueBaseCcy: 0, profitBaseCcy: 0 });
 
