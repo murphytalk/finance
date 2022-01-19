@@ -85,8 +85,8 @@ export class FinOverviewComponent implements OnInit {
   overviewData: OverviewItem[];
 
   columnDefs = [
-    { headerName: 'Broker', field: 'broker', flex: 1 },
     { headerName: 'Asset', field: 'asset', flex: 1 },
+    { headerName: 'Broker', field: 'broker', flex: 1 },
     { headerName: 'Currency', field: 'ccy', flex: 1 },
     {
       headerName: 'Market Value', children: [
@@ -109,7 +109,7 @@ export class FinOverviewComponent implements OnInit {
   };
 
   rowClassRules = {
-    sumRow: params => params.data.asset == null
+    sumRow: params => params.data.asset != null || params.data.broker != null
   };
 
   constructor(
