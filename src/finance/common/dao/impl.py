@@ -591,7 +591,7 @@ class ImplDao(Raw):
         portfolios = {}
         for x in self.exec('SELECT * from portfolio_v where name=?', (name,)) if name else self.exec('SELECT * from portfolio_v'):
             allocation = (x['instrument_id'],
-                          x['instrument_name'], x['type'], x['percentage'])
+                          x['instrument_name'],  x['percentage'])
             n = x['name']
             if n not in portfolios:
                 portfolios[n] = [allocation]

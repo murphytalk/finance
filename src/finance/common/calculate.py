@@ -85,7 +85,7 @@ def get_portfolios(dao: ImplDao, at_which_day, name=None):
     def get_portfolio(portfolio_name, portfolio_allocation):
         closings = []
         targets = []
-        for instrument_id, instrument_name, _, percentage in portfolio_allocation:
+        for instrument_id, instrument_name, percentage in portfolio_allocation:
             quote = dao.get_stock_latest_quotes(
                 at_which_day, instrument_name, instrument_id)
             closings.append((instrument_name, quote[instrument_id].price))
