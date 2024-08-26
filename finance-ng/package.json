@@ -27,7 +27,7 @@
     "@juggle/resize-observer": "^3.3.1",
     "@tailwindcss/postcss7-compat": "^2.0.2",
     "ag-grid-angular": "^26.0.0",
-    "ag-grid-community": "^26.0.0",
+    "ag-grid-community": "^31.3.4",
     "echarts": "^5.1.2",
     "ngx-build-plus": "^12.2.0",
     "ngx-echarts": "^7.0.2",
